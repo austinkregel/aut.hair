@@ -27,5 +27,12 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Passport::routes();
+        Passport::tokensCan([
+            'openid' ,
+            'profile',
+            'email',
+            'phone',
+            'address',
+        ]);
     }
 }
