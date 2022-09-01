@@ -86,6 +86,7 @@ axios.get('/oauth/clients')
 
 <template>
     <div>
+        <JetSectionBorder />
         <!-- Generate Client -->
         <JetFormSection @submitted="createApiToken">
             <template #title>
@@ -128,7 +129,7 @@ axios.get('/oauth/clients')
                         <div v-for="scope in scopes" :key="scope">
                             <label class="flex items-center">
                                 <JetCheckbox v-model:checked="createApiTokenForm.permissions" :value="scope.id" />
-                                <span class="ml-2 text-sm text-gray-600">{{ scope.description }}</span>
+                                <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ scope.description }}</span>
                             </label>
                         </div>
                     </div>
@@ -226,7 +227,7 @@ axios.get('/oauth/clients')
                     <div v-for="permission in availablePermissions" :key="permission">
                         <label class="flex items-center">
                             <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission" />
-                            <span class="ml-2 text-sm text-gray-600">{{ permission }}</span>
+                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission }}</span>
                         </label>
                     </div>
                 </div>

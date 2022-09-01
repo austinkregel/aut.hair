@@ -9,18 +9,18 @@
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 mx-4 italic">
+            <div class="max-w-xl text-sm text-gray-600 dark:text-slate-400 mx-4 italic">
                 If necessary, you may need to link and unlink your account. 
             </div>
 
 
             <div class=" gap-4">
                 <div class="mt-5 space-y-1 " v-for="social in providers">
-                    <a :href="'/login/' + social.value" class="items-center border border-blue-500 text-blue-600 rounded-lg px-4 py-1">
+                    <a :href="'/login/' + social.value" class="items-center border border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400 rounded-lg px-4 py-1">
                         <span>Link {{social.name}}</span>
                     </a>
                     <div class="text-sm pl-4 pt-2 flex gap-1" v-if="linked(social.value).length > 0">
-                        Already linked with <pre class="bg-slate-100">{{ linked(social.value).map(social => social.email).join(', ') }}</pre>
+                        Already linked with <pre class="bg-slate-100 dark:bg-slate-800 px-1">{{ linked(social.value).map(social => social.email).join(', ') }}</pre>
                     </div>
                 </div>
             </div>
