@@ -23,15 +23,6 @@ use Spatie\QueryBuilder\QueryBuilder;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/webman/sso/synoSSO-1.0.0.js', function () {
-    return response(file_get_contents(resource_path('synoSSO-1.0.0.js')), 200, [
-        'content-type' => 'application/javascript'
-    ]);
-});
-
-Route::get('/webman/sso/SSOOauth.cgi', function () {
-    return dd(request()->all());
-});
 
 Route::middleware([
     'auth:sanctum',
@@ -40,6 +31,7 @@ Route::middleware([
 ])->get('/api/social-accounts', function (Request $request) {
     return $request->user()->socials;
 });
+
 Route::get('/login/{provider}', function ($provider) {
     abort_if(!in_array($provider, ['google', 'github', 'synology']), 404);
 
@@ -56,7 +48,6 @@ Route::middleware('web')->get('/callback/{provider}', function ($provider) {
     try {
         $user = Socialite::driver($provider)->user();
     } catch (\Exception $e) {
-        dd($e);
         return redirect('/login?message='.urlencode($e->getMessage()));
     }
 

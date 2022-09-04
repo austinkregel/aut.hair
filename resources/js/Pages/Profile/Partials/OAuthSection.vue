@@ -59,6 +59,10 @@ export default {
                     name: 'Google',
                     value: 'google',
                 },
+                {
+                    name: 'Synology',
+                    value: 'synology',
+                },
             ],
             socials: [],
         };
@@ -69,10 +73,10 @@ export default {
         },
     },
     mounted() {
-            axios.get('/api/social-accounts')
-        .then(({ data }) => {
-            this.socials = data ?? [];
-        });
+        axios.get('/api/social-accounts')
+            .then(({ data }) => {
+                this.socials = data ?? [];
+            });
 
     }
 }

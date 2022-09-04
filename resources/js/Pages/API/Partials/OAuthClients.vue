@@ -47,7 +47,7 @@ const createApiToken = () => {
 };
 
 const manageApiTokenPermissions = (token) => {
-    updateApiTokenForm.permissions = token.abilities;
+    updateApiTokenForm.permissions = token;
     managingPermissionsFor.value = token;
 };
 
@@ -73,13 +73,13 @@ const deleteApiToken = () => {
 
 onMounted(() => {
     axios.get('/oauth/scopes')
-    .then(response => {
-        scopes.value = response.data;
-    });
-axios.get('/oauth/clients')
-    .then(response => {
-        clients.value = response.data;
-    });
+        .then(response => {
+            scopes.value = response.data;
+        });
+    axios.get('/oauth/clients')
+        .then(response => {
+            clients.value = response.data;
+        });
 
 })
 </script>
@@ -227,10 +227,11 @@ axios.get('/oauth/clients')
 
             <template #content>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="permission in availablePermissions" :key="permission">
+                    {{updateApiTokenForm}}
+                    <div v-for="permission in scopes" :key="permission">
                         <label class="flex items-center">
-                            <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission" />
-                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission }}</span>
+                            <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission.description" />
+                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission.description }}</span>
                         </label>
                     </div>
                 </div>

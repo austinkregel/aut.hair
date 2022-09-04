@@ -90,11 +90,14 @@ const submit = () => {
                     Log in
                 </JetButton>
             </div>
-            <div class="flex items-center justify-between mt-4">
-                <a href="/login/google" class="border border-red-500 text-red-500 px-4 py-2 rounded-lg">
+            <div class="flex flex-wrap items-center gap-4 mt-4">
+                <a href="/login/google" class="border border-red-400 text-red-400 px-4 py-2 rounded-lg">
                     Login With Google
                 </a>
-                <a href="/login/github" class="border border-blue-400 text-blue-500 px-4 py-2 rounded-lg">
+                <a href="/login/google" class="border border-indigo-500 dark:border-indigo-400 text-indigo-500 dark:text-indigo-300 px-4 py-2 rounded-lg">
+                    Login With Synology
+                </a>
+                <a href="/login/github" class="border border-blue-400 text-blue-400 dark:text-blue-300 px-4 py-2 rounded-lg">
                     Login With Github
                 </a>
             </div>
