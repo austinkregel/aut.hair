@@ -58,7 +58,7 @@ class SynologySocialiteProvider extends AbstractProvider
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get(
-            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID'),
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID').'&domain_name=kregel.host',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
