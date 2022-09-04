@@ -66,6 +66,11 @@ class SynologySocialiteProvider extends AbstractProvider
             ]
         );
 
+        dd(
+            (string) $response->getBody(),
+            request()->all()
+        );
+
         return json_decode((string) $response->getBody(), true);
     }
 
