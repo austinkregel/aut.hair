@@ -49,6 +49,10 @@ Route::get('/login/{provider}', function ($provider) {
 Route::middleware('web')->get('/callback/{provider}', function ($provider) {
     abort_if(!in_array($provider, ['google', 'github', 'synology']), 404);
 
+    if ($provider === 'synology' && empty(request()->get('access_token', null))) {
+        return view('synology');
+    }
+
     try {
         $user = Socialite::driver($provider)->user();
     } catch (\Exception $e) {
