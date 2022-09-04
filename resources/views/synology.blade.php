@@ -2,7 +2,7 @@
  <head>
     <script>
        var loc = window.location;
-        loc.replace(loc.pathname.loc.hash.replace('#', '?'));
+        loc.replace(loc.pathname + loc.hash.replace('#', '?'));
     </script>
     </head>
  <body>
