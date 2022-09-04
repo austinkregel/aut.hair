@@ -72,7 +72,7 @@ Route::middleware('web')->get('/callback/{provider}', function ($provider) {
         return redirect('/login?message='.urlencode('You need to register first.'));
     }
 
-    if (!$localUser->is($social?->user)) {
+    if (empty($social) || !$localUser->is($social?->user)) {
         auth()->login($localUser, true);
         
         $social = Social::create([
