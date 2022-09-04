@@ -57,6 +57,8 @@ class SynologySocialiteProvider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
+
+        dd($token, request()->all());
         $response = $this->getHttpClient()->get(
             $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID'),
             [
