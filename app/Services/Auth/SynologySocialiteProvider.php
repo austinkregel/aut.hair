@@ -65,16 +65,17 @@ class SynologySocialiteProvider extends AbstractProvider
         return json_decode((string) $response->getBody(), true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function mapUserToObject(array $user)
     {
-        dd($user);
-        return (new User())->setRaw($user)->map([
-            'id'    => $user['id'], 'nickname' => null, 'name' => $user['name'],
-            'email' => $user['login'], 'avatar' => $user['avatar_url'],
-        ]);
+        // Soooo, synology is pretty weird, they don't actually follow OAuth based standards and want you to use their SSO JSDK.
+        $username = $user['data']['user_name'];
+        $email = explode('\\', $username);
+        $data = [
+            'id' => $user['data']['user_id'],
+            'username' => $username,
+            'email' => end($email).'@'.env('SYNOLOGY_DOMAIN'),
+        ];
+        return (new User())->setRaw($data);
     }
 
     /**
