@@ -128,7 +128,7 @@ axios.get('/oauth/clients')
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-for="scope in scopes" :key="scope">
                             <label class="flex items-center">
-                                <JetCheckbox v-model:checked="createApiTokenForm.permissions" :value="scope.id" />
+                                <JetCheckbox v-model="createApiTokenForm.permissions" :value="scope" />
                                 <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ scope.description }}</span>
                             </label>
                         </div>
@@ -166,7 +166,10 @@ axios.get('/oauth/clients')
                         <div class="space-y-6">
                             <div v-for="token in clients" :key="token.id" class="flex items-center justify-between">
                                 <div>
-                                    {{ token.name }}
+                                    {{ token.client_name }}
+                                </div>
+                                <div>
+                                    {{ token.redirect_uris }}
                                 </div>
 
                                 <div class="flex items-center">

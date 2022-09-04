@@ -31,13 +31,19 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
     'google' => [
-        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect'      => env('GOOGLE_REDIRECT')
+        'redirect' => env('GOOGLE_REDIRECT')
     ],
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),
         'client_secret' => env('GITHUB_CLIENT_SECRET'),
         'redirect' => env('GITHUB_REDIRECT'),
-    ],    
+    ],
+    'synology' => [
+        'client_id' => env('SYNOLOGY_CLIENT_ID'),
+        'client_secret' => env('SYNOLOGY_CLIENT_SECRET'),
+        'redirect' => env('SYNOLOGY_REDIRECT', 'localhost/callback/synology'),
+
+    ]
 ];

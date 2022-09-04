@@ -57,9 +57,9 @@ const submit = () => {
                     autofocus
                 />
 
-            <div v-if="message" class="text-red-600 my-1">
-            {{message}}
-            </div>
+                <div v-if="message" class="text-red-600 dark:text-red-400 my-1">
+                    {{message}}
+                </div>
             </div>
 
             <div class="mt-4">
