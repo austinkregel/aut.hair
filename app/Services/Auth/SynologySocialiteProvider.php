@@ -76,8 +76,8 @@ class SynologySocialiteProvider extends AbstractProvider
             'email' => end($email).'@'.env('SYNOLOGY_DOMAIN'),
         ];
         return (new User())->setRaw($data)->map([
-            'id'    => $data['id'], 'nickname' => $username, 'name' => $user['username'],
-            'email' => $data['email'], 'avatar' => $user['avatar_url'] ?? null,
+            'id'    => $data['id'], 'nickname' => $username, 'name' => $username,
+            'email' => $data['email'], 'avatar' => $data['avatar_url'] ?? null,
         ]);
     }
 
