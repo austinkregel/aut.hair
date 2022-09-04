@@ -52,7 +52,7 @@ class SynologySocialiteProvider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
-        $token = request()->get('acces_token');
+        $token = request()->get('access_token');
         $response = $this->getHttpClient()->get(
             $this->getTokenUrl().'?action=exchange&access_token='.$token.'&domain_name=kregel.host',
             [
