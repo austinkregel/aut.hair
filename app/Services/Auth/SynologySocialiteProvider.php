@@ -54,19 +54,12 @@ class SynologySocialiteProvider extends AbstractProvider
     {
         $token = request()->get('access_token');
         $response = $this->getHttpClient()->get(
-            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&domain_name=kregel.host',
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.(env('SYNOLOGY_DOMAIN') ? '&domain_name='.env('SYNOLOGY_DOMAIN') : ''),
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
                 ],
             ]
-        );
-
-        dd(
-            (string) $response->getBody(),
-            request()->all(),
-            $token,
-            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&domain_name=kregel.host'
         );
 
         return json_decode((string) $response->getBody(), true);
