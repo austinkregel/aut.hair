@@ -25,11 +25,6 @@ class SynologySocialiteProvider extends AbstractProvider
             $fields['state'] = $state;
         }
 
-        if ($this->usesPKCE()) {
-            $fields['code_challenge'] = $this->getCodeChallenge();
-            $fields['code_challenge_method'] = $this->getCodeChallengeMethod();
-        }
-
         return array_merge($fields, $this->parameters);
     }
 
@@ -58,7 +53,7 @@ class SynologySocialiteProvider extends AbstractProvider
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get(
-            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID').'&domain_name=kregel.host',
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&domain_name=kregel.host',
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -68,7 +63,8 @@ class SynologySocialiteProvider extends AbstractProvider
 
         dd(
             (string) $response->getBody(),
-            request()->all()
+            request()->all(),
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&domain_name=kregel.host'
         );
 
         return json_decode((string) $response->getBody(), true);
