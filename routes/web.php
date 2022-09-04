@@ -52,6 +52,7 @@ Route::middleware('web')->get('/callback/{provider}', function ($provider) {
     try {
         $user = Socialite::driver($provider)->user();
     } catch (\Exception $e) {
+        dd($e);
         return redirect('/login?message='.urlencode($e->getMessage()));
     }
 

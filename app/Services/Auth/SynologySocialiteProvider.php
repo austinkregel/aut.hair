@@ -58,7 +58,7 @@ class SynologySocialiteProvider extends AbstractProvider
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get(
-            env('SYNOLOGY_HOST').'/webman/sso/',
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID'),
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
