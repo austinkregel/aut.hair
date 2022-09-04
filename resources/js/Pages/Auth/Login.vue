@@ -94,7 +94,7 @@ const submit = () => {
                 <a href="/login/google" class="border border-red-400 text-red-400 px-4 py-2 rounded-lg">
                     Login With Google
                 </a>
-                <a href="/login/google" class="border border-indigo-500 dark:border-indigo-400 text-indigo-500 dark:text-indigo-300 px-4 py-2 rounded-lg">
+                <a href="/login/synology" class="border border-indigo-500 dark:border-indigo-400 text-indigo-500 dark:text-indigo-300 px-4 py-2 rounded-lg">
                     Login With Synology
                 </a>
                 <a href="/login/github" class="border border-blue-400 text-blue-400 dark:text-blue-300 px-4 py-2 rounded-lg">
