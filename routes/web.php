@@ -78,11 +78,7 @@ Route::middleware('web')->get('/callback/{provider}', function ($provider) {
 
     if (empty($social) || !$localUser->is($social?->user)) {
         auth()->login($localUser, true);
-        dd(
-            $user,
-            $user->getEmail(),
-            $user->getId()
-        );
+        
         $social = Social::create([
             'user_id' => $localUser->id,
             'email' => $user->getEmail(),
