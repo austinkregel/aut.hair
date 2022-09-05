@@ -24,7 +24,7 @@ Artisan::command('inspire', function () {
 Artisan::command('test', function () {
     $connection = new Connection([
         'hosts' => ['kregel.host'],
-        'port' => 636,
+        'port' => 389,
         'base_dn' => 'dc=kregel,dc=host',
         'username' => 'cn=austin,dc=kregel,dc=host',
         'password' => 'nzc2qkb@uwq_GFT9kna',
