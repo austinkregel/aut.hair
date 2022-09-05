@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://localhost'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -186,7 +186,8 @@ return [
         /*
          * Package Service Providers...
          */
-        \SocialiteProviders\Manager\ServiceProvider::class, // add
+        SocialiteProviders\Manager\ServiceProvider::class,
+        OpenIDConnect\Laravel\PassportServiceProvider::class,
 
         /*
          * Application Service Providers...

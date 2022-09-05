@@ -23,11 +23,11 @@ const props = defineProps({
 
 const createApiTokenForm = useForm({
     name: '',
-    permissions: props.defaultPermissions,
+    scopes: props.defaultPermissions,
 });
 
 const updateApiTokenForm = useForm({
-    permissions: [],
+    scopes: [],
 });
 
 const deleteApiTokenForm = useForm();
@@ -47,16 +47,9 @@ const createApiToken = () => {
 };
 
 const manageApiTokenPermissions = (token) => {
-    updateApiTokenForm.permissions = token.abilities;
+    console.log(token);
+    updateApiTokenForm.scopes = token.scopes;
     managingPermissionsFor.value = token;
-};
-
-const updateApiToken = () => {
-    // updateApiTokenForm.put(route('api-tokens.update', managingPermissionsFor.value), {
-    //     preserveScroll: true,
-    //     preserveState: true,
-    //     onSuccess: () => (managingPermissionsFor.value = null),
-    // });
 };
 
 const confirmApiTokenDeletion = (token) => {
@@ -103,9 +96,9 @@ const deleteApiToken = () => {
                     <JetLabel for="permissions" value="Permissions" />
 
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div v-for="permission in availablePermissions" :key="permission">
+                        <div v-for="permission in availablePermissions" :key="permission.id">
                             <label class="flex items-center">
-                                <JetCheckbox v-model:checked="createApiTokenForm.permissions" :value="permission" />
+                                <JetCheckbox v-model:checked="createApiTokenForm.scopes" :value="permission" />
                                 <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission }}</span>
                             </label>
                         </div>
@@ -144,20 +137,14 @@ const deleteApiToken = () => {
                             <div v-for="token in tokens" :key="token.id" class="flex items-center justify-between">
                                 <div>
                                     {{ token.name }}
+                                    {{ token.scopes }}
                                 </div>
+                                
 
                                 <div class="flex items-center">
                                     <div v-if="token.last_used_ago" class="text-sm text-gray-400">
                                         Last used {{ token.last_used_ago }}
                                     </div>
-
-                                    <button
-                                        v-if="availablePermissions.length > 0"
-                                        class="cursor-pointer ml-6 text-sm text-gray-400 underline"
-                                        @click="manageApiTokenPermissions(token)"
-                                    >
-                                        Permissions
-                                    </button>
 
                                     <button class="cursor-pointer ml-6 text-sm text-red-500" @click="confirmApiTokenDeletion(token)">
                                         Delete
@@ -190,39 +177,6 @@ const deleteApiToken = () => {
                 <JetSecondaryButton @click="displayingToken = false">
                     Close
                 </JetSecondaryButton>
-            </template>
-        </JetDialogModal>
-
-        <!-- API Token Permissions Modal -->
-        <JetDialogModal :show="managingPermissionsFor != null" @close="managingPermissionsFor = null">
-            <template #title>
-                API Token Permissions
-            </template>
-
-            <template #content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="permission in availablePermissions" :key="permission">
-                        <label class="flex items-center">
-                            <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission" />
-                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-200">{{ permission }}</span>
-                        </label>
-                    </div>
-                </div>
-            </template>
-
-            <template #footer>
-                <JetSecondaryButton @click="managingPermissionsFor = null">
-                    Cancel
-                </JetSecondaryButton>
-
-                <JetButton
-                    class="ml-3"
-                    :class="{ 'opacity-25': updateApiTokenForm.processing }"
-                    :disabled="updateApiTokenForm.processing"
-                    @click="updateApiToken"
-                >
-                    Save
-                </JetButton>
             </template>
         </JetDialogModal>
 

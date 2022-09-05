@@ -31,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
             'openid' ,
             'profile',
             'email',
-            'phone',
+            'name',
             'address',
         ]);
     }

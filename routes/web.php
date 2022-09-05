@@ -6,8 +6,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Validator;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 use Spatie\Activitylog\Models\Activity;
@@ -23,6 +21,10 @@ use Spatie\QueryBuilder\QueryBuilder;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('.well-known/openid-connect', function () {
+    return view('openid.well-known');
+});
 
 Route::middleware([
     'auth:sanctum',
