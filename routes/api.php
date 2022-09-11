@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('auth:api')->get('userinfo', function (Request $request) {    
     $user = [];
     
-    if (request->user()->tokenCan('openid') {
+    if (request->user()->tokenCan('openid')) {
         $user['id'] = auth()->id();
         $user['updated_at'] => auth()->user()->updated_at;
         $user['created_at'] => auth()->user()->created_at;
