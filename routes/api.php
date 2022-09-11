@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:api')->get('userinfo', function (Request $request) {
-    dd($request->all(), $request->user());
+    return $request->user();
 })->name('oidc.userinfo');
 
 Route::get('jwks', function () {
