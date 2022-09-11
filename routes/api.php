@@ -24,8 +24,8 @@ Route::middleware('auth:api')->get('userinfo', function (Request $request) {
     
     if (request->user()->tokenCan('openid')) {
         $user['id'] = auth()->id();
-        $user['updated_at'] => auth()->user()->updated_at;
-        $user['created_at'] => auth()->user()->created_at;
+        $user['updated_at'] = auth()->user()->updated_at;
+        $user['created_at'] = auth()->user()->created_at;
     }
     if (request->user()->tokenCan('profile')) {
         $user['photo_url'] = auth()->user()->profile_photo_url;
