@@ -38,7 +38,7 @@ class JetstreamServiceProvider extends ServiceProvider
      */
     protected function configurePermissions()
     {
-        Jetstream::defaultApiTokenPermissions(['read']);
+        Jetstream::defaultApiTokenPermissions(['name', 'email']);
 
         Jetstream::permissions(Passport::scopeIds());
     }
