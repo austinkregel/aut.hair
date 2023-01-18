@@ -25,6 +25,13 @@ class RemoveTeamMember implements RemovesTeamMembers
         $this->ensureUserDoesNotOwnTeam($teamMember, $team);
 
         $team->removeUser($teamMember);
+        activity()->on($team)
+            ->causedBy($user)
+            ->event('invitation')
+            ->withProperty('old', [
+                'email' => $teamMember->email,
+            ])
+            ->log('invited');
 
         TeamMemberRemoved::dispatch($team, $teamMember);
     }

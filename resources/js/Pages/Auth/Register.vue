@@ -88,14 +88,14 @@ const submit = () => {
                         <JetCheckbox id="terms" v-model:checked="form.terms" name="terms" />
 
                         <div class="ml-2">
-                            I agree to the <a target="_blank" :href="route('terms.show')" class="underline text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900">Terms of Service</a> and <a target="_blank" :href="route('policy.show')" class="underline text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900">Privacy Policy</a>
+                            I agree to the <a target="_blank" :href="route('terms.show')" class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900">Terms of Service</a> and <a target="_blank" :href="route('policy.show')" class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900">Privacy Policy</a>
                         </div>
                     </div>
                 </JetLabel>
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <Link :href="route('login')" class="underline text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900">
+                <Link :href="route('login')" class="underline text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900">
                     Already registered?
                 </Link>
 

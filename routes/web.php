@@ -114,12 +114,7 @@ Route::middleware('web')->get('/callback/{provider}', function ($provider) {
 });
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return Inertia::location('/login');
 });
 
 Route::middleware([

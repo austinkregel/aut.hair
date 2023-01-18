@@ -129,7 +129,7 @@ onMounted(() => {
                         <div v-for="scope in scopes" :key="scope">
                             <label class="flex items-center">
                                 <JetCheckbox v-model="createApiTokenForm.permissions" :value="scope" />
-                                <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ scope.description }}</span>
+                                <span class="ml-2 text-sm text-slate-600 dark:text-slate-300">{{ scope.description }}</span>
                             </label>
                         </div>
                     </div>
@@ -173,13 +173,13 @@ onMounted(() => {
                                 </div>
 
                                 <div class="flex items-center">
-                                    <div v-if="token.last_used_ago" class="text-sm text-gray-400">
+                                    <div v-if="token.last_used_ago" class="text-sm text-slate-400">
                                         Last used {{ token.last_used_ago }}
                                     </div>
 
                                     <button
                                         v-if="scopes.length > 0"
-                                        class="cursor-pointer ml-6 text-sm text-gray-400 underline"
+                                        class="cursor-pointer ml-6 text-sm text-slate-400 underline"
                                         @click="manageApiTokenPermissions(token)"
                                     >
                                         Permissions
@@ -207,7 +207,7 @@ onMounted(() => {
                     Please copy your new Client. For your security, it won't be shown again.
                 </div>
 
-                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-gray-100 px-4 py-2 rounded font-mono text-sm text-gray-500">
+                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-slate-100 px-4 py-2 rounded font-mono text-sm text-slate-500">
                     {{ $page.props.jetstream.flash.token }}
                 </div>
             </template>
@@ -231,7 +231,7 @@ onMounted(() => {
                     <div v-for="permission in scopes" :key="permission">
                         <label class="flex items-center">
                             <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission.description" />
-                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission.description }}</span>
+                            <span class="ml-2 text-sm text-slate-600 dark:text-slate-300">{{ permission.description }}</span>
                         </label>
                     </div>
                 </div>

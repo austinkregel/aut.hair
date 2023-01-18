@@ -14,6 +14,10 @@ class DeleteTeam implements DeletesTeams
      */
     public function delete($team)
     {
+        activity()->on($team)
+            ->causedBy(request()->user())
+            ->event('delete')
+            ->log('deleted');
         $team->purge();
     }
 }

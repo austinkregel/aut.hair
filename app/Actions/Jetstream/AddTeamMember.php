@@ -31,6 +31,12 @@ class AddTeamMember implements AddsTeamMembers
 
         AddingTeamMember::dispatch($team, $newTeamMember);
 
+
+        activity()->on($newTeamMember)
+            ->causedBy($user)
+            ->event('update')
+            ->log('invited new team member');
+
         $team->users()->attach(
             $newTeamMember, ['role' => $role]
         );

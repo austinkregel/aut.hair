@@ -31,6 +31,10 @@ class CreateTeam implements CreatesTeams
             'name' => $input['name'],
             'personal_team' => false,
         ]));
+        activity()->on($team)
+            ->causedBy($user)
+            ->event('update')
+            ->log('created');
 
         return $team;
     }

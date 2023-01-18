@@ -9,8 +9,8 @@
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 dark:text-slate-400 mx-4 italic">
-                If necessary, you may need to link and unlink your account. 
+            <div class="max-w-xl text-sm text-slate-600 dark:text-slate-400 mx-4 italic">
+                If necessary, you may need to link and unlink your account.
             </div>
 
 

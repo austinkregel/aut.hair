@@ -35,6 +35,14 @@ class InviteTeamMember implements InvitesTeamMembers
             'email' => $email,
             'role' => $role,
         ]);
+        activity()->on($team)
+            ->causedBy($user)
+            ->event('invitation')
+            ->withProperty('new', [
+                'email' => $email,
+                'role' => $role,
+            ])
+            ->log('invited');
 
         Mail::to($email)->send(new TeamInvitation($invitation));
     }
