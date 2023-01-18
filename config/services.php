@@ -30,6 +30,9 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+
+    'sso' => env('ENABLED_SSO_SERVICE', false) ? explode(',', env('ENABLED_SSO_SERVICE', '')) : ['github'],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
@@ -44,6 +47,5 @@ return [
         'client_id' => env('SYNOLOGY_CLIENT_ID'),
         'client_secret' => env('SYNOLOGY_CLIENT_SECRET'),
         'redirect' => env('SYNOLOGY_REDIRECT', 'localhost/callback/synology'),
-
     ]
 ];
