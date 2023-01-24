@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\CrudContract;
+use App\Models\Contracts\Owner;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
 
-class Team extends JetstreamTeam
+class Team extends JetstreamTeam implements CrudContract, Owner
 {
     use HasFactory;
 

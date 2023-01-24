@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
+use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 
 class DeleteApiTokenTest extends TestCase
@@ -20,10 +21,18 @@ class DeleteApiTokenTest extends TestCase
 
         $this->actingAs($user = User::factory()->withPersonalTeam()->create());
 
+        $clientId = app(ClientRepository::class)->createPersonalAccessClient(
+            $user->id,
+            'Personal Access Client',
+            (string) url('')
+        )->id;
         $token = $user->tokens()->create([
+            'id' => Str::uuid(),
             'name' => 'Test Token',
             'token' => Str::random(40),
             'abilities' => ['create', 'read'],
+            'revoked' => false,
+            'client_id' => $clientId,
         ]);
 
         $response = $this->delete('/user/api-tokens/'.$token->id);

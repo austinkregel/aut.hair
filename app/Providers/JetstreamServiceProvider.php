@@ -9,8 +9,10 @@ use App\Actions\Jetstream\DeleteUser;
 use App\Actions\Jetstream\InviteTeamMember;
 use App\Actions\Jetstream\RemoveTeamMember;
 use App\Actions\Jetstream\UpdateTeamName;
+use App\Models\Token;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
+use Laravel\Passport\Passport;
 
 class JetstreamServiceProvider extends ServiceProvider
 {
@@ -49,6 +51,7 @@ class JetstreamServiceProvider extends ServiceProvider
      */
     protected function configurePermissions()
     {
+        Passport::useTokenModel(Token::class);
         Jetstream::defaultApiTokenPermissions(['read']);
 
         Jetstream::role('admin', 'Administrator', [

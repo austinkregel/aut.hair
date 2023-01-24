@@ -19,27 +19,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware('auth:sanctum')->get('userinfo', function (Request $request) {    
-    $user = [];
-    
-    if ($request->user()->tokenCan('openid')) {
-        $user['id'] = auth()->id();
-        $user['updated_at'] = auth()->user()->updated_at;
-        $user['created_at'] = auth()->user()->created_at;
-    }
-    if ($request->user()->tokenCan('profile')) {
-        $user['photo_url'] = auth()->user()->profile_photo_url;
-        $user['name'] = auth()->user()->name;
-    }
-        
-    if ($request->user()->tokenCan('email')) {
-        $user['email'] = auth()->user()->email;
-        $user['email_verified_at'] = auth()->user()->eamil_verified_at;
-    }
-    
-    return response()->json($user);
+Route::middleware([config('jetstream.auth_session'), 'verified'])->get('userinfo', function (Request $request) {
+    return \App\Http\Resources\UserResource::make($request->user());
 })->name('oidc.userinfo');
 
 Route::get('jwks', function () {
-    return 'ok';
+    return [
+        ''
+    ];
 })->name('oidc.jwks');

@@ -155,6 +155,10 @@ const logout = () => {
                                             Manage Account
                                         </div>
 
+                                      <JetDropdownLink :href="route('oauth.link')">
+                                        Oauth Links
+                                      </JetDropdownLink>
+
                                         <JetDropdownLink :href="route('profile.show')">
                                             Profile
                                         </JetDropdownLink>
@@ -235,9 +239,13 @@ const logout = () => {
                                 Profile
                             </JetResponsiveNavLink>
 
-                            <JetResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
-                                API Tokens
-                            </JetResponsiveNavLink>
+                          <JetResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
+                            API Tokens
+                          </JetResponsiveNavLink>
+
+                          <JetResponsiveNavLink :href="route('oauth.link')" :active="route().current('oauth.link')">
+                            Oauth Links
+                          </JetResponsiveNavLink>
 
                             <!-- Authentication -->
                             <form method="POST" @submit.prevent="logout">

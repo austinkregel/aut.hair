@@ -1,36 +1,3 @@
-<script>
-import dayjs from 'dayjs';
-import AppLayout from '@/Layouts/AppLayout.vue';
-export default {
-    data() {
-        return {
-            activityItems: [],
-        };
-    },
-    methods: {
-        prettyClass(className) {
-            return className.split('\\').pop();
-        },
-        prettyDate(date) {
-            return dayjs(date).format('MMM D, YYYY hh:mm A');
-        }
-    },
-    computed: {
-        currentTeam() {
-            return this.$attrs.currentTeam;
-        },
-
-        user() {
-            return this.$attrs.user;
-        },
-        activityItems() {
-          return this.$attrs.activityItems.data
-        }
-    },
-    components: { AppLayout }
-}
-</script>
-
 <template>
     <AppLayout title="Dashboard">
         <template #header>
@@ -40,7 +7,7 @@ export default {
         </template>
 
         <div class="py-12">
-            <div class="max-w-7xl w-full md:w-1/2 sm:px-6 mx-auto lg:px-8">
+            <div class="max-w-7xl w-full lg:w-1/2 sm:px-6 mx-auto lg:px-8">
                 <div class="bg-white dark:bg-slate-600 overflow-hidden shadow sm:rounded-lg overflow-y-scroll" style="max-height: 280px;">
                     <!-- This example requires Tailwind CSS v2.0+ -->
                     <ul role="list" class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -61,3 +28,35 @@ export default {
         </div>
     </AppLayout>
 </template>
+<script>
+import dayjs from 'dayjs';
+import AppLayout from '@/Layouts/AppLayout.vue';
+export default {
+  data() {
+    return {
+      activityItems: [],
+    };
+  },
+  methods: {
+    prettyClass(className) {
+      return className.split('\\').pop();
+    },
+    prettyDate(date) {
+      return dayjs(date).format('MMM D, YYYY hh:mm A');
+    }
+  },
+  computed: {
+    currentTeam() {
+      return this.$attrs.currentTeam;
+    },
+
+    user() {
+      return this.$attrs.user;
+    },
+    activityItems() {
+      return this.$attrs.activityItems.data
+    }
+  },
+  components: { AppLayout }
+}
+</script>

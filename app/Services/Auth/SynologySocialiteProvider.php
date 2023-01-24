@@ -67,7 +67,8 @@ class SynologySocialiteProvider extends AbstractProvider
 
     protected function mapUserToObject(array $user)
     {
-        // Soooo, synology is pretty weird, they don't actually follow OAuth based standards and want you to use their SSO JSDK.
+        // Soooo, synology is pretty weird, they don't actually follow OAuth
+        // based standards and want you to use their SSO JSDK.
         $username = $user['data']['user_name'];
         $email = explode('\\', $username);
         $data = [

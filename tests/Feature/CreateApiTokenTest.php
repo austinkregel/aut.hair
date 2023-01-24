@@ -4,24 +4,40 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
+use Laravel\Passport\Client;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class CreateApiTokenTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Passport::tokensCan([
+            'read', 'write', 'delete', 'create','update',
+        ]);
+    }
+
     public function test_api_tokens_can_be_created()
     {
         if (! Features::hasApiFeatures()) {
             return $this->markTestSkipped('API support is not enabled.');
         }
-
+        /** @var User $user */
         $this->actingAs($user = User::factory()->withPersonalTeam()->create());
-
+        $clientRepo = $this->app->make(ClientRepository::class);
+        $client = $clientRepo->createPersonalAccessClient($user->id, 'Random thing', 'http://localhost');
         $response = $this->post('/user/api-tokens', [
+            'id' => Str::uuid(),
             'name' => 'Test Token',
-            'permissions' => [
+            'client_id' => $client->id,
+            'revoked' => false,
+            'scopes' => [
                 'read',
                 'update',
             ],

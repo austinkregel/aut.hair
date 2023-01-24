@@ -31,8 +31,6 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'sso' => env('ENABLED_SSO_SERVICE', false) ? explode(',', env('ENABLED_SSO_SERVICE', '')) : ['github'],
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
@@ -47,5 +45,12 @@ return [
         'client_id' => env('SYNOLOGY_CLIENT_ID'),
         'client_secret' => env('SYNOLOGY_CLIENT_SECRET'),
         'redirect' => env('SYNOLOGY_REDIRECT', 'localhost/callback/synology'),
-    ]
+    ],
+    'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_REDIRECT_URI'),
+        'allow_gif_avatars' => (bool)env('DISCORD_AVATAR_GIF', true),
+        'avatar_default_extension' => env('DISCORD_EXTENSION_DEFAULT', 'jpg'), // only pick from jpg, png, webp
+    ],
 ];

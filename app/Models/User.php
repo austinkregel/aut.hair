@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\CrudContract;
+use App\Models\Contracts\Owner;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,12 +11,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CrudContract, Owner, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, HasProfilePhoto, HasTeams, Notifiable;
     use CausesActivity, LogsActivity, TwoFactorAuthenticatable;
@@ -25,7 +27,11 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name',
+        'email',
+        'password',
+        'ownable_type',
+        'ownable_id',
     ];
 
     /**
@@ -57,6 +63,11 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function socials()
+    {
+        return $this->morphMany(Social::class, 'ownable');
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
