@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Social;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 class CallbackController extends Controller

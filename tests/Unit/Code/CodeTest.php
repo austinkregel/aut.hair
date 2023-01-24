@@ -1,13 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\Unit\Code;
 
-use App\Services\Code;
 use App\Services\Programming\LaravelProgrammingStyle;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Tests\App\Contracts\Ownable;
 use Tests\App\CustomNewEvent;
 use Tests\App\Listeners\LogAuthenticatedUserListener;
 use Tests\App\Providers\EventServiceProvider;
@@ -15,12 +13,10 @@ use Tests\App\Traits\CausesActivity;
 use Tests\App\Traits\HasApiTokensExample;
 use Tests\App\Traits\LogsActivity;
 use Tests\App\User;
-use Tests\App\Contracts\Ownable;
 use Tests\TestCase;
 
 class CodeTest extends TestCase
 {
-
     public function testWeCanReturnTheFileContents()
     {
         $userModel = LaravelProgrammingStyle::for(User::class)

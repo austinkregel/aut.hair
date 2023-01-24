@@ -3,20 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class DashboardController extends Controller
 {
-    public function __invoke() {
+    public function __invoke()
+    {
         return Inertia::render('Dashboard', [
             'currentTeam' => request()->user()->currentTeam,
             'activityItems' => QueryBuilder::for(Activity::class)
                 ->allowedFilters(['description', 'subject_type', 'subject_id'])
                 ->allowedIncludes(['causer', 'subject'])
-                ->allowedSorts(['id', 'name' ,'causer_id', 'subject_id'])
+                ->allowedSorts(['id', 'name', 'causer_id', 'subject_id'])
                 ->where(function ($query) {
                     $query->where(function ($q) {
                         $q->where('causer_id', auth()->id())
@@ -30,7 +30,7 @@ class DashboardController extends Controller
                 ->with('causer', 'subject')
                 ->defaultSort('-id')
                 ->paginate()
-                ->appends(request()->query())
+                ->appends(request()->query()),
         ]);
     }
 

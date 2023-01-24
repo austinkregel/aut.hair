@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Facade;
-use Laravel\Passport\PassportServiceProvider;
 
 return [
 
@@ -141,7 +140,7 @@ return [
 
     'maintenance' => [
         'driver' => 'cache',
-        'store'  => 'redis',
+        'store' => 'redis',
     ],
 
     /*

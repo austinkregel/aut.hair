@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use JetBrains\PhpStorm\NoReturn;
-use Laravel\Passport\ClientRepository;
-
 class Token extends \Laravel\Passport\Token
 {
     protected $fillable = [
@@ -13,7 +10,7 @@ class Token extends \Laravel\Passport\Token
         'name',
         'scopes',
         'revoked',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
@@ -37,6 +34,7 @@ class Token extends \Laravel\Passport\Token
     {
         return $this->id;
     }
+
     public function setTokenAttribute($value)
     {
         $this->id = $value;
@@ -52,6 +50,7 @@ class Token extends \Laravel\Passport\Token
         if ($this->expires_at) {
             return $this->expires_at->before(now());
         }
+
         return false;
     }
 }

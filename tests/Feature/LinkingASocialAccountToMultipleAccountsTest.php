@@ -2,15 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Social;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
-use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\SocialiteManager;
 use Laravel\Socialite\Two\AbstractProvider;
-use SocialiteProviders\Manager\SocialiteWasCalled;
 use Tests\TestCase;
 
 class LinkingASocialAccountToMultipleAccountsTest extends TestCase
@@ -71,9 +67,9 @@ class LinkingASocialAccountToMultipleAccountsTest extends TestCase
                 $mockedUser->shouldReceive('getId')->once()->andReturn(489284);
                 $mockedUser->shouldReceive('getName')->once()->andReturn('John Smith');
                 $mockedUser->shouldReceive('getEmail')->once()->andReturn('John Smith');
-
             }
             $mockProvider->shouldReceive('user')->once()->andReturn($mockedUser);
+
             return $mockProvider;
         });
 

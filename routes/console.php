@@ -1,13 +1,13 @@
 <?php
 
 use App\Listeners\SynologyExtendSocialiteListener;
+use App\Services\Code;
 use Illuminate\Support\Facades\Artisan;
 use SocialiteProviders\Manager\SocialiteWasCalled;
-use App\Services\Code;
-use Composer\Factory;
 
-if (!function_exists('class_implements_recursive')) {
-    function class_implements_recursive($class) {
+if (! function_exists('class_implements_recursive')) {
+    function class_implements_recursive($class)
+    {
         if (is_object($class)) {
             $class = get_class($class);
         }
@@ -20,14 +20,12 @@ if (!function_exists('class_implements_recursive')) {
             try {
                 $implementations = class_implements($class);
             } catch (\Throwable $e) {
-
             }
 
             foreach (array_reverse($implementations) as $class) {
                 $results += class_implements_recursive($class);
             }
         } catch (\Throwable $e) {
-
         } finally {
 //        $results += [$class => $class];
             return array_unique($results);
@@ -40,7 +38,7 @@ Artisan::command('test2', function () {
 //        ->addListenerToEvent(SocialiteWasCalled::class, SynologyExtendSocialiteListener::class)
 //        ->toFile();
 
-// vendor/composer/composer/src/Composer/Command/RequireCommand.php
+    // vendor/composer/composer/src/Composer/Command/RequireCommand.php
 //    View the above command
 
 //    dd(Code::with('laravel')
@@ -80,6 +78,7 @@ Artisan::command('test', function () {
         if (isset($jsonFile->{'require-dev'})) {
             return isset($jsonFile->{'require-dev'}->{'socialiteproviders/manager'});
         }
+
         return false;
     });
 
@@ -97,7 +96,7 @@ Artisan::command('test', function () {
 
     $uninstalled = [];
     do {
-        $response = \Illuminate\Support\Facades\Http::get('https://packagist.org/search.json?q=socialiteproviders&per_page=100&page=' . $page++)->json();
+        $response = \Illuminate\Support\Facades\Http::get('https://packagist.org/search.json?q=socialiteproviders&per_page=100&page='.$page++)->json();
         $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
             $response['results'],
             $response['total'],
@@ -111,9 +110,9 @@ Artisan::command('test', function () {
             }
 
             $uninstalled[] = [
-                'name' =>  $provider['name'],
-                'description' =>  $provider['description'],
-                'downloads' =>  $provider['downloads'],
+                'name' => $provider['name'],
+                'description' => $provider['description'],
+                'downloads' => $provider['downloads'],
                 'installed' => false,
             ];
         }
@@ -121,14 +120,14 @@ Artisan::command('test', function () {
 
     $enabled = collect(config('services'))
         ->filter(function ($service, $key) {
-            return \Illuminate\Support\Arr::has($service, ['client_id','client_secret','redirect']);
+            return \Illuminate\Support\Arr::has($service, ['client_id', 'client_secret', 'redirect']);
         });
 
     file_put_contents(resource_path('js/socialite-providers.js'), view('social-discovery', [
         'enabled' => $enabled->filter(function ($service) {
-            return !empty($service['client_id'])
-                && !empty($service['client_secret'])
-                && !empty($service['redirect']);
+            return ! empty($service['client_id'])
+                && ! empty($service['client_secret'])
+                && ! empty($service['redirect']);
         }),
         'disabled' => $enabled->filter(function ($service) {
             return empty($service['client_id'])

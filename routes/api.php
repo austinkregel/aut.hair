@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Laravel\Passport\Passport;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +24,6 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->get('userinfo
 
 Route::get('jwks', function () {
     return [
-        ''
+        '',
     ];
 })->name('oidc.jwks');

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class JsonWebKeysController extends Controller
 {
     public function __invoke()
@@ -12,9 +10,9 @@ class JsonWebKeysController extends Controller
             'keys' => [
                 [
                     'kty' => 'sig',
-                    'alg' => 'HS256'
-                ]
-            ]
+                    'alg' => 'HS256',
+                ],
+            ],
         ]);
     }
 }

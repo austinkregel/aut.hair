@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use App\Services\Auth\SynologySocialiteProvider;
-use Laravel\Socialite\SocialiteServiceProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class SynologyExtendSocialiteListener

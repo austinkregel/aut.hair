@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Tests\App\Providers;
 
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Tests\App\BasicModel;
 use Tests\App\Policies\BaseModelPolicy;
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -17,7 +18,6 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         BasicModel::class => BaseModelPolicy::class,
     ];
-
 
     /**
      * Register any authentication / authorization services.

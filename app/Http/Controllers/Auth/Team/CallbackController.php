@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth\Team;
 use App\Http\Controllers\Controller;
 use App\Models\Social;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 class CallbackController extends Controller
@@ -40,7 +39,7 @@ class CallbackController extends Controller
             return redirect('/login?message='.urlencode('You need to register first.'));
         }
 
-        if (empty($social) || !$localUser->is($social?->owner)) {
+        if (empty($social) || ! $localUser->is($social?->owner)) {
             auth()->login($localUser, true);
 
             $social = Social::create([

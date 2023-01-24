@@ -1,16 +1,9 @@
 <?php
 
-use App\Models\Social;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Http\Controllers;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Socialite\Facades\Socialite;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\QueryBuilder\QueryBuilder;
-use App\Http\Controllers;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +39,3 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');
     Route::get('/user/admin', Controllers\Settings\AdminController::class);
 });
-
-
-
-

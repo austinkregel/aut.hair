@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
-use Laravel\Passport\Client;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -19,7 +18,7 @@ class CreateApiTokenTest extends TestCase
     {
         parent::setUp();
         Passport::tokensCan([
-            'read', 'write', 'delete', 'create','update',
+            'read', 'write', 'delete', 'create', 'update',
         ]);
     }
 
