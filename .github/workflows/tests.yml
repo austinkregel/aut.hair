@@ -36,5 +36,14 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
+      - name: Install NPM
+        run: |
+          curl https://lazy.build/nodejs@ubuntu:18 | bash
+          npm install
+          npm run build
+
+      - name: Execute tests
+        run: vendor/bin/phpunit
+
       - name: Execute tests
         run: vendor/bin/phpunit
