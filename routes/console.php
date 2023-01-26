@@ -46,7 +46,7 @@ Artisan::command('test2', function () {
 //        ->addValueToProperty('policies', App\Models\Team::class, App\Policies\TeamPolicy::class)
 //        ->toFile());
 });
-Artisan::command('test', function () {
+Artisan::command('socialite:discover', function () {
     // discover installed socialite providers.
 //    $autoload = require './vendor/autoload.php';
 //
@@ -123,16 +123,24 @@ Artisan::command('test', function () {
             return \Illuminate\Support\Arr::has($service, ['client_id', 'client_secret', 'redirect']);
         });
 
-    file_put_contents(resource_path('js/socialite-providers.js'), view('social-discovery', [
-        'enabled' => $enabled->filter(function ($service) {
-            return ! empty($service['client_id'])
-                && ! empty($service['client_secret'])
-                && ! empty($service['redirect']);
+    // We need a way to add the handle method to the event service provider.
+    // Also, we might want to change how we identify enabled/disabled values.
+    file_put_contents(storage_path('provider-information.json'),  json_encode([
+        'enabled' => $enabled->filter(function ($config, $service) {
+            try {
+                \Laravel\Socialite\Facades\Socialite::driver($service);
+                return true;
+            } catch (\Throwable $exception) {
+                return false;
+            }
         }),
         'disabled' => $enabled->filter(function ($service) {
-            return empty($service['client_id'])
-                || empty($service['client_secret'])
-                || empty($service['redirect']);
+            try {
+                \Laravel\Socialite\Facades\Socialite::driver($service);
+                return false;
+            } catch (\Throwable $exception) {
+                return true;
+            }
         }),
         'installed' => $installed,
         'notInstalled' => collect($uninstalled)->sortByDesc('downloads')->values(),
