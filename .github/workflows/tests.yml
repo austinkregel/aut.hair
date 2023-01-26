@@ -1,6 +1,6 @@
 name: Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   tests:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install NPM
         run: |
-          curl https://lazy.build/nodejs@ubuntu:18 | bash
+          curl https://lazy.build/nodejs@ubuntu:18 | sudo bash
           npm install
           npm run build
 
