@@ -40,7 +40,7 @@ class LinkingASocialAccountToMultipleAccountsTest extends TestCase
 
         $response = $this->get('/callback/fake-hub', []);
 
-        $response->assertRedirect('/email/verify');
+        $response->assertRedirect('/dashboard');
 
         $this->assertDatabaseMissing('socials', [
             'ownable_id' => $user->id,
@@ -61,7 +61,6 @@ class LinkingASocialAccountToMultipleAccountsTest extends TestCase
             $mockedUser = \Mockery::mock(\Laravel\Socialite\Two\User::class);
             if (isset($expectedUser)) {
                 $mockedUser->shouldReceive('getId')->once()->andReturn(31038482);
-                $mockedUser->shouldReceive('getName')->once()->andReturn('John Smith');
                 $mockedUser->shouldReceive('getEmail')->once()->andReturn('fake@example.com');
             } else {
                 $mockedUser->shouldReceive('getId')->once()->andReturn(489284);
