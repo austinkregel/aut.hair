@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-slate-100 dark:bg-slate-800">
+    <div class="flex flex-col sm:justify-center items-center pt-6 sm:pt-0 min-h-screen bg-slate-100 dark:bg-slate-800">
         <div>
             <slot name="logo" />
         </div>

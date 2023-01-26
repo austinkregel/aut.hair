@@ -5,7 +5,6 @@
         Administration
       </h2>
     </template>
-
     <div class="py-12">
       <div class="max-w-7xl w-full sm:px-6 mx-auto lg:px-8">
         <div class="flex flex-col gap-4">
@@ -23,12 +22,12 @@
           </div>
           <div class="grid grid-cols-3 flex flex-wrap gap-4">
             <template v-for="pkg in socialProviders.notInstalled">
-              <composer-package :composer-package="pkg"></composer-package>
+              <composer-package :composer-package="pkg" @update="() => updatePackages()"></composer-package>
             </template>
           </div>
         </div>
       </div>
-      <pre>{{ socialProviders }}</pre>
+      <!-- API Token Permissions Modal -->
     </div>
   </AppLayout>
 </template>
@@ -36,12 +35,16 @@
 import dayjs from 'dayjs';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ComposerPackage from "@/Components/ComposerPackage.vue";
-import socialProviders from '../socialite-providers';
-
+import DialogModal from '@/Components/DialogModal.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import VueTerm from '@/Components/VueTerm.vue';
 export default {
+  components: { AppLayout, ComposerPackage, DialogModal, PrimaryButton, SecondaryButton, VueTerm },
   data() {
     return {
-      socialProviders,
+      socialProviders: [],
+      logLines: [],
     };
   },
   methods: {
@@ -50,6 +53,11 @@ export default {
     },
     prettyDate(date) {
       return dayjs(date).format('MMM D, YYYY hh:mm A');
+    },
+    updatePackages() {
+      axios.get('/api/packages').then(res => {
+        this.socialProviders = res.data
+      });
     }
   },
   computed: {
@@ -58,8 +66,13 @@ export default {
     },
     activityItems() {
       return this.$attrs.activityItems.data
-    }
+    },
   },
-  components: { AppLayout, ComposerPackage }
+  mounted() {
+    this.updatePackages();
+    const fetch = () => this.updatePackages();
+    window.document.removeEventListener('updatePackages', fetch);
+    window.document.addEventListener('updatePackages',fetch);
+  },
 }
 </script>

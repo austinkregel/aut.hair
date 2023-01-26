@@ -27,19 +27,19 @@ class CallbackController extends Controller
             return redirect('/login?message='.urlencode($e->getMessage()));
         }
 
-        $social = Social::with('owner')->firstWhere([
+        $social = Social::with('ownable')->firstWhere([
             'provider' => $provider,
             'provider_id' => $user->getId(),
         ]);
 
         // Don't create a new user. Link the user to their existing account.
-        $localUser = auth()->user() ?? $social->owner;
+        $localUser = auth()->user() ?? $social->ownable;
 
         if (empty($localUser)) {
             return redirect('/login?message='.urlencode('You need to register first.'));
         }
 
-        if (empty($social) || ! $localUser->is($social?->owner)) {
+        if (empty($social) || ! $localUser->is($social?->ownable)) {
             auth()->login($localUser, true);
 
             $social = Social::create([
@@ -52,9 +52,9 @@ class CallbackController extends Controller
             ]);
 
             event(new Registered($localUser));
-            $social->load('user');
+            $social->load('ownable');
         } else {
-            auth()->login($social->owner, true);
+            auth()->login($social->ownable, true);
             $social->update([
                 'email' => $user->getEmail(),
                 'expires_at' => now()->addSeconds($user->expiresIn),
@@ -63,7 +63,7 @@ class CallbackController extends Controller
 
         activity()
             ->performedOn($social)
-            ->causedBy($social->owner)
+            ->causedBy($social->ownable)
             ->log('logged in');
 
         return redirect('/dashboard');

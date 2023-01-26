@@ -1,4 +1,6 @@
-export default {
-    installed: {!! $installed !!},
-    notInstalled: {!! $notInstalled !!},
+{
+    "installed": {!! $installed !!},
+    "notInstalled": {!! $notInstalled !!},
+    "enabled": {!! $enabled !!},
+    "disabled": {!! $disabled !!},
 }

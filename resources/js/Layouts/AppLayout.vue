@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import { Inertia } from '@inertiajs/inertia';
 import { Head, Link } from '@inertiajs/inertia-vue3';
 import JetApplicationMark from '@/Components/ApplicationMark.vue';
@@ -8,6 +8,7 @@ import JetDropdown from '@/Components/Dropdown.vue';
 import JetDropdownLink from '@/Components/DropdownLink.vue';
 import JetNavLink from '@/Components/NavLink.vue';
 import JetResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import NotificationTray from "@/Components/Notifications/NotificationTray.vue";
 
 defineProps({
     title: String,
@@ -26,6 +27,11 @@ const switchToTeam = (team) => {
 const logout = () => {
     Inertia.post(route('logout'));
 };
+import { notify } from "notiwind"
+
+onMounted(() => {
+
+})
 </script>
 
 <template>
@@ -81,7 +87,7 @@ const logout = () => {
                                             <!-- Team Management -->
                                             <template v-if="$page.props.jetstream.hasTeamFeatures">
                                                 <div class="block px-4 py-2 text-xs text-slate-400">
-                                                    Manage Team
+                                  ``                  Manage Team
                                                 </div>
 
                                                 <!-- Team Settings -->
@@ -315,5 +321,6 @@ const logout = () => {
                 <slot />
             </main>
         </div>
+        <NotificationTray />
     </div>
 </template>

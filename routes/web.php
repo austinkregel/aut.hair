@@ -18,6 +18,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/.well-known/openid-configuration', Controllers\WellKnownController::class);
 Route::get('/oauth/jwks', Controllers\JsonWebKeysController::class)->name('oauth.jwks');
+Route::get('/api/available-login-providers', Controllers\AvailableLoginProvidersController::class);
+
+Route::middleware('web')->group(function () {
+    Route::prefix('/callback/{provider}')->group(function () {
+//        Route::get('/team', Controllers\Auth\Team\CallbackController::class);
+        Route::get('/', Controllers\Auth\CallbackController::class);
+    });
+});
 
 Route::middleware([config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/api/social-accounts', function (Request $request) {
@@ -28,14 +36,18 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
 //        Route::get('/team', Controllers\Auth\Team\RedirectController::class);
         Route::get('/', Controllers\Auth\RedirectController::class);
     });
-    Route::prefix('/callback/{provider}')->group(function () {
-//        Route::get('/team', Controllers\Auth\Team\CallbackController::class);
-        Route::get('/', Controllers\Auth\CallbackController::class);
-    });
 
     Route::get('/', Controllers\DashboardController::class.'@link');
     Route::get('/dashboard', Controllers\DashboardController::class)->name('dashboard');
 
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');
+});
+
+Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {
     Route::get('/user/admin', Controllers\Settings\AdminController::class);
+    Route::get('api/packages', Controllers\PackagesController::class);
+    Route::post('api/install', Controllers\InstallNewProvider::class);
+    Route::post('api/uninstall', Controllers\UninstallNewProvider::class);
+    Route::post('api/enable', Controllers\EnableProviderController::class);
+    Route::post('api/disable', Controllers\DisableProviderController::class);
 });

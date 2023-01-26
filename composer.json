@@ -6,18 +6,22 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
+        "beyondcode/laravel-websockets": "^1.13",
         "composer/composer": "^2.5",
         "directorytree/ldaprecord": "^2.17",
         "inertiajs/inertia-laravel": "^v0.6",
         "laravel/framework": "^v9.47",
+        "laravel/horizon": "^5.13",
         "laravel/jetstream": "^2.14",
         "laravel/passport": "^v11.5",
         "laravel/sanctum": "^3.0",
         "laravel/socialite": "^5.5",
         "laravel/tinker": "^v2.7",
         "nette/php-generator": "^4.0",
+        "pusher/pusher-php-server": "^7.2",
         "ronvanderheijden/openid-connect": "^1.0",
         "socialiteproviders/discord": "^4.1",
+        "socialiteproviders/manager": "^4.2",
         "spatie/laravel-activitylog": "^4.7",
         "spatie/laravel-query-builder": "^5.1",
         "symfony/http-client": "^6.1",
@@ -48,7 +52,9 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+          "@php artisan socialite:discover --ansi",
+          "@php artisan cache:forget packages --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

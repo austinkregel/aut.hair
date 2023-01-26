@@ -34,8 +34,10 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 export default {
   data() {
     return {
-      activityItems: [],
     };
+  },
+  mounted() {
+
   },
   methods: {
     prettyClass(className) {

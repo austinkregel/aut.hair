@@ -19,6 +19,12 @@ use Whoops\Exception\ErrorException;
 
 class Code
 {
+    public const RETURN_CONTENTS = 2;
+
+    public const REPLACE_FILE = 1;
+
+    public const DO_BOTH = 3;
+
     protected array $phpFiles = [];
 
     public function __construct(public $files)
@@ -425,12 +431,6 @@ class Code
         return $this;
     }
 
-    public const RETURN_CONTENTS = 2;
-
-    public const REPLACE_FILE = 1;
-
-    public const DO_BOTH = 3;
-
     // Default to non-destructive action.
     public function toFile($howToHandleFile = self::RETURN_CONTENTS)
     {
@@ -498,5 +498,11 @@ class Code
         } finally {
             $filesystem->delete($path);
         }
+    }
+
+    public function propertyIncludesValue($field, \Closure $closure)
+    {
+        call_user_func($closure, $field);
+        return false;
     }
 }

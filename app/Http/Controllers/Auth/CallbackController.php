@@ -56,7 +56,7 @@ class CallbackController extends Controller
             ]);
 
             event(new Registered($localUser));
-            $social->load('user');
+            $social->load('ownable');
         } else {
             auth()->login($social->ownable, true);
             $social->update([
