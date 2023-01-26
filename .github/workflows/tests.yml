@@ -39,8 +39,9 @@ jobs:
       - name: Install NPM
         run: |
           curl https://lazy.build/nodejs@ubuntu:18 | sudo bash
-          npm install
-          npm run build
+          sudo npm install --global yarn
+          yarn
+          yarn run build
 
       - name: Execute tests
         run: vendor/bin/phpunit
