@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -19,16 +19,16 @@ import { trackVForSlotScopes } from '@vue/compiler-core';
 const props = defineProps({
 });
 
-const createApiTokenForm = useForm({
+const createApiTokenForm = useForm('create api token form', {
     name: '',
     redirect: '',
 });
 
-const updateApiTokenForm = useForm({
+const updateApiTokenForm = useForm('update api token form',{
     permissions: [],
 });
 
-const deleteApiTokenForm = useForm();
+const deleteApiTokenForm = useForm('delete token form', {});
 
 const displayingToken = ref(false);
 const managingPermissionsFor = ref(null);

@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, ref } from 'vue';
-import { Head, useForm } from '@inertiajs/inertia-vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import JetAuthenticationCard from '@/Components/AuthenticationCard.vue';
 import JetAuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import JetButton from '@/Components/Button.vue';
@@ -10,7 +10,7 @@ import JetValidationErrors from '@/Components/ValidationErrors.vue';
 
 const recovery = ref(false);
 
-const form = useForm({
+const form = useForm('two factor challenge form', {
     code: '',
     recovery_code: '',
 });

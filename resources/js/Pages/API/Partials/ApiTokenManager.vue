@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -21,16 +21,16 @@ const props = defineProps({
     defaultPermissions: Array,
 });
 
-const createApiTokenForm = useForm({
+const createApiTokenForm = useForm('api token form', {
     name: '',
     scopes: props.defaultPermissions,
 });
 
-const updateApiTokenForm = useForm({
+const updateApiTokenForm = useForm('update api token form', {
     scopes: [],
 });
 
-const deleteApiTokenForm = useForm();
+const deleteApiTokenForm = useForm('delete api token form', {});
 
 const displayingToken = ref(false);
 const managingPermissionsFor = ref(null);

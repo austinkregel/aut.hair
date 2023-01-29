@@ -1,5 +1,5 @@
 <script setup>
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetButton from '@/Components/Button.vue';
 import JetFormSection from '@/Components/FormSection.vue';
@@ -12,7 +12,7 @@ const props = defineProps({
     permissions: Object,
 });
 
-const form = useForm({
+const form = useForm('update team name form', {
     name: props.team.name,
 });
 

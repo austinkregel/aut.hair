@@ -9,7 +9,13 @@
       <p class="text-base text-gray-500 dark:text-slate-300">{{ downloadsOrDate }}</p>
     </div>
     <div class="flex justify-end gap-4 bg-slate-700 w-full p-4">
-      <JetstreamButton :disabled="uninstalling" purpose="danger" v-if="isInstalled" type="button" @click="uninstallPackage">
+      <JetstreamButton
+          :disabled="uninstalling || isEnabled || systemPackages.includes(composerPackage.name)"
+          purpose="danger"
+          v-if="isInstalled"
+          type="button"
+          @click="uninstallPackage"
+      >
         <span v-if="!uninstalling">
           Uninstall
         </span>
@@ -21,7 +27,7 @@
           <span>Uninstalling</span>
         </span>
       </JetstreamButton>
-      <JetstreamButton purpose="secondary" v-if="isInstalled && isEnabled" type="button">
+      <JetstreamButton purpose="secondary" v-if="isInstalled && isEnabled" :disabled="systemPackages.includes(composerPackage.name)" @click="disablePackage" type="button">
         <span v-if="!disabling">
           Disable
         </span>
@@ -34,8 +40,8 @@
         </span>
       </JetstreamButton>
 
-      <JetstreamButton purpose="primary" v-if="isInstalled && !isEnabled" type="button">
-        <span v-if="!disabling">
+      <JetstreamButton purpose="primary" v-if="isInstalled && !isEnabled && !systemPackages.includes(composerPackage.name)" @click="enablePackage" type="button">
+        <span v-if="!enabling">
           Enable
         </span>
         <span v-else class="flex items-center gap-2">
@@ -46,7 +52,7 @@
           <span>Enabling</span>
         </span>
       </JetstreamButton>
-      <JetstreamButton :disabled="installing" @click="installPackage" v-if="!isInstalled" type="button">
+      <JetstreamButton primary :disabled="installing" @click="installPackage" v-if="!isInstalled" type="button">
         <span v-if="!installing">
           Install
         </span>
@@ -75,10 +81,6 @@
       </template>
 
       <template #footer>
-        <SecondaryButton @click="() => {}">
-          Cancel
-        </SecondaryButton>
-
         <PrimaryButton
             class="ml-3"
             :class="{ 'opacity-25': installing }"
@@ -104,7 +106,7 @@ import VueTerm from '@/Components/VueTerm.vue';
 
 export default {
   name: "ComposerPackage",
-  props: ['composerPackage', 'eventHandler'],
+  props: ['composerPackage', 'eventHandler', 'enabled', 'disabled'],
   components: { JetstreamButton, ArrowPathIcon, AppLayout, DialogModal, PrimaryButton, SecondaryButton, VueTerm },
 
   computed: {
@@ -115,7 +117,10 @@ export default {
       return this.composerPackage?.time ?? (this.composerPackage?.downloads?.toLocaleString() + ' downloads')
     },
     isEnabled() {
-      return this.composerPackage?.enabled
+      return Object.keys(this.composerPackage?.drivers ?? {}).filter(key => {
+        const driverName = this.composerPackage.drivers?.[key];
+         return this.enabled.hasOwnProperty(driverName);
+      }).length > 0
     },
     log() {
       return this.logLines.map(f => f.log).join('');
@@ -131,6 +136,7 @@ export default {
       uninstalling: false,
       logLines: [],
       jobId: null,
+      systemPackages: ['socialiteproviders/manager'],
     }
   },
   methods: {

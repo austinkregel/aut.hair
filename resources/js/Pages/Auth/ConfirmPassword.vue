@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, useForm } from '@inertiajs/inertia-vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import JetAuthenticationCard from '@/Components/AuthenticationCard.vue';
 import JetAuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import JetButton from '@/Components/Button.vue';
@@ -8,7 +8,7 @@ import JetInput from '@/Components/Input.vue';
 import JetLabel from '@/Components/Label.vue';
 import JetValidationErrors from '@/Components/ValidationErrors.vue';
 
-const form = useForm({
+const form = useForm('confirm password', {
     password: '',
 });
 

@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Inertia } from '@inertiajs/inertia';
-import { useForm, usePage } from '@inertiajs/inertia-vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -21,17 +20,17 @@ const props = defineProps({
     userPermissions: Object,
 });
 
-const addTeamMemberForm = useForm({
+const addTeamMemberForm = useForm('add team member form', {
     email: '',
     role: null,
 });
 
-const updateRoleForm = useForm({
+const updateRoleForm = useForm('update role form', {
     role: null,
 });
 
-const leaveTeamForm = useForm();
-const removeTeamMemberForm = useForm();
+const leaveTeamForm = useForm('leave team form', {});
+const removeTeamMemberForm = useForm('remove team member form', {});
 
 const currentlyManagingRole = ref(false);
 const managingRoleFor = ref(null);
@@ -47,7 +46,7 @@ const addTeamMember = () => {
 };
 
 const cancelTeamInvitation = (invitation) => {
-    Inertia.delete(route('team-invitations.destroy', invitation), {
+    router.delete(route('team-invitations.destroy', invitation), {
         preserveScroll: true,
     });
 };
@@ -70,7 +69,7 @@ const confirmLeavingTeam = () => {
 };
 
 const leaveTeam = () => {
-    leaveTeamForm.delete(route('team-members.destroy', [props.team, usePage().props.value.user]));
+    leaveTeamForm.delete(route('team-members.destroy', [props.team, usePage().props.user]));
 };
 
 const confirmTeamMemberRemoval = (teamMember) => {

@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/inertia-vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import JetAuthenticationCard from '@/Components/AuthenticationCard.vue';
 import JetAuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import JetButton from '@/Components/Button.vue';
@@ -12,7 +12,7 @@ const props = defineProps({
     token: String,
 });
 
-const form = useForm({
+const form = useForm('reset password form', {
     token: props.token,
     email: props.email,
     password: '',

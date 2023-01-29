@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetDialogModal from '@/Components/DialogModal.vue';
 import JetDangerButton from '@/Components/DangerButton.vue';
@@ -11,7 +11,7 @@ import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
 
-const form = useForm({
+const form = useForm('delete user form', {
     password: '',
 });
 

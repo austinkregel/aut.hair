@@ -1,12 +1,12 @@
 <script setup>
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetButton from '@/Components/Button.vue';
 import JetFormSection from '@/Components/FormSection.vue';
 import JetInput from '@/Components/Input.vue';
 import JetInputError from '@/Components/InputError.vue';
 import JetLabel from '@/Components/Label.vue';
 
-const form = useForm({
+const form = useForm('create team form', {
     name: '',
 });
 

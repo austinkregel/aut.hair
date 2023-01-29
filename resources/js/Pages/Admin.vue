@@ -5,15 +5,15 @@
         Administration
       </h2>
     </template>
-    <div class="py-12">
+    <div class="py-12" v-if="enabled && disabled">
       <div class="max-w-7xl w-full sm:px-6 mx-auto lg:px-8">
         <div class="flex flex-col gap-4">
           <div class="mt-4 mb-2 text-4lg">
             Installed packages
           </div>
           <div class="grid grid-cols-3 gap-4">
-            <template v-for="pkg in socialProviders.installed">
-              <composer-package :composer-package="pkg"></composer-package>
+            <template v-for="pkg in installed">
+              <composer-package :enabled="enabled" :disabled="disabled" :composer-package="pkg"></composer-package>
             </template>
 
           </div>
@@ -21,7 +21,7 @@
             Not-installed packages
           </div>
           <div class="grid grid-cols-3 flex flex-wrap gap-4">
-            <template v-for="pkg in socialProviders.notInstalled">
+            <template v-for="pkg in notInstalled">
               <composer-package :composer-package="pkg" @update="() => updatePackages()"></composer-package>
             </template>
           </div>
@@ -33,6 +33,7 @@
 </template>
 <script>
 import dayjs from 'dayjs';
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ComposerPackage from "@/Components/ComposerPackage.vue";
 import DialogModal from '@/Components/DialogModal.vue';
@@ -41,9 +42,14 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import VueTerm from '@/Components/VueTerm.vue';
 export default {
   components: { AppLayout, ComposerPackage, DialogModal, PrimaryButton, SecondaryButton, VueTerm },
+  props: [
+      'enabled',
+      'disabled',
+      'installed',
+      'notInstalled',
+  ],
   data() {
     return {
-      socialProviders: [],
       logLines: [],
     };
   },
@@ -54,11 +60,6 @@ export default {
     prettyDate(date) {
       return dayjs(date).format('MMM D, YYYY hh:mm A');
     },
-    updatePackages() {
-      axios.get('/api/packages').then(res => {
-        this.socialProviders = res.data
-      });
-    }
   },
   computed: {
     user() {
@@ -69,8 +70,12 @@ export default {
     },
   },
   mounted() {
-    this.updatePackages();
-    const fetch = () => this.updatePackages();
+    const fetch = () => router.reload({ only: [
+        'enabled',
+        'disabled',
+        'installed',
+        'notInstalled'
+      ]});
     window.document.removeEventListener('updatePackages', fetch);
     window.document.addEventListener('updatePackages',fetch);
   },

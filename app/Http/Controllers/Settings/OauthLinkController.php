@@ -9,6 +9,8 @@ class OauthLinkController extends Controller
 {
     public function __invoke()
     {
-        return Inertia::render('Profile/LinkSocial');
+        return Inertia::render('Profile/LinkSocial', [
+
+        ]);
     }
 }

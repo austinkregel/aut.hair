@@ -1,7 +1,6 @@
 <script setup>
 import {onMounted, ref} from 'vue';
-import { Inertia } from '@inertiajs/inertia';
-import { Head, Link } from '@inertiajs/inertia-vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import JetApplicationMark from '@/Components/ApplicationMark.vue';
 import JetBanner from '@/Components/Banner.vue';
 import JetDropdown from '@/Components/Dropdown.vue';
@@ -17,7 +16,7 @@ defineProps({
 const showingNavigationDropdown = ref(false);
 
 const switchToTeam = (team) => {
-    Inertia.put(route('current-team.update'), {
+    router.put(route('current-team.update'), {
         team_id: team.id,
     }, {
         preserveState: false,
@@ -25,7 +24,7 @@ const switchToTeam = (team) => {
 };
 
 const logout = () => {
-    Inertia.post(route('logout'));
+    router.post(route('logout'));
 };
 import { notify } from "notiwind"
 
