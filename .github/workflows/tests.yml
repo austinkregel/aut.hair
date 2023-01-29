@@ -34,7 +34,9 @@ jobs:
         run: cp .env.example .env
 
       - name: Generate app key
-        run: php artisan key:generate
+        run: |
+          php artisan key:generate
+          php artisan passport:keys
 
       - name: Install NPM
         run: |
