@@ -82,13 +82,36 @@ Artisan::command('socialite:discover', function () {
         return false;
     });
 
-    $installed = $files->map(function ($contents) {
+    $allFiles = Code::composerMappedClasses();
+    $installed = $files->map(function ($contents) use ($allFiles) {
+        $namespaces = $contents->autoload->{'psr-4'};
+
+
         return [
             'name' => $contents->name,
             'description' => $contents->description,
             'version' => $contents->version,
             'time' => \Carbon\Carbon::parse($contents->time)->format('F j, Y H:i:s'),
             'installed' => true,
+            'drivers' => collect($allFiles)
+                ->filter(function($value, $class) use ($namespaces) {
+                    foreach ($namespaces as $psr4Namespace => $sourceFolder) {
+                        if (str_starts_with($class, $psr4Namespace)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })
+                ->map(function ($filePath, $class) {
+                    $contentsOfFile = (file_get_contents($filePath));
+                    preg_match('/extendSocialite..([\w]+)\'./i', $contentsOfFile , $matches);
+                    if (!isset($matches[1])) {
+                        return null;
+                    }
+
+                    return $matches[1];
+                })->filter(),
         ];
     })->values();
     $page = 1;
@@ -118,30 +141,9 @@ Artisan::command('socialite:discover', function () {
         }
     } while ($paginator->hasMorePages());
 
-    $enabled = collect(config('services'))
-        ->filter(function ($service, $key) {
-            return \Illuminate\Support\Arr::has($service, ['client_id', 'client_secret', 'redirect']);
-        });
-
     // We need a way to add the handle method to the event service provider.
     // Also, we might want to change how we identify enabled/disabled values.
     file_put_contents(storage_path('provider-information.json'),  json_encode([
-        'enabled' => $enabled->filter(function ($config, $service) {
-            try {
-                \Laravel\Socialite\Facades\Socialite::driver($service);
-                return true;
-            } catch (\Throwable $exception) {
-                return false;
-            }
-        }),
-        'disabled' => $enabled->filter(function ($service) {
-            try {
-                \Laravel\Socialite\Facades\Socialite::driver($service);
-                return false;
-            } catch (\Throwable $exception) {
-                return true;
-            }
-        }),
         'installed' => $installed,
         'notInstalled' => collect($uninstalled)->sortByDesc('downloads')->values(),
     ]));
