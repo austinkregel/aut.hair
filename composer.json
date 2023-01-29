@@ -52,9 +52,9 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-          "@php artisan socialite:discover --ansi",
-          "@php artisan cache:forget packages --ansi"
+            "@php artisan package:discover --ansi 2>&1",
+            "@php artisan socialite:discover --ansi 2>&1",
+            "@php artisan cache:forget packages --ansi 2>&1"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

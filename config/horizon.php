@@ -119,7 +119,7 @@ return [
     */
 
     'silenced' => [
-        // App\Jobs\ExampleJob::class,
+        App\Events\ComposerActionLoggedToConsole::class,
     ],
 
     /*

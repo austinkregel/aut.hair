@@ -44,4 +44,9 @@ return [
     'password_timeout' => 10800,
 
     'admin_emails' => explode(',', env('ADMIN_EMAIL_ADDRESSES', '')),
+
+    'features' => [
+        'login' => true,
+        'register' => true,
+    ],
 ];

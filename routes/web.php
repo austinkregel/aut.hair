@@ -45,9 +45,8 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
 
 Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {
     Route::get('/user/admin', Controllers\Settings\AdminController::class);
-    Route::get('api/packages', Controllers\PackagesController::class);
-    Route::post('api/install', Controllers\InstallNewProvider::class);
-    Route::post('api/uninstall', Controllers\UninstallNewProvider::class);
-    Route::post('api/enable', Controllers\EnableProviderController::class);
-    Route::post('api/disable', Controllers\DisableProviderController::class);
+    Route::post('/api/install', Controllers\InstallNewProvider::class);
+    Route::post('/api/uninstall', Controllers\UninstallNewProvider::class);
+    Route::post('/api/enable', Controllers\EnableProviderController::class);
+    Route::post('/api/disable', Controllers\DisableProviderController::class);
 });
