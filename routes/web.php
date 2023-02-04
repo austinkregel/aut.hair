@@ -41,10 +41,11 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
     Route::get('/dashboard', Controllers\DashboardController::class)->name('dashboard');
 
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');
+    Route::delete('/user/oauth/remove', Controllers\Settings\RemoveOauthLinkController::class)->name('oauth.link.remove');
 });
 
 Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {
-    Route::get('/user/admin', Controllers\Settings\AdminController::class);
+    Route::get('/user/admin', Controllers\Settings\AdminController::class)->name('admin');
     Route::post('/api/install', Controllers\InstallNewProvider::class);
     Route::post('/api/uninstall', Controllers\UninstallNewProvider::class);
     Route::post('/api/enable', Controllers\EnableProviderController::class);

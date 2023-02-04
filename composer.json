@@ -1,5 +1,5 @@
 {
-    "name": "laravel/laravel",
+    "name": "kregel/aut.hair",
     "type": "project",
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
@@ -14,18 +14,19 @@
         "laravel/horizon": "^5.13",
         "laravel/jetstream": "^2.14",
         "laravel/passport": "^v11.5",
-        "laravel/sanctum": "^3.0",
         "laravel/socialite": "^5.5",
         "laravel/tinker": "^v2.7",
         "nette/php-generator": "^4.0",
         "pusher/pusher-php-server": "^7.2",
         "ronvanderheijden/openid-connect": "^1.0",
         "socialiteproviders/discord": "^4.1",
+        "socialiteproviders/instagram": "^5.0",
         "socialiteproviders/manager": "^4.2",
         "spatie/laravel-activitylog": "^4.7",
         "spatie/laravel-query-builder": "^5.1",
         "symfony/http-client": "^6.1",
         "symfony/mailgun-mailer": "^6.1",
+        "symfony/var-exporter": "^6.2",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {

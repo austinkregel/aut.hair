@@ -118,7 +118,7 @@ const updateApiToken = () => {
                     Created.
                 </JetActionMessage>
 
-                <JetButton :class="{ 'opacity-25': createApiTokenForm.processing }" :disabled="createApiTokenForm.processing">
+                <JetButton type="submit" :class="{ 'opacity-25': createApiTokenForm.processing }" :disabled="createApiTokenForm.processing">
                     Create
                 </JetButton>
             </template>

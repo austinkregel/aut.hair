@@ -14,7 +14,6 @@ import JetInputError from '@/Components/InputError.vue';
 import JetLabel from '@/Components/Label.vue';
 import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 import JetSectionBorder from '@/Components/SectionBorder.vue';
-import { trackVForSlotScopes } from '@vue/compiler-core';
 
 const props = defineProps({
 });
@@ -22,9 +21,12 @@ const props = defineProps({
 const createApiTokenForm = useForm('create api token form', {
     name: '',
     redirect: '',
+    permissions: [],
 });
 
 const updateApiTokenForm = useForm('update api token form',{
+    name: '',
+    redirect: '',
     permissions: [],
 });
 
@@ -141,7 +143,11 @@ onMounted(() => {
                     Created.
                 </JetActionMessage>
 
-                <JetButton :class="{ 'opacity-25': createApiTokenForm.processing }" :disabled="createApiTokenForm.processing">
+                <JetButton
+                    type="submit"
+                    :class="{ 'opacity-25': createApiTokenForm.processing }"
+                    :disabled="createApiTokenForm.processing"
+                >
                     Create
                 </JetButton>
             </template>
@@ -166,15 +172,15 @@ onMounted(() => {
                         <div class="space-y-6">
                             <div v-for="token in clients" :key="token.id" class="flex items-center justify-between">
                                 <div>
-                                    {{ token.client_name }}
+                                    {{ token.name }}
                                 </div>
                                 <div>
-                                    {{ token.redirect_uris }}
+                                    {{ token.redirect }}
                                 </div>
 
                                 <div class="flex items-center">
-                                    <div v-if="token.last_used_ago" class="text-sm text-slate-400">
-                                        Last used {{ token.last_used_ago }}
+                                    <div v-if="token.updated_at" class="text-sm text-slate-400">
+                                        Updated at {{ token.updated_at }}
                                     </div>
 
                                     <button
@@ -227,13 +233,29 @@ onMounted(() => {
 
             <template #content>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {{updateApiTokenForm}}
-                    <div v-for="permission in scopes" :key="permission">
-                        <label class="flex items-center">
-                            <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission.description" />
-                            <span class="ml-2 text-sm text-slate-600 dark:text-slate-300">{{ permission.description }}</span>
-                        </label>
+                    <div class="col-span-6 sm:col-span-4">
+                        <JetLabel for="name" value="Name" />
+                        <JetInput
+                            id="name"
+                            v-model="updateApiTokenForm.name"
+                            type="text"
+                            class="mt-1 block w-full"
+                            autofocus
+                        />
+                        <JetInputError :message="updateApiTokenForm.errors.name" class="mt-2" />
                     </div>
+                    <div class="col-span-6 sm:col-span-4">
+                        <JetLabel for="name" value="Redirect URL" />
+                        <JetInput
+                            id="name"
+                            v-model="updateApiTokenForm.redirect"
+                            type="text"
+                            class="mt-1 block w-full"
+                            autofocus
+                        />
+                        <JetInputError :message="updateApiTokenForm.errors.name" class="mt-2" />
+                    </div>
+
                 </div>
             </template>
 

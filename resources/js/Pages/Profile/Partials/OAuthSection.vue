@@ -5,35 +5,43 @@
         </template>
 
         <template #description>
-            Manage and unlink your social platforms for a convenient login experience. If you're an Admin,
+            Manage and unlink your social platforms for a convenient login
+            experience. If you're an Admin,
             you can install other auth providers.
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-slate-600 dark:text-slate-300 mx-4 italic">
+            <div
+                class="max-w-xl text-sm text-slate-600 dark:text-slate-300 my-2 italic">
                 If necessary, you may need to link and unlink your account.
             </div>
 
 
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col">
                 <div v-for="service in providers" :key="service">
-                  <div class="text-2xl font-semibold text-slate-300">
-                    {{service.name}}
-                  </div>
+                    <div class="text-2xl font-semibold text-slate-300">
+                        {{ service.name }}
+                    </div>
 
-                  <a v-if="linked(service.value).length === 0"  :key="service" :href="service.redirect" class="border text-center border-red-400 text-red-400 px-4 py-2 rounded-lg">
-                    Link with {{ service.name }}
-                  </a>
-                  <span>Already linked with</span>
-
-
-                    <div class="flex flex-col text-sm pt-2 flex flex-col gap-1" v-if="linked(service.value).length > 0">
-                        <div class="border border-slate-400 p-4 rounded w-full flex flex-wrap justify-between items-center" v-for="link in linked(service.value)">
-                          <span>{{link.provider}} - {{link.email}}</span>
-                          <button class="relative flex">
-                            <LinkIcon class="w-5 h-5 fill-current text-slate-100" />
-                          </button>
+                    <div class="flex flex-col text-sm pt-2 flex-col gap-1" v-if="linked(service.value).length > 0">
+                        <span>Already linked with</span>
+                        <div
+                            class="border border-slate-400 dark:border-slate-500 p-4 rounded w-full flex flex-wrap gap-2 items-center"
+                            v-for="link in linked(service.value)">
+                            <button @click="() => removeSocialAccount(service, link)" class="relative flex">
+                                <TrashIcon class="w-5 h-5 fill-current text-red-400" />
+                            </button>
+                            <span>{{ link.provider }} - {{ link.email }}</span>
                         </div>
+                    </div>
+                    <div class="flex flex-col text-sm p-4 mt-2 border borad--slate-400 dark:border-slate-500" v-else>
+                        There are no accounts linked for this service.
+                    </div>
+                    <div class="my-4 flex justify-end">
+                        <a :key="service" :href="service.redirect+'&intended=/user/oauth'" class="flex gap-2 items-center border text-center border-slate-300 dark:border-slate-500 text-slate-300 px-4 py-2 rounded-lg">
+                            <LinkIcon class="w-5 h-5 fill-current"/>
+                            Link with {{ service.name }}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -41,8 +49,8 @@
     </JetActionSection>
 </template>
 <script>
-import { onMounted, ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import {onMounted, ref} from 'vue';
+import {useForm} from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -50,11 +58,11 @@ import JetDialogModal from '@/Components/DialogModal.vue';
 import JetInput from '@/Components/Input.vue';
 import JetInputError from '@/Components/InputError.vue';
 import JetSecondaryButton from '@/Components/SecondaryButton.vue';
-import { UserIcon, LinkIcon, UserMinusIcon } from '@heroicons/vue/20/solid'
+import {UserIcon, LinkIcon, TrashIcon} from '@heroicons/vue/20/solid'
 
 export default {
     components: {
-      UserIcon, LinkIcon, UserMinusIcon,
+        UserIcon, LinkIcon, TrashIcon,
         JetActionMessage,
         JetActionSection,
         JetButton,
@@ -73,22 +81,32 @@ export default {
         linked(provider) {
             return this.socials.filter(social => social.provider === provider);
         },
+        removeSocialAccount(thing, link) {
+            console.log('attempting to remove', thing, link);
+            axios.post('/user/oauth/remove', {
+                _method: 'delete',
+                social_id: link.id,
+            })
+                .finally((data) => {
+                    window.document.dispatchEvent(new Event('updatePackages'));
+                })
+        }
     },
     mounted() {
 
         axios.get('/api/social-accounts')
-            .then(({ data }) => {
+            .then(({data}) => {
                 this.socials = data ?? [];
             });
 
         axios.get('/api/available-login-providers')
             .then(({data}) => {
-              this.providers = data.map(provider => {
-                return {
-                  ...provider,
+                this.providers = data.map(provider => {
+                    return {
+                        ...provider,
 
-                }
-              })
+                    }
+                })
             })
 
     }

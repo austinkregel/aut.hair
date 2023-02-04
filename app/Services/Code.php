@@ -501,10 +501,13 @@ class Code
         try {
             // Generally this isn't safe, but we need to check for syntax issues but we also want to add
             // a require line for the autoloader,
-            exec('php -f '.escapeshellarg($path).' 2>&1', $output, $errorCode);
-            $output = implode("\n", $output);
-
-            if ($errorCode !== 0) {
+            try {
+                exec('php -f ' . escapeshellarg($path) . ' 2>&1', $output, $errorCode);
+                $output = implode("\n", $output);
+            } catch (SyntaxErrorException $e) {
+                return null;
+            }
+                if ($errorCode !== 0) {
                 if (str_starts_with($output, 'PHP Fatal error:')) {
                     $line = explode('on line ', $output, 2)[1] ?? '';
 
@@ -515,7 +518,7 @@ class Code
                 }
 
 
-                throw new SyntaxErrorException('There were syntax errors found in the generated file, this shouldn\'t happen. '.$output);
+                throw new SyntaxErrorException('There were syntax errors found in the generated file, this shouldn\'t happen. ' . $output);
             }
 
             return $processedFile;

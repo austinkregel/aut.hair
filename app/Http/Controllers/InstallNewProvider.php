@@ -25,26 +25,9 @@ class InstallNewProvider extends Controller
         $queuedInstalledProcess = function () use ($jobId, $filesystem, $package) {
             $process = new Process(['composer', 'require', $package], base_path(), ["COMPOSER_HOME" => "~/.composer"]);
 
-            $process->setPty(true);
-            $process->start();
-
-            broadcast(new ComposerActionLoggedToConsole($jobId, 'Attempting to install '.$package.".\r\n"));
-
-            foreach ($process as $data) {
-                broadcast(new ComposerActionLoggedToConsole($jobId, $data));
-            }
-            broadcast(new ComposerActionLoggedToConsole($jobId, "Install complete."));
-
-            if ($process->isSuccessful()) {
-                broadcast(new ComposerActionFinished($jobId));
-            } else {
-                broadcast(new ComposerActionFailed($jobId));
-            }
+            $this->runProcess($jobId, $process);
         };
 
-        dispatch($queuedInstalledProcess);
-        return [
-            'id' => $jobId,
-        ];
+        dispatch($queuedInstalledProcess)->delay(5);
     }
 }

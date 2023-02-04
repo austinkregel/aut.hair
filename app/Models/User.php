@@ -12,14 +12,17 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\PersonalAccessTokenResult;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements CrudContract, Owner, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasProfilePhoto, HasTeams, Notifiable;
-    use CausesActivity, LogsActivity, TwoFactorAuthenticatable;
+    use HasFactory, HasProfilePhoto, HasTeams, Notifiable;
+    use CausesActivity, LogsActivity, TwoFactorAuthenticatable, HasApiTokens {
+        createToken as createPassportToken;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -74,5 +77,20 @@ class User extends Authenticatable implements CrudContract, Owner, MustVerifyEma
         return LogOptions::defaults()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function createToken(string $name, array $scopes = [])
+    {
+        $token = $this->createPassportToken($name, $scopes);
+        return new class ($token) {
+            public function __construct(
+                public PersonalAccessTokenResult $token,
+                public $plainTextToken = null,
+            ) {
+                $this->plainTextToken = implode('|', ['part1', $token->accessToken]);
+            }
+
+
+        };
     }
 }

@@ -23,6 +23,7 @@ class Token extends \Laravel\Passport\Token
     public $appends = [
         'abilities',
         'token',
+        'plainTextToken',
     ];
 
     public function setAbilitiesAttribute($value)
@@ -52,5 +53,10 @@ class Token extends \Laravel\Passport\Token
         }
 
         return false;
+    }
+
+    public function getPlainTextTokenAttribute()
+    {
+        return $this->id;
     }
 }

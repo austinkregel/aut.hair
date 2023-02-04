@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, ref} from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import {Head, Link, router, usePage} from '@inertiajs/vue3';
 import JetApplicationMark from '@/Components/ApplicationMark.vue';
 import JetBanner from '@/Components/Banner.vue';
 import JetDropdown from '@/Components/Dropdown.vue';
@@ -30,6 +30,10 @@ import { notify } from "notiwind"
 
 onMounted(() => {
 
+    Echo.private('user.'+usePage().props.user.id)
+        .listen('SubscribeToJobEvent', (job) => {
+            console.log()
+        })
 })
 </script>
 
@@ -57,6 +61,10 @@ onMounted(() => {
                                 <JetNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </JetNavLink>
+                                <JetNavLink :href="route('admin')" :active="route().current('admin')">
+                                    Admin
+                                </JetNavLink>
+
                             </div>
                         </div>
 
@@ -219,6 +227,10 @@ onMounted(() => {
                     <div class="pt-2 pb-3 space-y-1">
                         <JetResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
+                        </JetResponsiveNavLink>
+
+                        <JetResponsiveNavLink :href="route('admin')" :active="route().current('admin')">
+                            Admin
                         </JetResponsiveNavLink>
                     </div>
 

@@ -29,26 +29,9 @@ class UninstallNewProvider extends Controller
         $queuedInstalledProcess = function () use ($jobId, $filesystem, $package) {
             $process = new Process(['composer', 'remove', $package], base_path(), ["COMPOSER_HOME" => "~/.composer"]);
 
-            $process->setPty(true);
-            $process->start();
-
-            broadcast(new ComposerActionLoggedToConsole($jobId, 'Attempting to uninstall '.$package.".\r\n"));
-
-            foreach ($process as $data) {
-                broadcast(new ComposerActionLoggedToConsole($jobId, $data));
-            }
-            broadcast(new ComposerActionLoggedToConsole($jobId, "Uninstall complete."));
-
-            if ($process->isSuccessful()) {
-                broadcast(new ComposerActionFinished($jobId));
-            } else {
-                broadcast(new ComposerActionFailed($jobId));
-            }
+            $this->runProcess($jobId, $process);
         };
 
-        dispatch($queuedInstalledProcess);
-        return response()->json([
-            'id' => $jobId,
-        ]);
+        dispatch($queuedInstalledProcess)->delay(5);
     }
 }

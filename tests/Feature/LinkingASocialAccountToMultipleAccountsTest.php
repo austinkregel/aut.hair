@@ -67,6 +67,7 @@ class LinkingASocialAccountToMultipleAccountsTest extends TestCase
                 $mockedUser->shouldReceive('getName')->once()->andReturn('John Smith');
                 $mockedUser->shouldReceive('getEmail')->once()->andReturn('John Smith');
             }
+            $mockProvider->shouldReceive('stateless')->once()->andReturnSelf();
             $mockProvider->shouldReceive('user')->once()->andReturn($mockedUser);
 
             return $mockProvider;
