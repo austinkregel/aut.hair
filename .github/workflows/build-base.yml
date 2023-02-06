@@ -29,6 +29,11 @@ jobs:
         with:
           context: ./docker/base
           push: true
-          tags:
-            austinkregel/base:latest
-            austinkregel/base:${{ github.sha }}
+          tags: austinkregel/base:${{ github.sha }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker/base
+          push: true
+          tags: austinkregel/base:latest
