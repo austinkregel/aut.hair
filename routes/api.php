@@ -17,3 +17,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware([config('jetstream.auth_session'), 'verified'])->get('userinfo', function (Request $request) {
+    return \App\Http\Resources\UserResource::make($request->user());
+})->name('oidc.userinfo');
+
+Route::get('jwks', function () {
+    return [
+        '',
+    ];
+})->name('oidc.jwks');

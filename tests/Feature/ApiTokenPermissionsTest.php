@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
+use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 
 class ApiTokenPermissionsTest extends TestCase
@@ -17,13 +18,22 @@ class ApiTokenPermissionsTest extends TestCase
         if (! Features::hasApiFeatures()) {
             return $this->markTestSkipped('API support is not enabled.');
         }
-
+        /** @var User $user */
         $this->actingAs($user = User::factory()->withPersonalTeam()->create());
 
+        $clientId = app(ClientRepository::class)->createPersonalAccessClient(
+            $user->id,
+            'Personal Access Client',
+            (string) url('')
+        )->id;
+
         $token = $user->tokens()->create([
+            'id' => Str::uuid(),
             'name' => 'Test Token',
             'token' => Str::random(40),
             'abilities' => ['create', 'read'],
+            'client_id' => $clientId,
+            'revoked' => false,
         ]);
 
         $response = $this->put('/user/api-tokens/'.$token->id, [

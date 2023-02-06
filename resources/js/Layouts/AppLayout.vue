@@ -1,13 +1,13 @@
 <script setup>
-import { ref } from 'vue';
-import { Inertia } from '@inertiajs/inertia';
-import { Head, Link } from '@inertiajs/inertia-vue3';
+import {onMounted, ref} from 'vue';
+import {Head, Link, router, usePage} from '@inertiajs/vue3';
 import JetApplicationMark from '@/Components/ApplicationMark.vue';
 import JetBanner from '@/Components/Banner.vue';
 import JetDropdown from '@/Components/Dropdown.vue';
 import JetDropdownLink from '@/Components/DropdownLink.vue';
 import JetNavLink from '@/Components/NavLink.vue';
 import JetResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import NotificationTray from "@/Components/Notifications/NotificationTray.vue";
 
 defineProps({
     title: String,
@@ -16,7 +16,7 @@ defineProps({
 const showingNavigationDropdown = ref(false);
 
 const switchToTeam = (team) => {
-    Inertia.put(route('current-team.update'), {
+    router.put(route('current-team.update'), {
         team_id: team.id,
     }, {
         preserveState: false,
@@ -24,8 +24,17 @@ const switchToTeam = (team) => {
 };
 
 const logout = () => {
-    Inertia.post(route('logout'));
+    router.post(route('logout'));
 };
+import { notify } from "notiwind"
+
+onMounted(() => {
+
+    Echo.private('user.'+usePage().props.user.id)
+        .listen('SubscribeToJobEvent', (job) => {
+            console.log()
+        })
+})
 </script>
 
 <template>
@@ -34,8 +43,8 @@ const logout = () => {
 
         <JetBanner />
 
-        <div class="min-h-screen bg-gray-100 dark:bg-slate-800">
-            <nav class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 dark:bg-slate-700">
+        <div class="min-h-screen bg-slate-100 dark:bg-slate-800">
+            <nav class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 dark:bg-slate-700">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
@@ -52,6 +61,10 @@ const logout = () => {
                                 <JetNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </JetNavLink>
+                                <JetNavLink :href="route('admin')" :active="route().current('admin')">
+                                    Admin
+                                </JetNavLink>
+
                             </div>
                         </div>
 
@@ -61,7 +74,7 @@ const logout = () => {
                                 <JetDropdown v-if="$page.props.jetstream.hasTeamFeatures" align="right" width="60">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-500 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 hover:text-slate-700 focus:outline-none focus:bg-slate-50 active:bg-slate-50 transition">
                                                 {{ $page.props.user.current_team.name }}
 
                                                 <svg
@@ -80,8 +93,8 @@ const logout = () => {
                                         <div class="w-60">
                                             <!-- Team Management -->
                                             <template v-if="$page.props.jetstream.hasTeamFeatures">
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    Manage Team
+                                                <div class="block px-4 py-2 text-xs text-slate-400">
+                                  ``                  Manage Team
                                                 </div>
 
                                                 <!-- Team Settings -->
@@ -93,10 +106,10 @@ const logout = () => {
                                                     Create New Team
                                                 </JetDropdownLink>
 
-                                                <div class="border-t border-gray-100" />
+                                                <div class="border-t border-slate-100 dark:border-slate-800" />
 
                                                 <!-- Team Switcher -->
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                                <div class="block px-4 py-2 text-xs text-slate-400">
                                                     Switch Teams
                                                 </div>
 
@@ -129,12 +142,12 @@ const logout = () => {
                             <div class="ml-3 relative">
                                 <JetDropdown align="right" width="48">
                                     <template #trigger>
-                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
+                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-slate-300 transition">
                                             <img class="h-8 w-8 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name">
                                         </button>
 
                                         <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-500 dark:text-slate-300 bg-white dark:bg-slate-800 hover:text-slate-700 focus:outline-none transition">
                                                 {{ $page.props.user.name }}
 
                                                 <svg
@@ -151,9 +164,13 @@ const logout = () => {
 
                                     <template #content>
                                         <!-- Account Management -->
-                                        <div class="block px-4 py-2 text-xs text-gray-400 dark:text-slate-50">
+                                        <div class="block px-4 py-2 text-xs text-slate-400 dark:text-slate-50">
                                             Manage Account
                                         </div>
+
+                                      <JetDropdownLink :href="route('oauth.link')">
+                                        Oauth Links
+                                      </JetDropdownLink>
 
                                         <JetDropdownLink :href="route('profile.show')">
                                             Profile
@@ -163,7 +180,7 @@ const logout = () => {
                                             API Tokens
                                         </JetDropdownLink>
 
-                                        <div class="border-t border-gray-100 dark:border-slate-600" />
+                                        <div class="border-t border-slate-100 dark:border-slate-600" />
 
                                         <!-- Authentication -->
                                         <form @submit.prevent="logout">
@@ -178,7 +195,7 @@ const logout = () => {
 
                         <!-- Hamburger -->
                         <div class="-mr-2 flex items-center sm:hidden">
-                            <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition" @click="showingNavigationDropdown = ! showingNavigationDropdown">
+                            <button class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-slate-500 transition" @click="showingNavigationDropdown = ! showingNavigationDropdown">
                                 <svg
                                     class="h-6 w-6"
                                     stroke="currentColor"
@@ -211,20 +228,24 @@ const logout = () => {
                         <JetResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </JetResponsiveNavLink>
+
+                        <JetResponsiveNavLink :href="route('admin')" :active="route().current('admin')">
+                            Admin
+                        </JetResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="pt-4 pb-1 border-t border-slate-200">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 mr-3">
                                 <img class="h-10 w-10 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name">
                             </div>
 
                             <div>
-                                <div class="font-medium text-base text-gray-800">
+                                <div class="font-medium text-base text-slate-800">
                                     {{ $page.props.user.name }}
                                 </div>
-                                <div class="font-medium text-sm text-gray-500">
+                                <div class="font-medium text-sm text-slate-500">
                                     {{ $page.props.user.email }}
                                 </div>
                             </div>
@@ -235,9 +256,13 @@ const logout = () => {
                                 Profile
                             </JetResponsiveNavLink>
 
-                            <JetResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
-                                API Tokens
-                            </JetResponsiveNavLink>
+                          <JetResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
+                            API Tokens
+                          </JetResponsiveNavLink>
+
+                          <JetResponsiveNavLink :href="route('oauth.link')" :active="route().current('oauth.link')">
+                            Oauth Links
+                          </JetResponsiveNavLink>
 
                             <!-- Authentication -->
                             <form method="POST" @submit.prevent="logout">
@@ -248,9 +273,9 @@ const logout = () => {
 
                             <!-- Team Management -->
                             <template v-if="$page.props.jetstream.hasTeamFeatures">
-                                <div class="border-t border-gray-200" />
+                                <div class="border-t border-slate-200" />
 
-                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                <div class="block px-4 py-2 text-xs text-slate-400">
                                     Manage Team
                                 </div>
 
@@ -263,10 +288,10 @@ const logout = () => {
                                     Create New Team
                                 </JetResponsiveNavLink>
 
-                                <div class="border-t border-gray-200" />
+                                <div class="border-t border-slate-200" />
 
                                 <!-- Team Switcher -->
-                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                <div class="block px-4 py-2 text-xs text-slate-400">
                                     Switch Teams
                                 </div>
 
@@ -307,5 +332,6 @@ const logout = () => {
                 <slot />
             </main>
         </div>
+        <NotificationTray />
     </div>
 </template>

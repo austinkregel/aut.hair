@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -14,21 +14,23 @@ import JetInputError from '@/Components/InputError.vue';
 import JetLabel from '@/Components/Label.vue';
 import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 import JetSectionBorder from '@/Components/SectionBorder.vue';
-import { trackVForSlotScopes } from '@vue/compiler-core';
 
 const props = defineProps({
 });
 
-const createApiTokenForm = useForm({
+const createApiTokenForm = useForm('create api token form', {
     name: '',
     redirect: '',
-});
-
-const updateApiTokenForm = useForm({
     permissions: [],
 });
 
-const deleteApiTokenForm = useForm();
+const updateApiTokenForm = useForm('update api token form',{
+    name: '',
+    redirect: '',
+    permissions: [],
+});
+
+const deleteApiTokenForm = useForm('delete token form', {});
 
 const displayingToken = ref(false);
 const managingPermissionsFor = ref(null);
@@ -47,7 +49,7 @@ const createApiToken = () => {
 };
 
 const manageApiTokenPermissions = (token) => {
-    updateApiTokenForm.permissions = token.abilities;
+    updateApiTokenForm.permissions = token;
     managingPermissionsFor.value = token;
 };
 
@@ -73,13 +75,13 @@ const deleteApiToken = () => {
 
 onMounted(() => {
     axios.get('/oauth/scopes')
-    .then(response => {
-        scopes.value = response.data;
-    });
-axios.get('/oauth/clients')
-    .then(response => {
-        clients.value = response.data;
-    });
+        .then(response => {
+            scopes.value = response.data;
+        });
+    axios.get('/oauth/clients')
+        .then(response => {
+            clients.value = response.data;
+        });
 
 })
 </script>
@@ -129,7 +131,7 @@ axios.get('/oauth/clients')
                         <div v-for="scope in scopes" :key="scope">
                             <label class="flex items-center">
                                 <JetCheckbox v-model="createApiTokenForm.permissions" :value="scope" />
-                                <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ scope.description }}</span>
+                                <span class="ml-2 text-sm text-slate-600 dark:text-slate-300">{{ scope.description }}</span>
                             </label>
                         </div>
                     </div>
@@ -141,7 +143,11 @@ axios.get('/oauth/clients')
                     Created.
                 </JetActionMessage>
 
-                <JetButton :class="{ 'opacity-25': createApiTokenForm.processing }" :disabled="createApiTokenForm.processing">
+                <JetButton
+                    type="submit"
+                    :class="{ 'opacity-25': createApiTokenForm.processing }"
+                    :disabled="createApiTokenForm.processing"
+                >
                     Create
                 </JetButton>
             </template>
@@ -166,20 +172,20 @@ axios.get('/oauth/clients')
                         <div class="space-y-6">
                             <div v-for="token in clients" :key="token.id" class="flex items-center justify-between">
                                 <div>
-                                    {{ token.client_name }}
+                                    {{ token.name }}
                                 </div>
                                 <div>
-                                    {{ token.redirect_uris }}
+                                    {{ token.redirect }}
                                 </div>
 
                                 <div class="flex items-center">
-                                    <div v-if="token.last_used_ago" class="text-sm text-gray-400">
-                                        Last used {{ token.last_used_ago }}
+                                    <div v-if="token.updated_at" class="text-sm text-slate-400">
+                                        Updated at {{ token.updated_at }}
                                     </div>
 
                                     <button
                                         v-if="scopes.length > 0"
-                                        class="cursor-pointer ml-6 text-sm text-gray-400 underline"
+                                        class="cursor-pointer ml-6 text-sm text-slate-400 underline"
                                         @click="manageApiTokenPermissions(token)"
                                     >
                                         Permissions
@@ -207,7 +213,7 @@ axios.get('/oauth/clients')
                     Please copy your new Client. For your security, it won't be shown again.
                 </div>
 
-                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-gray-100 px-4 py-2 rounded font-mono text-sm text-gray-500">
+                <div v-if="$page.props.jetstream.flash.token" class="mt-4 bg-slate-100 px-4 py-2 rounded font-mono text-sm text-slate-500">
                     {{ $page.props.jetstream.flash.token }}
                 </div>
             </template>
@@ -227,12 +233,29 @@ axios.get('/oauth/clients')
 
             <template #content>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="permission in availablePermissions" :key="permission">
-                        <label class="flex items-center">
-                            <JetCheckbox v-model:checked="updateApiTokenForm.permissions" :value="permission" />
-                            <span class="ml-2 text-sm text-gray-600 dark:text-slate-300">{{ permission }}</span>
-                        </label>
+                    <div class="col-span-6 sm:col-span-4">
+                        <JetLabel for="name" value="Name" />
+                        <JetInput
+                            id="name"
+                            v-model="updateApiTokenForm.name"
+                            type="text"
+                            class="mt-1 block w-full"
+                            autofocus
+                        />
+                        <JetInputError :message="updateApiTokenForm.errors.name" class="mt-2" />
                     </div>
+                    <div class="col-span-6 sm:col-span-4">
+                        <JetLabel for="name" value="Redirect URL" />
+                        <JetInput
+                            id="name"
+                            v-model="updateApiTokenForm.redirect"
+                            type="text"
+                            class="mt-1 block w-full"
+                            autofocus
+                        />
+                        <JetInputError :message="updateApiTokenForm.errors.name" class="mt-2" />
+                    </div>
+
                 </div>
             </template>
 

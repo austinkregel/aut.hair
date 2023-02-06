@@ -1,6 +1,6 @@
 name: Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   tests:
@@ -14,8 +14,18 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.1
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          extensions: dom, curl, libxml, mbstring, zip, redis, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction
@@ -24,7 +34,19 @@ jobs:
         run: cp .env.example .env
 
       - name: Generate app key
-        run: php artisan key:generate
+        run: |
+          php artisan key:generate
+          php artisan passport:keys
+
+      - name: Install NPM
+        run: |
+          curl https://lazy.build/nodejs@ubuntu:18 | sudo bash
+          sudo npm install --global yarn
+          yarn
+          yarn run build
+
+      - name: Execute tests
+        run: vendor/bin/phpunit
 
       - name: Execute tests
         run: vendor/bin/phpunit

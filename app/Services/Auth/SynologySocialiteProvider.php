@@ -25,11 +25,6 @@ class SynologySocialiteProvider extends AbstractProvider
             $fields['state'] = $state;
         }
 
-        if ($this->usesPKCE()) {
-            $fields['code_challenge'] = $this->getCodeChallenge();
-            $fields['code_challenge_method'] = $this->getCodeChallengeMethod();
-        }
-
         return array_merge($fields, $this->parameters);
     }
 
@@ -57,8 +52,9 @@ class SynologySocialiteProvider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
+        $token = request()->get('access_token');
         $response = $this->getHttpClient()->get(
-            $this->getTokenUrl().'?action=exchange&access_token='.$token.'&app_id='.env('SYNOLOGY_CLIENT_ID'),
+            $this->getTokenUrl().'?action=exchange&access_token='.$token.(env('SYNOLOGY_DOMAIN') ? '&domain_name='.env('SYNOLOGY_DOMAIN') : ''),
             [
                 RequestOptions::HEADERS => [
                     'Accept' => 'application/json',
@@ -69,15 +65,21 @@ class SynologySocialiteProvider extends AbstractProvider
         return json_decode((string) $response->getBody(), true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function mapUserToObject(array $user)
     {
-        dd($user);
-        return (new User())->setRaw($user)->map([
-            'id'    => $user['id'], 'nickname' => null, 'name' => $user['name'],
-            'email' => $user['login'], 'avatar' => $user['avatar_url'],
+        // Soooo, synology is pretty weird, they don't actually follow OAuth
+        // based standards and want you to use their SSO JSDK.
+        $username = $user['data']['user_name'];
+        $email = explode('\\', $username);
+        $data = [
+            'id' => $user['data']['user_id'],
+            'username' => $username,
+            'email' => end($email).'@'.env('SYNOLOGY_DOMAIN'),
+        ];
+
+        return (new User())->setRaw($data)->map([
+            'id' => $data['id'], 'nickname' => $username, 'name' => $username,
+            'email' => $data['email'], 'avatar' => $data['avatar_url'] ?? null,
         ]);
     }
 

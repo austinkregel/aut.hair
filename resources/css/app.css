@@ -1,35 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* 
-.bg-white {
-    @apply dark:bg-zinc-700;
-}
-
-.bg-gray-100 {
-    @apply dark:bg-zinc-800;
-}
-
-.bg-gray-50 {
-    @apply dark:bg-zinc-900;
-}
-
-.border-gray-300 { 
-    @apply dark:border-zinc-600;
-}
-input, [type="email"], [type="text"], [type="password"] { 
-    @apply dark:bg-zinc-600 dark:placeholder:text-zinc-300 dark:text-zinc-200;
-}
-
-.text-gray-600, .text-gray-500 {
-    @apply dark:text-zinc-400;
-}
-.text-gray-700 {
-    @apply dark:text-zinc-200
-}
-.text-gray-800 {
-    @apply dark:text-zinc-100
-}
-.text-gray-900 {
-    @apply dark:text-zinc-50
-} */

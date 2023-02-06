@@ -1,7 +1,8 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
-const plugin = require('tailwindcss/plugin');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+    darkMode: 'class',
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './vendor/laravel/jetstream/**/*.blade.php',
@@ -18,8 +19,5 @@ module.exports = {
         },
     },
 
-    plugins: [
-        require('@tailwindcss/forms'), 
-        require('@tailwindcss/typography'),
-    ],
+    plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
 };

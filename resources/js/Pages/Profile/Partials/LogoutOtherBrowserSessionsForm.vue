@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -16,7 +16,7 @@ defineProps({
 const confirmingLogout = ref(false);
 const passwordInput = ref(null);
 
-const form = useForm({
+const form = useForm('logout other browser form', {
     password: '',
 });
 
@@ -53,7 +53,7 @@ const closeModal = () => {
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 dark:text-slate-300">
+            <div class="max-w-xl text-sm text-slate-600 dark:text-slate-300">
                 If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.
             </div>
 
@@ -69,7 +69,7 @@ const closeModal = () => {
                             stroke-width="2"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
-                            class="w-8 h-8 text-gray-500"
+                            class="w-8 h-8 text-slate-500"
                         >
                             <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -83,7 +83,7 @@ const closeModal = () => {
                             fill="none"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="w-8 h-8 text-gray-500"
+                            class="w-8 h-8 text-slate-500"
                         >
                             <path d="M0 0h24v24H0z" stroke="none" /><rect
                                 x="7"
@@ -96,12 +96,12 @@ const closeModal = () => {
                     </div>
 
                     <div class="ml-3">
-                        <div class="text-sm text-gray-600 dark:text-slate-300">
+                        <div class="text-sm text-slate-600 dark:text-slate-300">
                             {{ session.agent.platform ? session.agent.platform : 'Unknown' }} - {{ session.agent.browser ? session.agent.browser : 'Unknown' }}
                         </div>
 
                         <div>
-                            <div class="text-xs text-gray-500 dark:text-slate-400">
+                            <div class="text-xs text-slate-500 dark:text-slate-400">
                                 {{ session.ip_address }},
 
                                 <span v-if="session.is_current_device" class="text-green-500 font-semibold">This device</span>

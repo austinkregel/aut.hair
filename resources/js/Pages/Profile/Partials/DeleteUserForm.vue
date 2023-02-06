@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetDialogModal from '@/Components/DialogModal.vue';
 import JetDangerButton from '@/Components/DangerButton.vue';
@@ -11,7 +11,7 @@ import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
 
-const form = useForm({
+const form = useForm('delete user form', {
     password: '',
 });
 
@@ -48,7 +48,7 @@ const closeModal = () => {
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 dark:text-slate-300">
+            <div class="max-w-xl text-sm text-slate-600 dark:text-slate-300">
                 Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.
             </div>
 

@@ -2,20 +2,27 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\CrudContract;
+use App\Models\Contracts\Owner;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\PersonalAccessTokenResult;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CrudContract, Owner, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasProfilePhoto, Notifiable, TwoFactorAuthenticatable, CausesActivity, LogsActivity;
+    use HasFactory, HasProfilePhoto, HasTeams, Notifiable;
+    use CausesActivity, LogsActivity, TwoFactorAuthenticatable, HasApiTokens {
+        createToken as createPassportToken;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +33,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'ownable_type',
+        'ownable_id',
     ];
 
     /**
@@ -39,14 +48,6 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'two_factor_secret',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->logOnly(['name', 'email']);
-    }
 
     /**
      * The attributes that should be cast.
@@ -68,6 +69,28 @@ class User extends Authenticatable
 
     public function socials()
     {
-        return $this->hasMany(Social::class);
+        return $this->morphMany(Social::class, 'ownable');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function createToken(string $name, array $scopes = [])
+    {
+        $token = $this->createPassportToken($name, $scopes);
+        return new class ($token) {
+            public function __construct(
+                public PersonalAccessTokenResult $token,
+                public $plainTextToken = null,
+            ) {
+                $this->plainTextToken = implode('|', ['part1', $token->accessToken]);
+            }
+
+
+        };
     }
 }

@@ -1,13 +1,14 @@
 # For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    laravel.test:
+    aut.hair:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.1
+            context: ./docker/production
             dockerfile: Dockerfile
             args:
-                WWWGROUP: '${WWWGROUP}'
-        image: sail-8.1/app
+              WWWGROUP: 1000
+              WWWUSER: 1000
+        image: austinkregel/base
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -25,6 +26,40 @@ services:
         depends_on:
             - mariadb
             - redis
+    horizon:
+      build:
+        context: ./docker/horizon
+        dockerfile: Dockerfile
+        args:
+          WWWGROUP: 1000
+          WWWUSER: 1000
+      extra_hosts:
+        - 'host.docker.internal:host-gateway'
+      volumes:
+        - '.:/var/www/html'
+      networks:
+        - sail
+      depends_on:
+        - mariadb
+        - redis
+    weboscket:
+      build:
+        context: ./docker/websocket
+        dockerfile: Dockerfile
+        args:
+          WWWGROUP: 1000
+          WWWUSER: 1000
+      ports:
+          - '6001:6001'
+      extra_hosts:
+        - 'host.docker.internal:host-gateway'
+      volumes:
+        - '.:/var/www/html'
+      networks:
+        - sail
+      depends_on:
+        - mariadb
+        - redis
     mariadb:
         image: 'mariadb:10'
         ports:

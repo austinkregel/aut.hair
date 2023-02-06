@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/inertia-vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import JetAuthenticationCard from '@/Components/AuthenticationCard.vue';
 import JetAuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import JetButton from '@/Components/Button.vue';
@@ -11,7 +11,7 @@ defineProps({
     status: String,
 });
 
-const form = useForm({
+const form = useForm('forgot password form', {
     email: '',
 });
 
@@ -28,7 +28,7 @@ const submit = () => {
             <JetAuthenticationCardLogo />
         </template>
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-slate-300">
+        <div class="mb-4 text-sm text-slate-600 dark:text-slate-300">
             Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.
         </div>
 

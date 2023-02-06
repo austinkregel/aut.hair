@@ -48,10 +48,10 @@ onUnmounted(() => {
 const maxWidthClass = computed(() => {
     return {
         'sm': 'sm:max-w-sm',
-        'md': 'sm:max-w-md',
-        'lg': 'sm:max-w-lg',
-        'xl': 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
+        'md': 'sm:max-w-lg',
+        'lg': 'sm:max-w-xl',
+        'xl': 'sm:max-w-2xl',
+        '2xl': 'sm:max-w-4xl',
     }[props.maxWidth];
 });
 </script>
@@ -69,7 +69,7 @@ const maxWidthClass = computed(() => {
                     leave-to-class="opacity-0"
                 >
                     <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
-                        <div class="absolute inset-0 bg-gray-500 opacity-75" />
+                        <div class="absolute inset-0 bg-slate-500 opacity-75" />
                     </div>
                 </transition>
 

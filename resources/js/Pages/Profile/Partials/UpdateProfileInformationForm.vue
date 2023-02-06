@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Inertia } from '@inertiajs/inertia';
-import { Link, useForm } from '@inertiajs/inertia-vue3';
+import { router, Link, useForm } from '@inertiajs/vue3';
 import JetButton from '@/Components/Button.vue';
 import JetFormSection from '@/Components/FormSection.vue';
 import JetInput from '@/Components/Input.vue';
@@ -14,7 +13,7 @@ const props = defineProps({
     user: Object,
 });
 
-const form = useForm({
+const form = useForm('update profile information', {
     _method: 'PUT',
     name: props.user.name,
     email: props.user.email,
@@ -60,7 +59,7 @@ const updatePhotoPreview = () => {
 };
 
 const deletePhoto = () => {
-    Inertia.delete(route('current-user-photo.destroy'), {
+    router.delete(route('current-user-photo.destroy'), {
         preserveScroll: true,
         onSuccess: () => {
             photoPreview.value = null;
@@ -160,7 +159,7 @@ const clearPhotoFileInput = () => {
                             :href="route('verification.send')"
                             method="post"
                             as="button"
-                            class="underline text-gray-600 hover:text-gray-900"
+                            class="underline text-slate-600 hover:text-slate-900"
                             @click.prevent="sendEmailVerification"
                         >
                             Click here to re-send the verification email.
