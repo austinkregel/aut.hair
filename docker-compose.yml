@@ -1,14 +1,14 @@
 # For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    laravel.test:
+    aut.hair:
         build:
-            context: ./docker/8.1
+            context: ./docker/production
             dockerfile: Dockerfile
             args:
               WWWGROUP: 1000
               WWWUSER: 1000
-        image: sail-8.1/app
+        image: austinkregel/base
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
