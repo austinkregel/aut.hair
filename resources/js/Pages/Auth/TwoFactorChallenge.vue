@@ -95,7 +95,7 @@ const submit = () => {
                     </template>
                 </button>
 
-                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing" type="submit>
+                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing" type="submit">
                     Log in
                 </JetButton>
             </div>
