@@ -33,7 +33,7 @@ services:
         volumes:
             - proxy-data:/data
             - proxy-letsencrypt:/etc/letsencrypt
-    laravel.test:
+    app:
         image: austinkregel/authair:latest
         build:
             context: ./docker/production
