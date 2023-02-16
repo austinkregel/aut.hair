@@ -34,6 +34,7 @@ services:
             - proxy-data:/data
             - proxy-letsencrypt:/etc/letsencrypt
     laravel.test:
+        image: austinkregel/authair:latest
         build:
             context: ./docker/production
             dockerfile: Dockerfile
@@ -59,6 +60,7 @@ services:
             - mariadb
             - redis
     horizon:
+      image: austinkregel/horizon:latest
       build:
         context: ./docker/horizon
         dockerfile: Dockerfile
@@ -74,7 +76,8 @@ services:
       depends_on:
         - mariadb
         - redis
-    weboscket:
+    websocket:
+      image: austinkregel/websocket:latest
       build:
         context: ./docker/websocket
         dockerfile: Dockerfile
@@ -125,6 +128,8 @@ services:
 networks:
     sail:
         driver: bridge
+    sail_overlay:
+        driver: overlay
 volumes:
     sail-mariadb:
         driver: local

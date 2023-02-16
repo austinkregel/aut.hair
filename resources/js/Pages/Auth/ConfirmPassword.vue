@@ -55,7 +55,7 @@ const submit = () => {
             </div>
 
             <div class="flex justify-end mt-4">
-                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing" type="submit>
                     Confirm
                 </JetButton>
             </div>
