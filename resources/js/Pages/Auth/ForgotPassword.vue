@@ -52,7 +52,7 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing" type="submit">
                     Email Password Reset Link
                 </JetButton>
             </div>

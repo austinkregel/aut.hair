@@ -36,7 +36,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
 
         <form @submit.prevent="submit">
             <div class="mt-4 flex items-center justify-between">
-                <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing" type="submit">
                     Resend Verification Email
                 </JetButton>
 
