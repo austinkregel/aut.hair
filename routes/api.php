@@ -18,7 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware([config('jetstream.auth_session'), 'verified'])->get('userinfo', function (Request $request) {
+Route::middleware(['auth:api', 'verified'])->get('userinfo', function (Request $request) {
     return \App\Http\Resources\UserResource::make($request->user());
 })->name('oidc.userinfo');
 
