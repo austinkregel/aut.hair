@@ -1,7 +1,6 @@
 <script setup>
 import ApiTokenManager from '@/Pages/API/Partials/ApiTokenManager.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import OAuthClients from '@/Pages/API/Partials/OAuthClients.vue';
 defineProps({
     tokens: Array,
     availablePermissions: Array,
