@@ -10,4 +10,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.1/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
 
+## Build NPM deps, copy to image
+#RUN npm i && npm run build
+#COPY public/build /var/www/html/public/build
+
 ENTRYPOINT ["start-container"]
