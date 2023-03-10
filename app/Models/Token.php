@@ -48,7 +48,7 @@ class Token extends \Laravel\Passport\Token
 
     public function getRevokedAttribute()
     {
-        if ($this->expires_at) {
+        if (!empty($this->expires_at)) {
             return $this->expires_at->before(now());
         }
 
