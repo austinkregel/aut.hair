@@ -58,7 +58,7 @@ class JetstreamServiceProvider extends ServiceProvider
             'update',
             'delete'
         ]);
-
+        
         Jetstream::permissions($tokenPermissions);
         Jetstream::defaultApiTokenPermissions(['read']);
 
