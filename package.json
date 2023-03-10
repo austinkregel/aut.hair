@@ -1,8 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "dev": "vite",
-        "build": "vite build && vite build --ssr && vite build && vite build --ssr --ssr"
+        "dev": "npx vite",
+        "build": "npx vite build && vite build --ssr && npx vite build && npx vite build --ssr --ssr"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
