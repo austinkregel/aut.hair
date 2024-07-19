@@ -8,7 +8,7 @@
 
         <div class="py-12">
             <div class="max-w-7xl w-full lg:w-1/2 sm:px-6 mx-auto lg:px-8">
-                <div class="bg-white dark:bg-slate-600 overflow-hidden shadow sm:rounded-lg overflow-y-scroll" style="max-height: 280px;">
+                <div class="bg-white dark:bg-slate-900 overflow-hidden shadow sm:rounded-lg overflow-y-scroll" style="max-height: 280px;">
                     <!-- This example requires Tailwind CSS v2.0+ -->
                     <ul role="list" class="divide-y divide-slate-200 dark:divide-slate-700">
                         <li v-for="activityItem in activityItems" :key="activityItem.id" class="py-4">

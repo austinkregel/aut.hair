@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Laravel\Fortify\Fortify;
 
 class MakeUser extends Command
 {
@@ -14,12 +18,30 @@ class MakeUser extends Command
 
     public function handle()
     {
-        $user = new User;
-        $user->name = $this->ask('What is your name?');
-        $user->email = $this->ask("What is your email address?");
-        $user->password = bcrypt($password = Str::random(16));
-        $user->save();
+        /** @var CreatesNewUsers $createAction */
+        do {
+            $createAction = app(CreatesNewUsers::class);
+
+            $data = [
+                'name' => $this->ask('What is your name?'),
+                'email' => $this->ask("What is your email address?"),
+                'password' => $password = Str::random(16),
+                'password_confirmation' => $password,
+                'terms' => true,
+            ];
+
+            try {
+                $user = $createAction->create($data);
+            } catch (ValidationException $exception) {
+                $this->error($exception->getMessage());
+            }
+        } while (empty($user));
+
+        $user->markEmailAsVerified();
+
         $this->info("Created user");
+
+        $this->info('You can login using the following credentials.');
         $this->warn('    ' .$user->email);
         $this->warn('     '.$password);
 

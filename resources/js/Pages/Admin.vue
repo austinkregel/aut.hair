@@ -62,7 +62,6 @@
 </template>
 <script>
 import dayjs from 'dayjs';
-import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ComposerPackage from "@/Components/ComposerPackage.vue";
 import DialogModal from '@/Components/DialogModal.vue';
@@ -123,18 +122,13 @@ export default {
     },
   },
   mounted() {
-    const fetch = () => router.reload({ only: [
-        'enabled',
-        'disabled',
-        'installed',
-        'notInstalled'
-      ]});
-    window.document.removeEventListener('updatePackages', fetch);
-    window.document.addEventListener('updatePackages',fetch);
-      Echo.private('user.'+this.user.id)
-      .listen('SubscribeToJobEvent', ({userId, jobId}) => {
-          this.jobId = jobId;
-      })
+    // const fetch = () => {};
+    // window.document.removeEventListener('updatePackages', fetch);
+    // window.document.addEventListener('updatePackages',fetch);
+    //   Echo.private('user.'+this.user.id)
+    //       .listen('SubscribeToJobEvent', ({userId, jobId}) => {
+    //           this.jobId = jobId;
+    //       })
   },
 }
 </script>

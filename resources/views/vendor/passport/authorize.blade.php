@@ -20,7 +20,7 @@
         </div>
 
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div class="bg-white dark:bg-slate-600 dark:text-slate-50 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div class="bg-white dark:bg-slate-900 dark:text-slate-50 py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <form class="space-y-6" action="#" method="POST">
 
                 <div class="card-body">
