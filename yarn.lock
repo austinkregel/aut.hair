@@ -37,7 +37,7 @@
     nprogress "^0.2.0"
     qs "^6.9.0"
 
-"@inertiajs/vue3@^1.0.0":
+"@inertiajs/vue3@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@inertiajs/vue3/-/vue3-1.2.0.tgz#fc64a4ca7ed2d018d375b77504545b5e9ec23efe"
   integrity sha512-Y6AsvwIK/E1pQKAMp8B7i99CbNApcTYb7j8R+TXM/AFQG6yBlQ1Qb9oFMItb6VimXSnDyfO4+FWe/JPLk9OIVA==

@@ -69,6 +69,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import VueTerm from '@/Components/VueTerm.vue';
 import {notify} from "notiwind";
+import {router} from "@inertiajs/vue3";
 export default {
   components: { AppLayout, ComposerPackage, DialogModal, PrimaryButton, SecondaryButton, VueTerm },
   props: [
@@ -122,13 +123,18 @@ export default {
     },
   },
   mounted() {
-    // const fetch = () => {};
-    // window.document.removeEventListener('updatePackages', fetch);
-    // window.document.addEventListener('updatePackages',fetch);
-    //   Echo.private('user.'+this.user.id)
-    //       .listen('SubscribeToJobEvent', ({userId, jobId}) => {
-    //           this.jobId = jobId;
-    //       })
+    const fetch = () => router.reload({ only: [
+        'enabled',
+        'disabled',
+        'installed',
+        'notInstalled'
+      ]});
+    window.document.removeEventListener('updatePackages', fetch);
+    window.document.addEventListener('updatePackages',fetch);
+      Echo.private('user.'+this.user.id)
+      .listen('SubscribeToJobEvent', ({userId, jobId}) => {
+          this.jobId = jobId;
+      })
   },
 }
 </script>

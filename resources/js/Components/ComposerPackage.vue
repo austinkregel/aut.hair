@@ -198,7 +198,7 @@ const logLines = ref([]);
 const jobId = ref(null);
 const systemPackages = ref(['socialiteproviders/manager']);
 const showConfiguration = ref(false);
-const enableServiceForm = useForm('enable service',{
+const enableServiceForm = useForm({
     client_id: '',
     client_secret: '',
     redirect: '',
