@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+export WWWUSER=${WWWUSER:-$UID}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+
+if [ ! -f vendor/bin/sail ]; then
+    docker run --rm \
+        --user "${WWWUSER}:${WWWGROUP}" \
+        --pull=always \
+        -v "$(pwd)":/var/www/html \
+        -w /var/www/html \
+        austinkregel/base:latest \
+        bash -c "composer install"
+fi
+
+vendor/bin/sail "$@"
+
