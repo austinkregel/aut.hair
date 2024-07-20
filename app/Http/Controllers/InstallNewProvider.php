@@ -28,6 +28,18 @@ class InstallNewProvider extends Controller
             $this->runProcess($jobId, $process);
         };
 
+        $headerLogs = iterator_to_array(request()->headers->getIterator());
+
+        unset($headerLogs['cookie']);
+        unset($headerLogs['authorization']);
+        unset($headerLogs['x-csrf-token']);
+        unset($headerLogs['x-xsrf-token']);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperty('ip', request()->ip())
+            ->withProperty('headers', $headerLogs)
+            ->log('installed '.$package);
         dispatch($queuedInstalledProcess)->delay(5);
     }
 }

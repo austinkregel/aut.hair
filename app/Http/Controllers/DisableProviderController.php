@@ -80,6 +80,18 @@ class DisableProviderController extends Controller
             broadcast(new ComposerActionLoggedToConsole($jobId, "\e[01;33mDisabling complete, you can close this window.\r\n"));
         };
 
+        $headerLogs = iterator_to_array(request()->headers->getIterator());
+
+        unset($headerLogs['cookie']);
+        unset($headerLogs['authorization']);
+        unset($headerLogs['x-csrf-token']);
+        unset($headerLogs['x-xsrf-token']);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperty('ip', request()->ip())
+            ->withProperty('headers', $headerLogs)
+            ->log('disabled '.$name);
         dispatch($queuedInstalledProcess)->delay(5);
     }
 }

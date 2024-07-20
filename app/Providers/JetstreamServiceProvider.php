@@ -52,13 +52,11 @@ class JetstreamServiceProvider extends ServiceProvider
     protected function configurePermissions()
     {
         Passport::useTokenModel(Token::class);
+        // Passport tokens come from our Client tokens, not used by users
         Passport::tokensCan($tokenPermissions = [
             'read',
-            'write',
-            'update',
-            'delete'
         ]);
-        
+
         Jetstream::permissions($tokenPermissions);
         Jetstream::defaultApiTokenPermissions(['read']);
 
@@ -68,6 +66,11 @@ class JetstreamServiceProvider extends ServiceProvider
             'update',
             'delete',
         ])->description('Administrator users can perform any action.');
+        Jetstream::role('admin', 'Manager', [
+            'create',
+            'read',
+            'update',
+        ])->description('Manager users can link new users.');
 
         Jetstream::role('login', 'Login', [
             'read',
