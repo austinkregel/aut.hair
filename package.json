@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "@heroicons/vue": "^2.0.13",
-        "@inertiajs/vue3": "^1.0.0",
+        "@inertiajs/vue3": "^1.2.0",
         "dayjs": "^1.11.5",
         "laravel-echo": "^1.15.0",
         "notiwind": "^2.0.0",
