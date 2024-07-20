@@ -15,7 +15,6 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-
     protected function runProcess(string $jobId, Process $process)
     {
         $process->setPty(true);
@@ -26,7 +25,7 @@ class Controller extends BaseController
         foreach ($process as $data) {
             broadcast(new ComposerActionLoggedToConsole($jobId, $data));
         }
-        broadcast(new ComposerActionLoggedToConsole($jobId, "Install complete."));
+        broadcast(new ComposerActionLoggedToConsole($jobId, 'Install complete.'));
 
         if ($process->isSuccessful()) {
             broadcast(new ComposerActionFinished($jobId));

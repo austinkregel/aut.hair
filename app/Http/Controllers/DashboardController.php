@@ -47,7 +47,7 @@ class DashboardController extends Controller
                                 ->where('causer_type', \App\Models\Team::class);
                         });
                 })
-                ->where('description', '!=','logged in')
+                ->where('description', '!=', 'logged in')
                 ->with('causer', 'subject')
                 ->defaultSort('-id')
                 ->paginate()

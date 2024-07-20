@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Social extends Model implements Ownable
 {
-    use HasFactory, LogsActivity, HasOwner;
+    use HasFactory, HasOwner, LogsActivity;
 
     public $fillable = [
         'ownable_id',

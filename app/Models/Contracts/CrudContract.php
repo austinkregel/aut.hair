@@ -9,6 +9,4 @@ use Illuminate\Database\Query\Builder;
  * @mixin Model
  * @mixin Builder
  */
-interface CrudContract
-{
-}
+interface CrudContract {}

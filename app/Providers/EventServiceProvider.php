@@ -10,9 +10,9 @@ use SocialiteProviders\Manager\SocialiteWasCalled;
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        #
-        # Do NOT add socialite providers here manually,
-        #
+        //
+        // Do NOT add socialite providers here manually,
+        //
         SocialiteWasCalled::class => [
             SynologyExtendSocialiteListener::class.'@handle',
         ],

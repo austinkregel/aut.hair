@@ -37,7 +37,7 @@ trait HasOwner
         return $this->defaultOwner;
     }
 
-    public function withDefaultOwner(Owner $owner = null)
+    public function withDefaultOwner(?Owner $owner = null)
     {
         $this->defaultOwner = $owner ?: $this->resolveDefaultOwner();
         if (isset($this->withDefaultOwnerOnCreate)) {

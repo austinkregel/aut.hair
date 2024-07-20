@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-/** @property Carbon $expires_at */
 
+/** @property Carbon $expires_at */
 class Token extends \Laravel\Passport\Token
 {
     protected $fillable = [
@@ -51,7 +51,7 @@ class Token extends \Laravel\Passport\Token
 
     public function getRevokedAttribute()
     {
-        if (!empty($this->expires_at)) {
+        if (! empty($this->expires_at)) {
             return $this->expires_at->isBefore(now());
         }
 
