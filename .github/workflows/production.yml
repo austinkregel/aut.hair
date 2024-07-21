@@ -1,6 +1,6 @@
 name: Production build
 
-on: [workflow_dispatch]
+on: [workflow_call]
 
 jobs:
   production:
