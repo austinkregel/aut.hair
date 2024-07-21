@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Laravel\Passport\Events\AccessTokenCreated;
@@ -27,11 +28,22 @@ class LogAuthenticatedUserApprovedApplication
      */
     public function handle(AccessTokenCreated $event)
     {
-        dd($event, debug_backtrace());
-        activity()
-            ->on($event->user)
-            ->causedBy(auth()->user() ?? null)
-            ->log('authenticated');
+        $user = User::find($event->userId);
 
+
+        $headerLogs = iterator_to_array(request()?->headers?->getIterator());
+
+        unset($headerLogs['cookie']);
+        unset($headerLogs['authorization']);
+        unset($headerLogs['x-csrf-token']);
+        unset($headerLogs['x-xsrf-token']);
+
+        activity()
+            ->performedOn($user)
+            ->causedByAnonymous()
+            ->withProperty('ip', request()->ip())
+            ->withProperty('headers', $headerLogs)
+            ->withProperty('oauth_client_id', $event->clientId)
+            ->log('approved');
     }
 }
