@@ -14,12 +14,6 @@ class CallbackController extends Controller
 {
     public function __invoke($provider, Request $request)
     {
-        //        try {
-        //            Socialite::driver($provider);
-        //        } catch (\InvalidArgumentException $e) {
-        //            abort(404);
-        //        }
-
         if ($provider === 'synology' && empty(request()->get('access_token', null))) {
             // Synology requires the usage of their custom javascript, which can be loaded
             // from the NAS's domain. I tried building a redirect URL but wasn't able to reproduce
