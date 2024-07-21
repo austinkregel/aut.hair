@@ -23,7 +23,6 @@ class CallbackController extends Controller
 
         try {
             $user = Socialite::driver($provider)->stateless()->user();
-
         } catch (InvalidStateException $e) {
             $user = Socialite::driver($provider)->stateless()->user();
         } catch (\Throwable $e) {
