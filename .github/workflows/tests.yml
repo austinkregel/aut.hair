@@ -47,6 +47,3 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/phpunit
-
-      - name: Execute tests
-        run: vendor/bin/phpunit
