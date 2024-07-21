@@ -6,19 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Social;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 
 class CallbackController extends Controller
 {
-    public function __invoke($provider)
+    public function __invoke($provider, Request $request)
     {
-//        try {
-//            Socialite::driver($provider);
-//        } catch (\InvalidArgumentException $e) {
-//            abort(404);
-//        }
-
         if ($provider === 'synology' && empty(request()->get('access_token', null))) {
             // Synology requires the usage of their custom javascript, which can be loaded
             // from the NAS's domain. I tried building a redirect URL but wasn't able to reproduce
@@ -28,7 +23,6 @@ class CallbackController extends Controller
 
         try {
             $user = Socialite::driver($provider)->stateless()->user();
-
         } catch (InvalidStateException $e) {
             $user = Socialite::driver($provider)->stateless()->user();
         } catch (\Throwable $e) {
@@ -68,10 +62,18 @@ class CallbackController extends Controller
                 'expires_at' => now()->addSecond($user->expiresIn),
             ]);
         }
+        $headerLogs = iterator_to_array($request->headers->getIterator());
+
+        unset($headerLogs['cookie']);
+        unset($headerLogs['authorization']);
+        unset($headerLogs['x-csrf-token']);
+        unset($headerLogs['x-xsrf-token']);
 
         activity()
             ->performedOn($social)
             ->causedBy($social->ownable)
+            ->withProperty('ip', $request->ip())
+            ->withProperty('headers', $headerLogs)
             ->log('logged in');
 
         return redirect('/dashboard');

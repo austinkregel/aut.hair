@@ -1,7 +1,6 @@
 <script setup>
 import ApiTokenManager from '@/Pages/API/Partials/ApiTokenManager.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import OAuthClients from '@/Pages/API/Partials/OAuthClients.vue';
 defineProps({
     tokens: Array,
     availablePermissions: Array,
@@ -24,9 +23,6 @@ defineProps({
                     :available-permissions="availablePermissions"
                     :default-permissions="defaultPermissions"
                 />
-            </div>
-            <div class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
-                <OAuthClients />
             </div>
         </div>
     </AppLayout>

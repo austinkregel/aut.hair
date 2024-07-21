@@ -9,9 +9,6 @@ use App\Services\Programming\LaravelProgrammingStyle;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
-use Laravel\Socialite\Facades\Socialite;
-use SocialiteProviders\Google\GoogleExtendSocialite;
-use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AdminController extends Controller
 {
@@ -22,13 +19,13 @@ class AdminController extends Controller
         /** @var Collection $serviceWithOauthish */
         $serviceWithOauthish = collect(config('services'));
         $serviceWithOauthish = $serviceWithOauthish->filter(function ($service, $key) {
-                return !empty($service['client_id'])
-                    && !empty($service['client_secret'])
-                    && !empty($service['redirect']);
-            })->reduce(function ($result, $config, $service) use ($installedNotInstalled) {
+            return ! empty($service['client_id'])
+                && ! empty($service['client_secret'])
+                && ! empty($service['redirect']);
+        })->reduce(function ($result, $config, $service) use ($installedNotInstalled) {
 
             try {
-                $installedServiceThatMatchesInstalledDriver = array_values(array_filter($installedNotInstalled['installed'], fn($value) => in_array($service, $value['drivers'] ?? [])));
+                $installedServiceThatMatchesInstalledDriver = array_values(array_filter($installedNotInstalled['installed'], fn ($value) => in_array($service, $value['drivers'] ?? [])));
                 $driver = Arr::first($installedServiceThatMatchesInstalledDriver) ?? [];
                 foreach ($driver['drivers'] ?? [] as $eventListener => $driverName) {
                     $foundListener = Code::with(LaravelProgrammingStyle::class)
@@ -67,6 +64,6 @@ class AdminController extends Controller
             'disabled' => [],
         ]);
 
-         return Inertia::render('Admin', array_merge($installedNotInstalled, $serviceWithOauthish));
+        return Inertia::render('Admin', array_merge($installedNotInstalled, $serviceWithOauthish));
     }
 }

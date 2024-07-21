@@ -2,6 +2,4 @@
 
 namespace App\Models\Contracts;
 
-interface Owner
-{
-}
+interface Owner {}

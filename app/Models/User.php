@@ -13,16 +13,18 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Passport\HasApiTokens;
 use Laravel\Passport\PersonalAccessTokenResult;
+use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
+use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable implements CrudContract, Owner, MustVerifyEmail
+class User extends Authenticatable implements CrudContract, MustVerifyEmail, Owner, LdapAuthenticatable
 {
-    use HasFactory, HasProfilePhoto, HasTeams, Notifiable;
-    use CausesActivity, LogsActivity, TwoFactorAuthenticatable, HasApiTokens {
+    use CausesActivity, HasApiTokens, LogsActivity, TwoFactorAuthenticatable {
         createToken as createPassportToken;
     }
+    use HasFactory, HasProfilePhoto, HasTeams, Notifiable, AuthenticatesWithLdap;
 
     /**
      * The attributes that are mass assignable.
@@ -82,15 +84,15 @@ class User extends Authenticatable implements CrudContract, Owner, MustVerifyEma
     public function createToken(string $name, array $scopes = [])
     {
         $token = $this->createPassportToken($name, $scopes);
-        return new class ($token) {
+
+        return new class($token)
+        {
             public function __construct(
                 public PersonalAccessTokenResult $token,
                 public $plainTextToken = null,
             ) {
                 $this->plainTextToken = implode('|', ['part1', $token->accessToken]);
             }
-
-
         };
     }
 }

@@ -62,7 +62,6 @@
 </template>
 <script>
 import dayjs from 'dayjs';
-import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ComposerPackage from "@/Components/ComposerPackage.vue";
 import DialogModal from '@/Components/DialogModal.vue';
@@ -70,6 +69,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import VueTerm from '@/Components/VueTerm.vue';
 import {notify} from "notiwind";
+import {router} from "@inertiajs/vue3";
 export default {
   components: { AppLayout, ComposerPackage, DialogModal, PrimaryButton, SecondaryButton, VueTerm },
   props: [

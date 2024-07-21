@@ -17,7 +17,6 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Create a newly registered user.
      *
-     * @param  array  $input
      * @return \App\Models\User
      */
     public function create(array $input)
@@ -43,14 +42,18 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Create a personal team for the user.
      *
-     * @param  \App\Models\User  $user
      * @return void
      */
     protected function createTeam(User $user)
     {
+        $name = explode(' ', $user->name, 2)[0]."'s Team";
+        if (Team::count() === 0) {
+            $name = config('app.name').' Admin Team';
+        }
+
         $user->ownedTeams()->save(Team::forceCreate([
             'user_id' => $user->id,
-            'name' => explode(' ', $user->name, 2)[0]."'s Team",
+            'name' => $name,
             'personal_team' => true,
         ]));
     }

@@ -12,7 +12,7 @@ interface Ownable
 
     public function defaultOwner();
 
-    public function withDefaultOwner(Owner $owner = null);
+    public function withDefaultOwner(?Owner $owner = null);
 
     public function withoutDefaultOwner();
 

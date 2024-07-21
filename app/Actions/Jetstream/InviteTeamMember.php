@@ -19,11 +19,9 @@ class InviteTeamMember implements InvitesTeamMembers
      *
      * @param  mixed  $user
      * @param  mixed  $team
-     * @param  string  $email
-     * @param  string|null  $role
      * @return void
      */
-    public function invite($user, $team, string $email, string $role = null)
+    public function invite($user, $team, string $email, ?string $role = null)
     {
         Gate::forUser($user)->authorize('addTeamMember', $team);
 
@@ -51,8 +49,6 @@ class InviteTeamMember implements InvitesTeamMembers
      * Validate the invite member operation.
      *
      * @param  mixed  $team
-     * @param  string  $email
-     * @param  string|null  $role
      * @return void
      */
     protected function validate($team, string $email, ?string $role)
@@ -89,7 +85,6 @@ class InviteTeamMember implements InvitesTeamMembers
      * Ensure that the user is not already on the team.
      *
      * @param  mixed  $team
-     * @param  string  $email
      * @return \Closure
      */
     protected function ensureUserIsNotAlreadyOnTeam($team, string $email)

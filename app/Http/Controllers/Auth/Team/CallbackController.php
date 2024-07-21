@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Auth\Team;
 use App\Http\Controllers\Controller;
 use App\Models\Social;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 class CallbackController extends Controller
 {
-    public function __invoke($provider)
+    public function __invoke($provider, Request $request)
     {
         try {
             Socialite::driver($provider);
@@ -61,9 +62,18 @@ class CallbackController extends Controller
             ]);
         }
 
+        $headerLogs = iterator_to_array($request->headers->getIterator());
+
+        unset($headerLogs['cookie']);
+        unset($headerLogs['authorization']);
+        unset($headerLogs['x-csrf-token']);
+        unset($headerLogs['x-xsrf-token']);
+
         activity()
             ->performedOn($social)
             ->causedBy($social->ownable)
+            ->withProperty('ip', $request->ip())
+            ->withProperty('headers', $headerLogs)
             ->log('logged in');
 
         return redirect('/dashboard');

@@ -22,7 +22,7 @@ Route::get('/api/available-login-providers', Controllers\AvailableLoginProviders
 
 Route::middleware('web')->group(function () {
     Route::prefix('/callback/{provider}')->group(function () {
-//        Route::get('/team', Controllers\Auth\Team\CallbackController::class);
+        Route::get('/team', Controllers\Auth\Team\CallbackController::class);
         Route::get('/', Controllers\Auth\CallbackController::class);
     });
 });
@@ -33,11 +33,11 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
     });
     // Users must be verified before they can actually login or link an oauth provider.
     Route::prefix('/login/{provider}')->group(function () {
-//        Route::get('/team', Controllers\Auth\Team\RedirectController::class);
+        Route::get('/team', Controllers\Auth\Team\RedirectController::class);
         Route::get('/', Controllers\Auth\RedirectController::class);
     });
 
-    Route::get('/', Controllers\DashboardController::class.'@link');
+    Route::get('/', Controllers\DashboardController::class.'@link')->name('issuer');
     Route::get('/dashboard', Controllers\DashboardController::class)->name('dashboard');
 
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');

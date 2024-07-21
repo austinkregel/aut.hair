@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-slate-600 flex flex-col items-center justify-between">
+  <div class="bg-white dark:bg-slate-900 flex flex-col items-center justify-between">
     <div class="flex flex-col gap-2 p-6 w-full h-full">
       <p class="text-xl font-medium text-gray-900 dark:text-slate-50">{{ props.composerPackage.name }}</p>
       <p class="text-base text-gray-500 dark:text-slate-300">{{ props.composerPackage.description }}</p>
@@ -198,7 +198,7 @@ const logLines = ref([]);
 const jobId = ref(null);
 const systemPackages = ref(['socialiteproviders/manager']);
 const showConfiguration = ref(false);
-const enableServiceForm = useForm('enable service',{
+const enableServiceForm = useForm({
     client_id: '',
     client_secret: '',
     redirect: '',
