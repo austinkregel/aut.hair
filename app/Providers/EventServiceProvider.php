@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Events\ComposerActionLoggedToConsole;
+use App\Listeners\LogAuthenticatedUserApprovedApplication;
 use App\Listeners\SynologyExtendSocialiteListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Laravel\Passport\Events\AccessTokenCreated;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class EventServiceProvider extends ServiceProvider
@@ -19,6 +21,9 @@ class EventServiceProvider extends ServiceProvider
         ComposerActionLoggedToConsole::class => [
             //
         ],
+        AccessTokenCreated::class => [
+            LogAuthenticatedUserApprovedApplication::class,
+        ]
     ];
 
     /**

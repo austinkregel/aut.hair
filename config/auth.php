@@ -26,6 +26,15 @@ return [
             'model' => App\Models\User::class,
         ],
 
+        'ldap' => [
+            'driver' => 'ldap',
+            'model' => LdapRecord\Models\ActiveDirectory\User::class,
+            'rules' => [
+            ],
+            'database' => [
+                'model' => App\Models\User::class, // <-- This model here.
+            ],
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

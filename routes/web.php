@@ -37,7 +37,7 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
         Route::get('/', Controllers\Auth\RedirectController::class);
     });
 
-    Route::get('/', Controllers\DashboardController::class.'@link');
+    Route::get('/', Controllers\DashboardController::class.'@link')->name('issuer');
     Route::get('/dashboard', Controllers\DashboardController::class)->name('dashboard');
 
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');

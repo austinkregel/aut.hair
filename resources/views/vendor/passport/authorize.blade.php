@@ -20,7 +20,7 @@
         </div>
 
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div class="bg-white dark:bg-slate-900 dark:text-slate-50 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div class="bg-white dark:bg-slate-800 dark:text-slate-50 py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <form class="space-y-6" action="#" method="POST">
 
                 <div class="card-body">
@@ -29,13 +29,13 @@
                     <!-- Scope List -->
                     @if (count($scopes) > 0)
                         <div class="scopes">
-                                <p><strong>This application will be able to:</strong></p>
+                            <p><strong>This application will be able to:</strong></p>
 
-                                <ul>
-                                    @foreach ($scopes as $scope)
-                                        <li>{{ $scope->description }}</li>
-                                    @endforeach
-                                </ul>
+                            <ul>
+                                @foreach ($scopes as $scope)
+                                    <li>{{ $scope->description }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
                     <div class="my-8 text-slate-400 dark:text-slate-300 font-semibold">

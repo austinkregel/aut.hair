@@ -9,6 +9,7 @@
         "beyondcode/laravel-websockets": "^1.13",
         "composer/composer": "^2.5",
         "directorytree/ldaprecord": "^2.17",
+        "directorytree/ldaprecord-laravel": "^2.7",
         "inertiajs/inertia-laravel": "^v0.6",
         "laravel/framework": "^v9.47",
         "laravel/horizon": "^5.13",

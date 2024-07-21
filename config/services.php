@@ -57,4 +57,11 @@ return [
         'allow_gif_avatars' => (bool) env('DISCORD_AVATAR_GIF', true),
         'avatar_default_extension' => env('DISCORD_EXTENSION_DEFAULT', 'jpg'), // only pick from jpg, png, webp
     ],
+
+    'laravelpassport' => [
+        'client_id' => env('LARAVELPASSPORT_CLIENT_ID'),
+        'client_secret' => env('LARAVELPASSPORT_CLIENT_SECRET'),
+        'redirect' => env('LARAVELPASSPORT_REDIRECT_URI'),
+        'host' => env('LARAVELPASSPORT_HOST'),
+    ],
 ];
