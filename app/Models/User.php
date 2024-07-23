@@ -19,12 +19,12 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable implements CrudContract, MustVerifyEmail, Owner, LdapAuthenticatable
+class User extends Authenticatable implements CrudContract, LdapAuthenticatable, MustVerifyEmail, Owner
 {
+    use AuthenticatesWithLdap, HasFactory, HasProfilePhoto, HasTeams, Notifiable;
     use CausesActivity, HasApiTokens, LogsActivity, TwoFactorAuthenticatable {
         createToken as createPassportToken;
     }
-    use HasFactory, HasProfilePhoto, HasTeams, Notifiable, AuthenticatesWithLdap;
 
     /**
      * The attributes that are mass assignable.

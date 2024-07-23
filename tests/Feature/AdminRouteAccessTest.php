@@ -14,7 +14,7 @@ class AdminRouteAccessTest extends TestCase
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
-            'email' => 'never-a-real-email@not.fake.tools'
+            'email' => 'never-a-real-email@not.fake.tools',
         ]);
 
         $this->actingAs($user)
@@ -26,7 +26,7 @@ class AdminRouteAccessTest extends TestCase
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
-            'email' => 'never-a-real-email@not.fake.tools'
+            'email' => 'never-a-real-email@not.fake.tools',
         ]);
 
         $this->actingAs($user)
@@ -56,7 +56,7 @@ class AdminRouteAccessTest extends TestCase
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
 
         $user = User::factory()->create([
-            'email' => 'real-email@fake.tools'
+            'email' => 'real-email@fake.tools',
         ]);
 
         $this->actingAs($user)

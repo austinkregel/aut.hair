@@ -38,7 +38,7 @@ return [
             'use_tls' => env('LDAP_TLS', false),
         ],
 
-        'default' => []
+        'default' => [],
     ],
 
     /*

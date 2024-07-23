@@ -11,7 +11,7 @@ class EventServiceProviderWithCustomEvent extends ServiceProvider
 {
     protected $listen = [
         CustomNewEvent::class => [
-            LogAuthenticatedUserListener::class
+            LogAuthenticatedUserListener::class,
         ],
         SocialiteWasCalled::class => [
             //

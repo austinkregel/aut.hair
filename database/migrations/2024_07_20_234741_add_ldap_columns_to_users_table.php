@@ -1,15 +1,15 @@
 <?php
 
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
 
 class AddLdapColumnsToUsersTable extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * @return void
      */
     public function up()
@@ -34,7 +34,7 @@ class AddLdapColumnsToUsersTable extends Migration
 
     /**
      * Reverse the migrations.
-     * 
+     *
      * @return void
      */
     public function down()
@@ -46,11 +46,10 @@ class AddLdapColumnsToUsersTable extends Migration
 
     /**
      * Compile a compatible "unique" SQL Server index constraint.
-     * 
-     * @param string $table
-     * @param string $column 
-     * 
-     * @return string 
+     *
+     * @param  string  $table
+     * @param  string  $column
+     * @return string
      */
     protected function compileUniqueSqlServerIndexStatement($table, $column)
     {

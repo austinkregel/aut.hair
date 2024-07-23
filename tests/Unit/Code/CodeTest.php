@@ -127,6 +127,7 @@ class EventServiceProvider extends ServiceProvider
 }
 ", $updatedEventServiceProvider);
     }
+
     public function testWeCanRemoveListenersFromEvents()
     {
         $updatedEventServiceProvider = LaravelProgrammingStyle::for(EventServiceProviderWithCustomEvent::class)

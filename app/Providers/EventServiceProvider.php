@@ -23,7 +23,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         AccessTokenCreated::class => [
             LogAuthenticatedUserApprovedApplication::class,
-        ]
+        ],
     ];
 
     /**
