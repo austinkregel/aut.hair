@@ -2,12 +2,13 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Models\Contracts\Owner;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasOwner
 {
-    public function ownable()
+    public function ownable(): MorphTo
     {
         return $this->morphTo('ownable');
     }

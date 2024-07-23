@@ -13,7 +13,7 @@ class MakeUser extends Command
 
     protected $description = 'Command description';
 
-    public function handle()
+    public function handle(): int
     {
         /** @var CreatesNewUsers $createAction */
         do {

@@ -10,7 +10,7 @@ class UserRouteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testUsersRouteSuccess()
+    public function testUsersRouteSuccess(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,
@@ -27,7 +27,7 @@ class UserRouteTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testUserInfoRouteSuccessForOauth()
+    public function testUserInfoRouteSuccessForOauth(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,
@@ -46,7 +46,7 @@ class UserRouteTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testUserInfoRouteFailsForNotBeingVerified()
+    public function testUserInfoRouteFailsForNotBeingVerified(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,

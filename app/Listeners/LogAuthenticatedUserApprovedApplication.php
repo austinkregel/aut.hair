@@ -23,7 +23,7 @@ class LogAuthenticatedUserApprovedApplication
      * @param  object  $event
      * @return void
      */
-    public function handle(AccessTokenCreated $event)
+    public function handle(AccessTokenCreated $event): void
     {
         $user = User::find($event->userId);
 

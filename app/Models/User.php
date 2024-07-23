@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\Contracts\CrudContract;
 use App\Models\Contracts\Owner;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -69,7 +70,7 @@ class User extends Authenticatable implements CrudContract, LdapAuthenticatable,
         'profile_photo_url',
     ];
 
-    public function socials()
+    public function socials(): MorphMany
     {
         return $this->morphMany(Social::class, 'ownable');
     }
