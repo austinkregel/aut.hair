@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Response;
 use App\Models\Social;
 use App\Models\User;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\QueryBuilder\QueryBuilder;
 

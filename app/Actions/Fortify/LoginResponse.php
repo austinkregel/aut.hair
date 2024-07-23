@@ -2,10 +2,10 @@
 
 namespace App\Actions\Fortify;
 
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Fortify\Http\Responses\LoginResponse as LoginResponseBase;
+use Symfony\Component\HttpFoundation\Response;
 
 class LoginResponse extends LoginResponseBase
 {

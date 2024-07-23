@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Settings;
 
-use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Models\Social;
+use Illuminate\Http\Response;
 
 class RemoveOauthLinkController extends Controller
 {

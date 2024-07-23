@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Settings;
 
-use Inertia\Response;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class OauthLinkController extends Controller
 {

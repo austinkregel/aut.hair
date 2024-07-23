@@ -2,10 +2,10 @@
 
 namespace App\Models\Traits;
 
-use Cog\Contracts\Ownership\CanBeOwner;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Models\Contracts\Owner;
+use Cog\Contracts\Ownership\CanBeOwner;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 trait HasOwner
 {
