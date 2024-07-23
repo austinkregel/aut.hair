@@ -20,7 +20,7 @@ class LogAuthenticatedUserListener
      * @param  object  $event
      * @return void
      */
-    public function handle($event)
+    public function handle(object $event): void
     {
         activity()
             ->event(get_class($event))

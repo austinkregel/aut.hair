@@ -48,7 +48,7 @@ class JetstreamServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function configurePermissions()
+    protected function configurePermissions(): void
     {
         Passport::useTokenModel(Token::class);
         // Passport tokens come from our Client tokens, not used by users

@@ -51,7 +51,7 @@ return new class extends Migration
      * @param  string  $column
      * @return string
      */
-    protected function compileUniqueSqlServerIndexStatement($table, $column)
+    protected function compileUniqueSqlServerIndexStatement(string $table, string $column): string
     {
         return sprintf('create unique index %s on %s (%s) where %s is not null',
             implode('_', [$table, $column, 'unique']),

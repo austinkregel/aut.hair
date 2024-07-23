@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits;
 
+use Cog\Contracts\Ownership\CanBeOwner;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Models\Contracts\Owner;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +19,7 @@ trait HasOwner
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
-    public function owner()
+    public function owner(): MorphTo
     {
         return $this->ownable();
     }
@@ -28,7 +29,7 @@ trait HasOwner
      *
      * @return \Cog\Contracts\Ownership\CanBeOwner
      */
-    public function getOwner()
+    public function getOwner(): CanBeOwner
     {
         return $this->ownedBy;
     }
