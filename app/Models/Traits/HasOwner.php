@@ -16,8 +16,6 @@ trait HasOwner
 
     /**
      * Get the model owner. Alias for `ownedBy()` method.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     public function owner(): MorphTo
     {
@@ -26,8 +24,6 @@ trait HasOwner
 
     /**
      * Get the model owner.
-     *
-     * @return \Cog\Contracts\Ownership\CanBeOwner
      */
     public function getOwner(): CanBeOwner
     {

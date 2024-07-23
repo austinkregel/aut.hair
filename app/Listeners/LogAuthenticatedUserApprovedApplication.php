@@ -19,9 +19,6 @@ class LogAuthenticatedUserApprovedApplication
 
     /**
      * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
      */
     public function handle(AccessTokenCreated $event): void
     {

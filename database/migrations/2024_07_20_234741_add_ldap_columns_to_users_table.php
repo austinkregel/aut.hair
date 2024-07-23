@@ -9,8 +9,6 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
@@ -34,8 +32,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {
@@ -46,10 +42,6 @@ return new class extends Migration
 
     /**
      * Compile a compatible "unique" SQL Server index constraint.
-     *
-     * @param  string  $table
-     * @param  string  $column
-     * @return string
      */
     protected function compileUniqueSqlServerIndexStatement(string $table, string $column): string
     {

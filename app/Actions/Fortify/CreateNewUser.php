@@ -16,8 +16,6 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * Create a newly registered user.
-     *
-     * @return \App\Models\User
      */
     public function create(array $input): User
     {
@@ -41,8 +39,6 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * Create a personal team for the user.
-     *
-     * @return void
      */
     protected function createTeam(User $user): void
     {

@@ -29,7 +29,6 @@ class DeleteUser implements DeletesUsers
      * Delete the given user.
      *
      * @param  mixed  $user
-     * @return void
      */
     public function delete($user): void
     {
@@ -49,7 +48,6 @@ class DeleteUser implements DeletesUsers
      * Delete the teams and team associations attached to the user.
      *
      * @param  mixed  $user
-     * @return void
      */
     protected function deleteTeams($user): void
     {
