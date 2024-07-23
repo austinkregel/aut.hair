@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Social;
 use App\Models\User;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): Response
     {
         return Inertia::render('Dashboard', [
             'currentTeam' => request()->user()->currentTeam,

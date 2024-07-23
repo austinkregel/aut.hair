@@ -6,14 +6,13 @@ use App\Events\ComposerActionFailed;
 use App\Events\ComposerActionFinished;
 use App\Events\ComposerActionLoggedToConsole;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Symfony\Component\Process\Process;
 
 class Controller extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests, ValidatesRequests;
 
     protected function runProcess(string $jobId, Process $process)
     {

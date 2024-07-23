@@ -10,20 +10,16 @@ class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         //        Passport::$tokenModel
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Gate::define('viewWebSocketsDashboard', function ($user = null) {
             return in_array($user->email, config('auth.admin_emails'));

@@ -10,11 +10,11 @@ class AdminRouteAccessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testOnlyHostMiddlewarePreventsAccessUnlessTheEmailMatchesTheConfigValue()
+    public function testOnlyHostMiddlewarePreventsAccessUnlessTheEmailMatchesTheConfigValue(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
-            'email' => 'never-a-real-email@not.fake.tools'
+            'email' => 'never-a-real-email@not.fake.tools',
         ]);
 
         $this->actingAs($user)
@@ -22,11 +22,11 @@ class AdminRouteAccessTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function testApiRoutesAreBlockedIfWeAreNotAdmin()
+    public function testApiRoutesAreBlockedIfWeAreNotAdmin(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
-            'email' => 'never-a-real-email@not.fake.tools'
+            'email' => 'never-a-real-email@not.fake.tools',
         ]);
 
         $this->actingAs($user)
@@ -51,12 +51,12 @@ class AdminRouteAccessTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function testOnlyHostMiddlewareAllowsAccessUnlessTheEmailMatchesTheConfigValue()
+    public function testOnlyHostMiddlewareAllowsAccessUnlessTheEmailMatchesTheConfigValue(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
 
         $user = User::factory()->create([
-            'email' => 'real-email@fake.tools'
+            'email' => 'real-email@fake.tools',
         ]);
 
         $this->actingAs($user)

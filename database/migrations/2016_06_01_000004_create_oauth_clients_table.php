@@ -25,20 +25,16 @@ return new class extends Migration
 
     /**
      * Get the migration connection name.
-     *
-     * @return string|null
      */
-    public function getConnection()
+    public function getConnection(): ?string
     {
         return config('passport.storage.database.connection');
     }
 
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         $this->schema->create('oauth_clients', function (Blueprint $table) {
             $table->bigIncrements('id');
@@ -56,10 +52,8 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         $this->schema->dropIfExists('oauth_clients');
     }

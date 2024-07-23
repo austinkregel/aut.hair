@@ -10,27 +10,28 @@ class UserRouteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testUsersRouteSuccess()
+    public function testUsersRouteSuccess(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,
-            '--name' => 'personal'
+            '--name' => 'personal',
         ]);
         /** @var User $user */
         $user = User::factory()->create();
         $token = $user->createToken('Passport Token');
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token->token->accessToken
+            'Authorization' => 'Bearer '.$token->token->accessToken,
         ])->getJson('api/user');
 
         $response->assertStatus(200);
     }
-    public function testUserInfoRouteSuccessForOauth()
+
+    public function testUserInfoRouteSuccessForOauth(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,
-            '--name' => 'personal'
+            '--name' => 'personal',
         ]);
         /** @var User $user */
         $user = User::factory()->create([
@@ -39,16 +40,17 @@ class UserRouteTest extends TestCase
         $token = $user->createToken('Passport Token');
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token->token->accessToken
+            'Authorization' => 'Bearer '.$token->token->accessToken,
         ])->getJson('api/userinfo');
 
         $response->assertStatus(200);
     }
-    public function testUserInfoRouteFailsForNotBeingVerified()
+
+    public function testUserInfoRouteFailsForNotBeingVerified(): void
     {
         $this->artisan('passport:client', [
             '--personal' => true,
-            '--name' => 'personal'
+            '--name' => 'personal',
         ]);
         /** @var User $user */
         $user = User::factory()->create([
@@ -57,7 +59,7 @@ class UserRouteTest extends TestCase
         $token = $user->createToken('Passport Token');
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token->token->accessToken
+            'Authorization' => 'Bearer '.$token->token->accessToken,
         ])->getJson('api/userinfo');
 
         $response->assertStatus(403);

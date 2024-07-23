@@ -10,9 +10,8 @@ class DeleteTeam implements DeletesTeams
      * Delete the given team.
      *
      * @param  mixed  $team
-     * @return void
      */
-    public function delete($team)
+    public function delete($team): void
     {
         activity()->on($team)
             ->causedBy(request()->user())

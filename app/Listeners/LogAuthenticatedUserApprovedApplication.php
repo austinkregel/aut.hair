@@ -3,10 +3,7 @@
 namespace App\Listeners;
 
 use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Laravel\Passport\Events\AccessTokenCreated;
-use function Psy\debug;
 
 class LogAuthenticatedUserApprovedApplication
 {
@@ -22,14 +19,10 @@ class LogAuthenticatedUserApprovedApplication
 
     /**
      * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
      */
-    public function handle(AccessTokenCreated $event)
+    public function handle(AccessTokenCreated $event): void
     {
         $user = User::find($event->userId);
-
 
         $headerLogs = iterator_to_array(request()?->headers?->getIterator());
 

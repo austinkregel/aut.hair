@@ -16,10 +16,8 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * Create a newly registered user.
-     *
-     * @return \App\Models\User
      */
-    public function create(array $input)
+    public function create(array $input): User
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
@@ -41,10 +39,8 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * Create a personal team for the user.
-     *
-     * @return void
      */
-    protected function createTeam(User $user)
+    protected function createTeam(User $user): void
     {
         $name = explode(' ', $user->name, 2)[0]."'s Team";
         if (Team::count() === 0) {

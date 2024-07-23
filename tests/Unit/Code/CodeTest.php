@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 class CodeTest extends TestCase
 {
-    public function testWeCanReturnTheFileContents()
+    public function testWeCanReturnTheFileContents(): void
     {
         $userModel = LaravelProgrammingStyle::for(User::class)
             ->toFile();
@@ -26,7 +26,7 @@ class CodeTest extends TestCase
         $this->assertSame(file_get_contents(base_path('tests/App/User.php')), $userModel);
     }
 
-    public function testWeCanUseTraitsAndImplementAContract()
+    public function testWeCanUseTraitsAndImplementAContract(): void
     {
         $newUserModel = LaravelProgrammingStyle::for(User::class)
             ->use(HasApiTokensExample::class)
@@ -79,7 +79,7 @@ class User extends Authenticatable implements Ownable
 ", $newUserModel);
     }
 
-    public function testWeCanAddListenersToTheEventServiceProvider()
+    public function testWeCanAddListenersToTheEventServiceProvider(): void
     {
         $updatedEventServiceProvider = LaravelProgrammingStyle::for(EventServiceProvider::class)
             ->addListenerToEvent(CustomNewEvent::class, LogAuthenticatedUserListener::class)
@@ -107,27 +107,24 @@ class EventServiceProvider extends ServiceProvider
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
 
     /**
      * Determine if events and listeners should be automatically discovered.
-     *
-     * @return bool
      */
-    public function shouldDiscoverEvents()
+    public function shouldDiscoverEvents(): bool
     {
         return false;
     }
 }
 ", $updatedEventServiceProvider);
     }
-    public function testWeCanRemoveListenersFromEvents()
+
+    public function testWeCanRemoveListenersFromEvents(): void
     {
         $updatedEventServiceProvider = LaravelProgrammingStyle::for(EventServiceProviderWithCustomEvent::class)
             ->removeListenerFromEvent(CustomNewEvent::class, LogAuthenticatedUserListener::class)
@@ -153,20 +150,16 @@ class EventServiceProviderWithCustomEvent extends ServiceProvider
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
 
     /**
      * Determine if events and listeners should be automatically discovered.
-     *
-     * @return bool
      */
-    public function shouldDiscoverEvents()
+    public function shouldDiscoverEvents(): bool
     {
         return false;
     }

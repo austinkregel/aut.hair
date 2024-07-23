@@ -6,6 +6,7 @@ use App\Models\Contracts\CrudContract;
 use App\Models\Contracts\Owner;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -19,12 +20,12 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class User extends Authenticatable implements CrudContract, MustVerifyEmail, Owner, LdapAuthenticatable
+class User extends Authenticatable implements CrudContract, LdapAuthenticatable, MustVerifyEmail, Owner
 {
+    use AuthenticatesWithLdap, HasFactory, HasProfilePhoto, HasTeams, Notifiable;
     use CausesActivity, HasApiTokens, LogsActivity, TwoFactorAuthenticatable {
         createToken as createPassportToken;
     }
-    use HasFactory, HasProfilePhoto, HasTeams, Notifiable, AuthenticatesWithLdap;
 
     /**
      * The attributes that are mass assignable.
@@ -69,7 +70,7 @@ class User extends Authenticatable implements CrudContract, MustVerifyEmail, Own
         'profile_photo_url',
     ];
 
-    public function socials()
+    public function socials(): MorphMany
     {
         return $this->morphMany(Social::class, 'ownable');
     }

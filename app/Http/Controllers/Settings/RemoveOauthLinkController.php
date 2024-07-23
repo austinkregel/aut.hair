@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Social;
+use Illuminate\Http\Response;
 
 class RemoveOauthLinkController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): Response
     {
         request()->validate([
             'social_id' => 'exists:socials,id',

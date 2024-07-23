@@ -11,7 +11,7 @@ class EventServiceProviderWithCustomEvent extends ServiceProvider
 {
     protected $listen = [
         CustomNewEvent::class => [
-            LogAuthenticatedUserListener::class
+            LogAuthenticatedUserListener::class,
         ],
         SocialiteWasCalled::class => [
             //
@@ -20,20 +20,16 @@ class EventServiceProviderWithCustomEvent extends ServiceProvider
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
 
     /**
      * Determine if events and listeners should be automatically discovered.
-     *
-     * @return bool
      */
-    public function shouldDiscoverEvents()
+    public function shouldDiscoverEvents(): bool
     {
         return false;
     }

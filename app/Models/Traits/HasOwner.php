@@ -3,31 +3,29 @@
 namespace App\Models\Traits;
 
 use App\Models\Contracts\Owner;
+use Cog\Contracts\Ownership\CanBeOwner;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 trait HasOwner
 {
-    public function ownable()
+    public function ownable(): MorphTo
     {
         return $this->morphTo('ownable');
     }
 
     /**
      * Get the model owner. Alias for `ownedBy()` method.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
-    public function owner()
+    public function owner(): MorphTo
     {
         return $this->ownable();
     }
 
     /**
      * Get the model owner.
-     *
-     * @return \Cog\Contracts\Ownership\CanBeOwner
      */
-    public function getOwner()
+    public function getOwner(): CanBeOwner
     {
         return $this->ownedBy;
     }

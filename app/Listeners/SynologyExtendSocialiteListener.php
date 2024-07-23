@@ -21,9 +21,8 @@ class SynologyExtendSocialiteListener
      * Handle the event.
      *
      * @param  \App\Events\SocialiteWasCalled  $event
-     * @return void
      */
-    public function handle(SocialiteWasCalled $socialiteWasCalled)
+    public function handle(SocialiteWasCalled $socialiteWasCalled): void
     {
         $socialiteWasCalled->extendSocialite('synology', SynologySocialiteProvider::class);
     }
