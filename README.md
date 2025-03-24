@@ -39,3 +39,13 @@ npm run build
 ```
 
 The bin/sail command will detect if `vendor` is missing, and will install composer dependencies. It will then forward the `up -d` to docker compose to start the stack.
+
+## Installation (via Docker container)
+
+If you don't want to use sail, you can also start the docker container with the following command:
+
+```bash
+docker run -d --name aut-hair -p 80:8000 -v /-/aut.hair/.env:/var/www/html/.env ghcr.io/austinkregel/aut.hair:latest php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Note: You'll want to create an .env file with the necessary environment variables.
