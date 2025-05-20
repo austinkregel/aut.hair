@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserinfoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,9 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware(['auth:api', 'verified'])->get('userinfo', function (Request $request) {
-    return \App\Http\Resources\UserResource::make($request->user());
-})->name('oidc.userinfo');
+Route::middleware(['auth:api', 'verified'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
 
 Route::get('jwks', function () {
     return [

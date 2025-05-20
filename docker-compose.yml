@@ -38,7 +38,7 @@ services:
   laravel.test:
     image: austinkregel/authair:latest
     build:
-      context: ./docker/production
+      context: ./
       dockerfile: Dockerfile
       args:
         WWWGROUP: 1000

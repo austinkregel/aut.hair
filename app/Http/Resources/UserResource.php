@@ -16,21 +16,21 @@ class UserResource extends JsonResource
     {
         $user = [];
 
+        // OIDC 'sub' claim: unique identifier for the user (as a string)
         if ($request->user()->tokenCan('openid')) {
-            $user['id'] = auth()->id();
-            $user['updated_at'] = auth()->user()->updated_at;
-            $user['created_at'] = auth()->user()->created_at;
+            $user['sub'] = (string) auth()->id();
         }
+        // OIDC 'name', 'picture', etc.
         if ($request->user()->tokenCan('profile')) {
-            $user['photo_url'] = auth()->user()->profile_photo_url;
             $user['name'] = auth()->user()->name;
+            $user['picture'] = auth()->user()->profile_photo_url;
         }
-
+        // OIDC 'email' and 'email_verified'
         if ($request->user()->tokenCan('email')) {
             $user['email'] = auth()->user()->email;
-            $user['email_verified_at'] = auth()->user()->eamil_verified_at;
+            $user['email_verified'] = (bool) auth()->user()->email_verified_at;
         }
-
+        // Optionally add more standard OIDC claims as needed
         return $user;
     }
 }

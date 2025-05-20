@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
+use App\Repositories\KeyRepositoryContract;
+use App\Repositories\KeyRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //        Passport::$tokenModel
+        $this->app->bind(KeyRepositoryContract::class, KeyRepository::class);
     }
 
     /**
