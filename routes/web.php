@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/.well-known/openid-configuration', Controllers\WellKnownController::class);
 Route::get('/oauth/jwks', Controllers\JsonWebKeysController::class)->name('oauth.jwks');
+// OIDC End Session Endpoint
+Route::match(['GET', 'POST'], '/oauth/logout', Controllers\OidcLogoutController::class)->name('oauth.logout');
 Route::get('/api/available-login-providers', Controllers\AvailableLoginProvidersController::class);
 
 Route::middleware('web')->group(function () {

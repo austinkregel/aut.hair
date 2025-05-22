@@ -21,8 +21,3 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::middleware(['auth:api', 'verified'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
 
-Route::get('jwks', function () {
-    return [
-        '',
-    ];
-})->name('oidc.jwks');
