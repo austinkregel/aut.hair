@@ -15,6 +15,7 @@ class TwoFactorAuthenticationSettingsTest extends TestCase
     {
         if (! Features::canManageTwoFactorAuthentication()) {
             $this->markTestSkipped('Two factor authentication is not enabled.');
+
             return;
         }
 
@@ -32,6 +33,7 @@ class TwoFactorAuthenticationSettingsTest extends TestCase
     {
         if (! Features::canManageTwoFactorAuthentication()) {
             $this->markTestSkipped('Two factor authentication is not enabled.');
+
             return;
         }
 
@@ -54,6 +56,7 @@ class TwoFactorAuthenticationSettingsTest extends TestCase
     {
         if (! Features::canManageTwoFactorAuthentication()) {
             $this->markTestSkipped('Two factor authentication is not enabled.');
+
             return;
         }
 

@@ -2,6 +2,4 @@
 
 namespace Tests\App;
 
-class CustomNewEvent
-{
-}
+class CustomNewEvent {}

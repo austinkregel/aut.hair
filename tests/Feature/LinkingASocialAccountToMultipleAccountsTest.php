@@ -13,7 +13,7 @@ class LinkingASocialAccountToMultipleAccountsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testHandleVerifiedUsersCanOauthNonVerifiedUsersCannotOauth(): void
+    public function test_handle_verified_users_can_oauth_non_verified_users_cannot_oauth(): void
     {
         /** @var User $user */
         $user = User::factory()->create();

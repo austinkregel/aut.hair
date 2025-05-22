@@ -197,7 +197,7 @@ class LaravelProgrammingStyle extends Code
                         $newNamespaceObject->add($function);
                     }
 
-                    $file = new PhpFile();
+                    $file = new PhpFile;
                     $file->setStrictTypes($phpFile->hasStrictTypes());
                     $file->addNamespace($newNamespaceObject);
 

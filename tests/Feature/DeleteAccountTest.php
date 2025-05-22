@@ -15,6 +15,7 @@ class DeleteAccountTest extends TestCase
     {
         if (! Features::hasAccountDeletionFeatures()) {
             $this->markTestSkipped('Account deletion is not enabled.');
+
             return;
         }
 
@@ -31,6 +32,7 @@ class DeleteAccountTest extends TestCase
     {
         if (! Features::hasAccountDeletionFeatures()) {
             $this->markTestSkipped('Account deletion is not enabled.');
+
             return;
         }
 

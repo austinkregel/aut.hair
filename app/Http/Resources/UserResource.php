@@ -14,23 +14,29 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $now = time();
         $user = [];
 
-        if ($request->user()->tokenCan('openid')) {
-            $user['id'] = auth()->id();
-            $user['updated_at'] = auth()->user()->updated_at;
-            $user['created_at'] = auth()->user()->created_at;
-        }
+        // OIDC required claims
+        $user['iss'] = config('app.url'); // Issuer Identifier
+        $user['sub'] = (string) $this->id; // Subject Identifier
+        $user['aud'] = $request->input('client_id') ?? 'unknown'; // Audience (client_id)
+        $user['exp'] = $now + 3600; // Expiration time (1 hour from now)
+        $user['iat'] = $now; // Issued at
+        $user['auth_time'] = $now; // Authentication time (for password grant, same as iat)
+
+        // OIDC 'name', 'picture', etc.
         if ($request->user()->tokenCan('profile')) {
-            $user['photo_url'] = auth()->user()->profile_photo_url;
-            $user['name'] = auth()->user()->name;
+            $user['name'] = $this->name;
+            $user['picture'] = $this->profile_photo_url;
         }
-
+        // OIDC 'email' and 'email_verified'
         if ($request->user()->tokenCan('email')) {
-            $user['email'] = auth()->user()->email;
-            $user['email_verified_at'] = auth()->user()->eamil_verified_at;
+            $user['email'] = $this->email;
+            $user['email_verified'] = (bool) $this->email_verified_at;
         }
 
+        // Optionally add more standard OIDC claims as needed
         return $user;
     }
 }

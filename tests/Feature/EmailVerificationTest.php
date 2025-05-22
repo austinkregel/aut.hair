@@ -19,6 +19,7 @@ class EmailVerificationTest extends TestCase
     {
         if (! Features::enabled(Features::emailVerification())) {
             $this->markTestSkipped('Email verification not enabled.');
+
             return;
         }
 
@@ -33,6 +34,7 @@ class EmailVerificationTest extends TestCase
     {
         if (! Features::enabled(Features::emailVerification())) {
             $this->markTestSkipped('Email verification not enabled.');
+
             return;
         }
 
@@ -58,6 +60,7 @@ class EmailVerificationTest extends TestCase
     {
         if (! Features::enabled(Features::emailVerification())) {
             $this->markTestSkipped('Email verification not enabled.');
+
             return;
         }
 

@@ -1,4 +1,4 @@
-FROM ghcr.io/austinkregel/base:8.2
+FROM austinkregel/base:8.2
 
 WORKDIR /var/www/html
 COPY . /var/www/html
