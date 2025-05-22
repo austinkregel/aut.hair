@@ -13,7 +13,7 @@ Route::get('/authorize', [
     'middleware' => 'web',
 ]);
 
-$guard = 'api';
+$guard = null;
 
 Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth'])->group(function () {
     Route::post('/token/refresh', [
