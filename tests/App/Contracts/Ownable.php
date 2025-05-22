@@ -2,6 +2,4 @@
 
 namespace Tests\App\Contracts;
 
-interface Ownable
-{
-}
+interface Ownable {}

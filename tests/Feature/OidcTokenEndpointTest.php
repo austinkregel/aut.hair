@@ -63,7 +63,7 @@ class OidcTokenEndpointTest extends TestCase
             'client_id' => $client->id,
             'client_secret' => $client->secret,
             'username' => $user->email,
-            'password' => 'secret', 
+            'password' => 'secret',
             'scope' => 'openid profile email',
         ]);
 
@@ -75,8 +75,6 @@ class OidcTokenEndpointTest extends TestCase
         $parts = explode('.', $idToken);
         $this->assertCount(3, $parts, 'id_token must be a JWT with 3 parts');
         [$headerB64, $payloadB64, $signatureB64] = $parts;
-
-
 
         $header = json_decode(base64_decode(strtr($headerB64, '-_', '+/')), true);
         $payload = json_decode(base64_decode(strtr($payloadB64, '-_', '+/')), true);
@@ -96,7 +94,7 @@ class OidcTokenEndpointTest extends TestCase
 
         // Never ever trim the contents of the hmac secret. Never. Don't do it. It's a bad idea.
         $hmacSecret = file_get_contents(base_path('tests/Feature/test-private.key'));
-        $signedData = $headerB64 . '.' . $payloadB64;
+        $signedData = $headerB64.'.'.$payloadB64;
         $expectedSignature = hash_hmac('sha256', $signedData, $hmacSecret, true);
         $expectedSignatureB64 = rtrim(strtr(base64_encode($expectedSignature), '+/', '-_'), '=');
 

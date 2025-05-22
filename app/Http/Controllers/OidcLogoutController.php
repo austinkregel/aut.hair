@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class OidcLogoutController extends Controller
 {
@@ -14,7 +13,6 @@ class OidcLogoutController extends Controller
      * Handle OIDC end session (logout) requests.
      * Supports GET and POST as per OIDC spec.
      *
-     * @param  Request  $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
      */
     public function __invoke(Request $request)
@@ -38,8 +36,9 @@ class OidcLogoutController extends Controller
             $redirectUrl = $postLogoutRedirectUri;
             // OIDC spec: If state is provided, append it
             if ($state) {
-                $redirectUrl .= (parse_url($redirectUrl, PHP_URL_QUERY) ? '&' : '?') . 'state=' . urlencode($state);
+                $redirectUrl .= (parse_url($redirectUrl, PHP_URL_QUERY) ? '&' : '?').'state='.urlencode($state);
             }
+
             // Always return a redirect response (302) for both GET and POST
             return new \Illuminate\Http\RedirectResponse($redirectUrl, 302, ['Location' => $redirectUrl]);
         }
@@ -57,25 +56,25 @@ class OidcLogoutController extends Controller
     {
         // In production, decode the id_token_hint to get the client_id (aud claim)
         // and check the registered post_logout_redirect_uris for that client.
-        if (!$idTokenHint) {
+        if (! $idTokenHint) {
             return false;
         }
 
         $clientId = $this->extractClientIdFromIdToken($idTokenHint);
-        if (!$clientId) {
+        if (! $clientId) {
             return false;
         }
 
         // Lookup the client in the database (Passport clients table)
         $client = \Laravel\Passport\Client::where('id', $clientId)->first();
 
-        if (!$client) {
+        if (! $client) {
             return false;
         }
 
         // Assume you have a column or config for allowed post_logout_redirect_uris (comma-separated)
         $allowedUris = [];
-        if (!empty($client->post_logout_redirect_uris)) {
+        if (! empty($client->post_logout_redirect_uris)) {
             $allowedUris = array_map('trim', explode(',', $client->post_logout_redirect_uris));
         } elseif (isset($client->redirect)) {
             // Fallback: allow the main redirect URI
@@ -92,11 +91,11 @@ class OidcLogoutController extends Controller
     protected function revokeIdToken($jwt)
     {
         $payload = $this->decodeJwtPayload($jwt);
-        if (!$payload) {
+        if (! $payload) {
             return;
         }
         $jti = $payload['jti'] ?? null;
-        if (!$jti) {
+        if (! $jti) {
             // Optionally, use a hash of the JWT if no jti is present
             $jti = hash('sha256', $jwt);
         }
@@ -114,6 +113,7 @@ class OidcLogoutController extends Controller
             return null;
         }
         $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+
         return is_array($payload) ? $payload : null;
     }
 
@@ -123,13 +123,14 @@ class OidcLogoutController extends Controller
     protected function extractClientIdFromIdToken($jwt)
     {
         $payload = $this->decodeJwtPayload($jwt);
-        if (!$payload) {
+        if (! $payload) {
             return null;
         }
         // aud can be a string or array
         if (isset($payload['aud'])) {
             return is_array($payload['aud']) ? $payload['aud'][0] : $payload['aud'];
         }
+
         return null;
     }
 }

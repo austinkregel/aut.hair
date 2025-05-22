@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
+use App\Repositories\KeyRepository;
+use App\Repositories\KeyRepositoryContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
-use App\Repositories\KeyRepositoryContract;
-use App\Repositories\KeyRepository;
 
 class AppServiceProvider extends ServiceProvider
 {

@@ -2,6 +2,4 @@
 
 namespace Tests\App\Traits;
 
-trait CausesActivity
-{
-}
+trait CausesActivity {}

@@ -17,6 +17,7 @@ class InviteTeamMemberTest extends TestCase
     {
         if (! Features::sendsTeamInvitations()) {
             $this->markTestSkipped('Team invitations not enabled.');
+
             return;
         }
 
@@ -38,6 +39,7 @@ class InviteTeamMemberTest extends TestCase
     {
         if (! Features::sendsTeamInvitations()) {
             $this->markTestSkipped('Team invitations not enabled.');
+
             return;
         }
 

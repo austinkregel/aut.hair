@@ -11,6 +11,7 @@ class KeyRepository implements KeyRepositoryContract
         } else {
             $path = base_path('storage/oauth-public.key');
         }
+
         return file_get_contents($path);
     }
 
@@ -21,6 +22,7 @@ class KeyRepository implements KeyRepositoryContract
         } else {
             $path = base_path('storage/oauth-private.key');
         }
+
         return file_get_contents($path);
     }
 }

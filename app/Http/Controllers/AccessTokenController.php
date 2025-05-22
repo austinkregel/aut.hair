@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Repositories\KeyRepositoryContract;
+use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Http\Controllers\AccessTokenController as PassportAccessTokenController;
 use Laravel\Passport\TokenRepository;
-use App\Repositories\KeyRepositoryContract;
 use League\OAuth2\Server\AuthorizationServer;
-use Psr\Http\Message\ServerRequestInterface;
 use Nyholm\Psr7\Response as Psr7Response;
-use Illuminate\Http\JsonResponse;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Psr\Http\Message\ServerRequestInterface;
 
 class AccessTokenController extends PassportAccessTokenController
 {
@@ -25,7 +23,6 @@ class AccessTokenController extends PassportAccessTokenController
         $this->keyRepository = $keyRepository;
     }
 
-    
     public function issueToken(ServerRequestInterface $request)
     {
         return $this->withErrorHandling(function () use ($request) {

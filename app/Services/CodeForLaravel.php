@@ -2,6 +2,4 @@
 
 namespace App\Services;
 
-class CodeForLaravel extends Code
-{
-}
+class CodeForLaravel extends Code {}

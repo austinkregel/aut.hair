@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Client;
 use Tests\TestCase;
-use App\Models\User;
 
 class OidcLogoutControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         // Create the blacklist table if it doesn't exist (for test DB)
-        if (!DB::getSchemaBuilder()->hasTable('oidc_token_blacklist')) {
+        if (! DB::getSchemaBuilder()->hasTable('oidc_token_blacklist')) {
             DB::getSchemaBuilder()->create('oidc_token_blacklist', function ($table) {
                 $table->string('jti')->unique();
                 $table->timestamp('revoked_at')->nullable();
@@ -114,6 +114,7 @@ class OidcLogoutControllerTest extends TestCase
     {
         $header = base64_encode(json_encode(['alg' => 'none', 'typ' => 'JWT']));
         $body = base64_encode(json_encode($payload));
-        return rtrim(strtr($header, '+/', '-_'), '=') . '.' . rtrim(strtr($body, '+/', '-_'), '=') . '.';
+
+        return rtrim(strtr($header, '+/', '-_'), '=').'.'.rtrim(strtr($body, '+/', '-_'), '=').'.';
     }
 }

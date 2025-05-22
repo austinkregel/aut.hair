@@ -8,7 +8,6 @@ use phpseclib3\Crypt\Common\AsymmetricKey;
 use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Crypt\RSA;
-use phpseclib3\Math\BigInteger;
 
 class JsonWebKeysController extends Controller
 {
@@ -50,6 +49,7 @@ class JsonWebKeysController extends Controller
                 ],
             ],
         ];
+
         return response()->json($jwks);
     }
 
@@ -60,7 +60,7 @@ class JsonWebKeysController extends Controller
     private function extractModulusExponentFromPublicKey(AsymmetricKey $publicKey): array
     {
         // Ensure we have a PublicKey instance
-        if (!$publicKey instanceof \phpseclib3\Crypt\Common\PublicKey) {
+        if (! $publicKey instanceof \phpseclib3\Crypt\Common\PublicKey) {
             throw new \RuntimeException('Key is not a PublicKey instance');
         }
         // Use reflection to access private/protected properties
@@ -73,6 +73,7 @@ class JsonWebKeysController extends Controller
         $exponent = $exponentProp->getValue($publicKey);
         $modulusBase64Url = rtrim(strtr(base64_encode($modulus->toBytes()), '+/', '-_'), '=');
         $exponentBase64Url = rtrim(strtr(base64_encode($exponent->toBytes()), '+/', '-_'), '=');
+
         return [$modulusBase64Url, $exponentBase64Url];
     }
 }

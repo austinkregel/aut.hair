@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 class CodeTest extends TestCase
 {
-    public function testWeCanReturnTheFileContents(): void
+    public function test_we_can_return_the_file_contents(): void
     {
         $userModel = LaravelProgrammingStyle::for(User::class)
             ->toFile();
@@ -26,7 +26,7 @@ class CodeTest extends TestCase
         $this->assertSame(file_get_contents(base_path('tests/App/User.php')), $userModel);
     }
 
-    public function testWeCanUseTraitsAndImplementAContract(): void
+    public function test_we_can_use_traits_and_implement_a_contract(): void
     {
         $newUserModel = LaravelProgrammingStyle::for(User::class)
             ->use(HasApiTokensExample::class)
@@ -79,7 +79,7 @@ class User extends Authenticatable implements Ownable
 ", $newUserModel);
     }
 
-    public function testWeCanAddListenersToTheEventServiceProvider(): void
+    public function test_we_can_add_listeners_to_the_event_service_provider(): void
     {
         $updatedEventServiceProvider = LaravelProgrammingStyle::for(EventServiceProvider::class)
             ->addListenerToEvent(CustomNewEvent::class, LogAuthenticatedUserListener::class)
@@ -124,7 +124,7 @@ class EventServiceProvider extends ServiceProvider
 ", $updatedEventServiceProvider);
     }
 
-    public function testWeCanRemoveListenersFromEvents(): void
+    public function test_we_can_remove_listeners_from_events(): void
     {
         $updatedEventServiceProvider = LaravelProgrammingStyle::for(EventServiceProviderWithCustomEvent::class)
             ->removeListenerFromEvent(CustomNewEvent::class, LogAuthenticatedUserListener::class)

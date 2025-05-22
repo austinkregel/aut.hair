@@ -35,6 +35,7 @@ class UserResource extends JsonResource
             $user['email'] = $this->email;
             $user['email_verified'] = (bool) $this->email_verified_at;
         }
+
         // Optionally add more standard OIDC claims as needed
         return $user;
     }

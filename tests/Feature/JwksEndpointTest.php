@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class JwksEndpointTest extends TestCase
@@ -27,8 +26,8 @@ class JwksEndpointTest extends TestCase
                 'keys' => [
                     [
                         'kty', 'alg', 'use', 'n', 'e', 'kid',
-                    ]
-                ]
+                    ],
+                ],
             ]);
         $jwk = $response->json('keys')[0];
         $this->assertEquals('RSA', $jwk['kty']);

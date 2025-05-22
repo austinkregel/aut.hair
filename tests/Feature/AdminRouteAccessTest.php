@@ -10,7 +10,7 @@ class AdminRouteAccessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testOnlyHostMiddlewarePreventsAccessUnlessTheEmailMatchesTheConfigValue(): void
+    public function test_only_host_middleware_prevents_access_unless_the_email_matches_the_config_value(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
@@ -22,7 +22,7 @@ class AdminRouteAccessTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function testApiRoutesAreBlockedIfWeAreNotAdmin(): void
+    public function test_api_routes_are_blocked_if_we_are_not_admin(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
         $user = User::factory()->create([
@@ -51,7 +51,7 @@ class AdminRouteAccessTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function testOnlyHostMiddlewareAllowsAccessUnlessTheEmailMatchesTheConfigValue(): void
+    public function test_only_host_middleware_allows_access_unless_the_email_matches_the_config_value(): void
     {
         config(['auth.admin_emails' => ['real-email@fake.tools']]);
 

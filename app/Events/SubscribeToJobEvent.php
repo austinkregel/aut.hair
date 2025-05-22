@@ -16,8 +16,7 @@ class SubscribeToJobEvent implements ShouldBroadcast
     public function __construct(
         public int $userId,
         public string $jobId
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {
