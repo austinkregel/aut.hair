@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\UserinfoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserinfoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,4 +20,3 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['auth:api', 'verified'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
-
