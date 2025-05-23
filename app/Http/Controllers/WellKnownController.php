@@ -14,7 +14,7 @@ class WellKnownController extends Controller
             'token_endpoint' => route('passport.token', []),
             'userinfo_endpoint' => route('oidc.userinfo', []),
             'jwks_uri' => route('oidc.jwks', []),
-            'revocation_endpoint' => route('passport.authorizations.deny'),
+            'revocation_endpoint' => route('oauth.revoke'),
             'end_session_endpoint' => route('oauth.logout', []),
             // 'service_documentation' => route('docs'),
             'response_types_supported' => ['code', 'token', 'id_token', 'code token', 'id_token token'],

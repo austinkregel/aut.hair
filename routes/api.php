@@ -19,4 +19,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware(['auth:api', 'verified'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
+Route::middleware(['auth:api'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');

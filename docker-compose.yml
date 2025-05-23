@@ -1,6 +1,7 @@
 services:
   horizon:
     image: austinkregel/horizon:latest
+    working_dir: /var/www/html
     build:
       context: ./docker/horizon
       dockerfile: Dockerfile
@@ -18,6 +19,7 @@ services:
       - redis
   websocket:
     image: austinkregel/websocket:latest
+    working_dir: /var/www/html
     build:
       context: ./docker/websocket
       dockerfile: Dockerfile
@@ -37,6 +39,7 @@ services:
       - 6001:6001
   laravel.test:
     image: austinkregel/authair:latest
+    working_dir: /var/www/html
     build:
       context: ./
       dockerfile: Dockerfile

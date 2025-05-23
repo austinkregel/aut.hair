@@ -18,7 +18,7 @@ class JwksEndpointTest extends TestCase
     public function test_jwks_endpoint_returns_expected_jwk()
     {
         // Act: Call the endpoint
-        $response = $this->getJson(route('oauth.jwks'));
+        $response = $this->getJson(route('oidc.jwks'));
 
         // Assert: Structure and values
         $response->assertStatus(200)

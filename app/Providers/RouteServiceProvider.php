@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\OidcTokenBlacklistMiddleware;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -29,8 +30,7 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
+            Route::prefix('api')
                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')

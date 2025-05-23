@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class UserinfoEndpointTest extends TestCase
+class WellknownOpenIDCEndpointTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -25,23 +25,28 @@ class UserinfoEndpointTest extends TestCase
      *
      * @return void
      */
-    public function test_userinfo_endpoint_returns_oidc_claims()
+    public function test_we_can_fetch_openid_configuration()
     {
         $user = User::factory()->create([
             'email_verified_at' => now(),
         ]);
         Passport::actingAs($user, ['openid', 'profile', 'email']);
 
-        $response = $this->getJson('/api/userinfo');
+        $response = $this->getJson(route('well-known'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'sub', 'name', 'picture', 'email', 'email_verified',
+                'issuer',
+                'authorization_endpoint',
+                'token_endpoint',
+                'jwks_uri',
+                'userinfo_endpoint',
+                'response_types_supported',
+                'scopes_supported',
+                'claims_supported',
+                'token_endpoint_auth_methods_supported',
+                'ui_locales_supported'
             ]);
-        $this->assertSame((string) $user->id, $response->json('sub'));
-        $this->assertSame($user->name, $response->json('name'));
-        $this->assertSame($user->profile_photo_url, $response->json('picture'));
-        $this->assertSame($user->email, $response->json('email'));
-        $this->assertTrue($response->json('email_verified'));
+
     }
 }
