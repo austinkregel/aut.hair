@@ -29,7 +29,6 @@ class AccessTokenController extends PassportAccessTokenController
             $psrResponse = $this->server->respondToAccessTokenRequest($request, new Psr7Response);
             $laravelResponse = $this->convertResponse($psrResponse);
             $data = json_decode($laravelResponse->getContent(), true);
-
             return new JsonResponse($data, $laravelResponse->getStatusCode(), $laravelResponse->headers->all());
         });
     }

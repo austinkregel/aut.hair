@@ -36,7 +36,16 @@ class WellknownOpenIDCEndpointTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'sub', 'name', 'picture', 'email', 'email_verified',
+                'issuer',
+                'authorization_endpoint',
+                'token_endpoint',
+                'jwks_uri',
+                'userinfo_endpoint',
+                'response_types_supported',
+                'scopes_supported',
+                'claims_supported',
+                'token_endpoint_auth_methods_supported',
+                'ui_locales_supported'
             ]);
 
     }

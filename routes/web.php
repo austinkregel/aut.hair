@@ -16,17 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/.well-known/openid-configuration', Controllers\WellKnownController::class)->name('well-known');
-Route::get('/oauth/jwks', Controllers\JsonWebKeysController::class)->name('oidc.jwks');
-// OIDC End Session Endpoint
-Route::match(['GET', 'POST'], '/oauth/logout', Controllers\OidcLogoutController::class)->name('oauth.logout');
-Route::get('/api/available-login-providers', Controllers\AvailableLoginProvidersController::class);
-
 Route::middleware('web')->group(function () {
     Route::prefix('/callback/{provider}')->group(function () {
         Route::get('/team', Controllers\Auth\Team\CallbackController::class);
         Route::get('/', Controllers\Auth\CallbackController::class);
     });
+    Route::get('/.well-known/openid-configuration', Controllers\WellKnownController::class)->name('well-known');
+    Route::get('/oauth/jwks', Controllers\JsonWebKeysController::class)->name('oidc.jwks');
+// OIDC End Session Endpoint
+    Route::match(['GET', 'POST'], '/oauth/logout', Controllers\OidcLogoutController::class)->name('oauth.logout');
+    Route::post('/oauth/revoke', App\Http\Controllers\OidcTokenRevocationController::class)->name('oauth.revoke');
+    Route::get('/api/available-login-providers', Controllers\AvailableLoginProvidersController::class);
 });
 
 Route::middleware([config('jetstream.auth_session'), 'verified'])->group(function () {

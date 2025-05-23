@@ -17,13 +17,7 @@ class OidcLogoutControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create the blacklist table if it doesn't exist (for test DB)
-        if (! DB::getSchemaBuilder()->hasTable('oidc_token_blacklist')) {
-            DB::getSchemaBuilder()->create('oidc_token_blacklist', function ($table) {
-                $table->string('jti')->unique();
-                $table->timestamp('revoked_at')->nullable();
-            });
-        }
+        // No need to create the blacklist table, since we now use cache for blacklisting
     }
 
     public function test_logout_logs_out_user_and_blacklists_token()
@@ -50,10 +44,8 @@ class OidcLogoutControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('You have been logged out');
 
-        // Assert token is blacklisted
-        $this->assertDatabaseHas('oidc_token_blacklist', [
-            'jti' => 'test-jti-123',
-        ]);
+        // Assert token is blacklisted in cache
+        $this->assertTrue(\Cache::has('oidc_token_blacklist:test-jti-123'));
     }
 
     public function test_logout_redirects_to_post_logout_redirect_uri_if_valid()
@@ -105,9 +97,7 @@ class OidcLogoutControllerTest extends TestCase
         ]);
         $response->assertStatus(200);
         $response->assertSee('You have been logged out');
-        $this->assertDatabaseHas('oidc_token_blacklist', [
-            'jti' => 'test-jti-789',
-        ]);
+        $this->assertTrue(\Cache::has('oidc_token_blacklist:test-jti-789'));
     }
 
     private function encodeFakeJwt(array $payload): string

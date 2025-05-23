@@ -86,7 +86,6 @@ class OidcLogoutController extends Controller
 
     /**
      * Revoke or blacklist the ID token (JWT) by storing its jti or hash in a blacklist table.
-     * This requires a database table (e.g., oidc_token_blacklist) with a unique jti/hash column.
      */
     protected function revokeIdToken($jwt)
     {
@@ -99,8 +98,7 @@ class OidcLogoutController extends Controller
             // Optionally, use a hash of the JWT if no jti is present
             $jti = hash('sha256', $jwt);
         }
-        // Store in blacklist (create table if not exists: oidc_token_blacklist with jti column)
-        \DB::table('oidc_token_blacklist')->updateOrInsert(['jti' => $jti], ['revoked_at' => now()]);
+        cache()->put('oidc_token_blacklist:'.$jti, now());
     }
 
     /**
