@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Middleware\OidcTokenBlacklistMiddleware;
+use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -38,11 +39,10 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::group([
                 'as' => 'passport.',
-                'prefix' => 'oauth',
                 'namespace' => 'Laravel\Passport\Http\Controllers',
-
             ], function () {
-                Route::middleware('web')->group(base_path('routes/passport.php'));
+                Route::prefix('oauth')
+                    ->group(base_path('routes/passport.php'));
             });
         });
     }
