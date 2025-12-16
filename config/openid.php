@@ -46,5 +46,11 @@ return [
      * The signer to be used
      * Can be Ecdsa, Hmac or RSA
      */
-    'signer' => \Lcobucci\JWT\Signer\Hmac\Sha256::class,
+    'signer' => \Lcobucci\JWT\Signer\Rsa\Sha256::class,
+
+    /*
+     * Optional static key id (kid) for JWKS and ID tokens.
+     * If null, the application derives a SHA-256 fingerprint of the public key.
+     */
+    'kid' => env('OIDC_KEY_ID'),
 ];

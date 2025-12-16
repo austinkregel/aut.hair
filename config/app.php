@@ -160,7 +160,7 @@ return [
          * Package Service Providers...
          */
         SocialiteProviders\Manager\ServiceProvider::class,
-        OpenIDConnect\Laravel\PassportServiceProvider::class,
+        App\Providers\OidcPassportServiceProvider::class,
 
         /*
          * Application Service Providers...
