@@ -8,6 +8,9 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Client;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Tests\TestCase;
 
 class OidcLogoutControllerTest extends TestCase
@@ -17,7 +20,10 @@ class OidcLogoutControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // No need to create the blacklist table, since we now use cache for blacklisting
+        config([
+            'passport.public_key' => base_path('tests/Feature/test-public.key'),
+            'passport.private_key' => base_path('tests/Feature/test-private.key'),
+        ]);
     }
 
     public function test_logout_logs_out_user_and_blacklists_token()
@@ -29,14 +35,13 @@ class OidcLogoutControllerTest extends TestCase
         ]);
         $this->be($user);
 
-        // Create a fake id_token_hint (JWT) with jti and aud (client id)
-        $payload = [
+        $jwt = $this->encodeSignedJwt([
             'sub' => $user->id,
             'aud' => $client->id,
             'jti' => 'test-jti-123',
             'exp' => time() + 3600,
-        ];
-        $jwt = $this->encodeFakeJwt($payload);
+            'iss' => config('app.url'),
+        ]);
 
         $response = $this->post('/oauth/logout', [
             'id_token_hint' => $jwt,
@@ -57,13 +62,13 @@ class OidcLogoutControllerTest extends TestCase
         ]);
         $this->be($user);
 
-        $payload = [
+        $jwt = $this->encodeSignedJwt([
             'sub' => $user->id,
             'aud' => $client->id,
             'jti' => 'test-jti-456',
             'exp' => time() + 3600,
-        ];
-        $jwt = $this->encodeFakeJwt($payload);
+            'iss' => config('app.url'),
+        ]);
 
         $response = $this->post('/oauth/logout', [
             'id_token_hint' => $jwt,
@@ -83,13 +88,13 @@ class OidcLogoutControllerTest extends TestCase
         ]);
         $this->be($user);
 
-        $payload = [
+        $jwt = $this->encodeSignedJwt([
             'sub' => $user->id,
             'aud' => $client->id,
             'jti' => 'test-jti-789',
             'exp' => time() + 3600,
-        ];
-        $jwt = $this->encodeFakeJwt($payload);
+            'iss' => config('app.url'),
+        ]);
 
         $response = $this->post('/oauth/logout', [
             'id_token_hint' => $jwt,
@@ -100,11 +105,30 @@ class OidcLogoutControllerTest extends TestCase
         $this->assertTrue(\Cache::has('oidc_token_blacklist:test-jti-789'));
     }
 
-    private function encodeFakeJwt(array $payload): string
+    private function encodeSignedJwt(array $payload): string
     {
-        $header = base64_encode(json_encode(['alg' => 'none', 'typ' => 'JWT']));
-        $body = base64_encode(json_encode($payload));
+        $config = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::file(config('passport.private_key')),
+            InMemory::file(config('passport.public_key'))
+        );
 
-        return rtrim(strtr($header, '+/', '-_'), '=').'.'.rtrim(strtr($body, '+/', '-_'), '=').'.';
+        $builder = $config->builder()
+            ->issuedBy($payload['iss'] ?? config('app.url'))
+            ->permittedFor((string) $payload['aud'])
+            ->identifiedBy($payload['jti'])
+            ->relatedTo((string) $payload['sub'])
+            ->issuedAt(new \DateTimeImmutable())
+            ->expiresAt((new \DateTimeImmutable())->setTimestamp($payload['exp']));
+
+        // Add any non-registered claims
+        foreach ($payload as $key => $value) {
+            if (in_array($key, ['iss', 'aud', 'jti', 'sub', 'exp'], true)) {
+                continue;
+            }
+            $builder = $builder->withClaim($key, $value);
+        }
+
+        return $builder->getToken($config->signer(), $config->signingKey())->toString();
     }
 }

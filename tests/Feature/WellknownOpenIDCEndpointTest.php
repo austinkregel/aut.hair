@@ -42,11 +42,18 @@ class WellknownOpenIDCEndpointTest extends TestCase
                 'jwks_uri',
                 'userinfo_endpoint',
                 'response_types_supported',
+                'response_modes_supported',
+                'grant_types_supported',
                 'scopes_supported',
                 'claims_supported',
                 'token_endpoint_auth_methods_supported',
-                'ui_locales_supported'
+                'code_challenge_methods_supported',
+                'id_token_signing_alg_values_supported',
             ]);
 
+        $body = $response->json();
+        $this->assertEquals(['code'], $body['response_types_supported']);
+        $this->assertEquals(['authorization_code', 'refresh_token'], $body['grant_types_supported']);
+        $this->assertEquals(['RS256'], $body['id_token_signing_alg_values_supported']);
     }
 }

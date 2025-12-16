@@ -30,12 +30,9 @@ class JsonWebKeysController extends Controller
         //   - key ID (kid): a unique identifier for this key (used by clients to select the correct key)
         // ---
 
-        $modulusBase64Url = null; // 'n' in JWKS
-        $exponentBase64Url = null; // 'e' in JWKS
-        $keyId = 'laravel-passport'; // 'kid' in JWKS
-
-        // Helper to extract modulus and exponent from PKCS1 DER
         [$modulusBase64Url, $exponentBase64Url] = $this->extractModulusExponentFromPublicKey($publicKey);
+        $keyId = config('openid.kid')
+            ?? 'laravel-passport';
 
         $jwks = [
             'keys' => [

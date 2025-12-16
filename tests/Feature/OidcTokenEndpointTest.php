@@ -5,6 +5,14 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\ClientRepository;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Validator;
 use Tests\TestCase;
 
 class OidcTokenEndpointTest extends TestCase
@@ -14,51 +22,108 @@ class OidcTokenEndpointTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // // Point Passport to the test keys
         config([
             'passport.public_key' => base_path('tests/Feature/test-public.key'),
             'passport.private_key' => base_path('tests/Feature/test-private.key'),
         ]);
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
     }
 
-    public function test_oauth_token_endpoint_issues_access_token_and_id_token()
+    public function test_auth_code_pkce_returns_rs256_id_token()
     {
-        // Create a user and a password grant client
         $user = User::factory()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
-        $client = app(ClientRepository::class)->createPasswordGrantClient(null, 'Test Password Grant', 'http://localhost');
 
-        // Request a token with openid scope
-        $response = $this->postJson('/oauth/token', [
-            'grant_type' => 'password',
+        $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code', 'http://localhost/callback');
+
+        $codeVerifier = str_repeat('a', 64); // PKCE requires 43-128 chars
+        $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
+        $state = 'xyz';
+
+        $this->actingAs($user);
+
+        $authResponse = $this->get('/oauth/authorize?' . http_build_query([
+            'response_type' => 'code',
             'client_id' => $client->id,
-            'client_secret' => $client->secret,
-            'username' => $user->email,
-            'password' => 'secret',
-            'scope' => 'openid',
+            'redirect_uri' => $client->redirect,
+            'scope' => 'openid profile email',
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+        ]));
+
+        $authResponse->assertStatus(200);
+
+        $approve = $this->post('/oauth/authorize', [
+            'state' => $state,
+            'client_id' => $client->id,
+            'response_type' => 'code',
+            'redirect_uri' => $client->redirect,
+            'scope' => 'openid profile email',
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+            'approve' => 'Approve',
         ]);
 
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
+        $approve->assertRedirect();
+        $location = $approve->headers->get('Location');
+        parse_str(parse_url($location, PHP_URL_QUERY), $query);
+
+        $this->assertSame($state, $query['state']);
+        $this->assertNotEmpty($query['code']);
+
+        $tokenResponse = $this->post('/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'client_id' => $client->id,
+            'client_secret' => $client->secret,
+            'redirect_uri' => $client->redirect,
+            'code' => $query['code'],
+            'code_verifier' => $codeVerifier,
+        ]);
+
+        $tokenResponse->assertStatus(200);
+        $tokenResponse->assertJsonStructure([
             'token_type',
             'expires_in',
             'access_token',
-            'id_token', // Uncomment this when id_token is implemented
+            'refresh_token',
+            'id_token',
         ]);
-        $this->assertNotEmpty($response->json('id_token'));
+
+        $idToken = $tokenResponse->json('id_token');
+        $this->assertNotEmpty($idToken);
+
+        $parser = new Parser(new JoseEncoder());
+        $jwt = $parser->parse($idToken);
+        $validator = new Validator();
+        $validator->assert(
+            $jwt,
+            new LooseValidAt(new SystemClock(new \DateTimeZone('UTC'))),
+            new SignedWith(
+                new Sha256(),
+                InMemory::file(base_path('tests/Feature/test-public.key'))
+            )
+        );
+
+        $claims = $jwt->claims()->all();
+        $this->assertArrayHasKey('sub', $claims);
+        $this->assertArrayHasKey('aud', $claims);
+        $this->assertArrayHasKey('exp', $claims);
+        $this->assertEquals('RS256', $jwt->headers()->get('alg'));
     }
 
-    public function test_id_token_is_jwt_and_contains_required_oidc_claims()
+    public function test_password_grant_does_not_issue_id_token()
     {
-        $user = \App\Models\User::factory()->create([
+        $user = User::factory()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
-        $client = app(\Laravel\Passport\ClientRepository::class)->createPasswordGrantClient(null, 'Test Password Grant', 'http://localhost');
 
-        $response = $this->postJson('/oauth/token', [
+        $client = app(ClientRepository::class)->createPasswordGrantClient(null, 'Password Client', 'http://localhost');
+
+        $response = $this->post('/oauth/token', [
             'grant_type' => 'password',
             'client_id' => $client->id,
             'client_secret' => $client->secret,
@@ -68,37 +133,7 @@ class OidcTokenEndpointTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $idToken = $response->json('id_token');
-        $this->assertNotEmpty($idToken);
-
-        // Decode JWT (header.payload.signature)
-        $parts = explode('.', $idToken);
-        $this->assertCount(3, $parts, 'id_token must be a JWT with 3 parts');
-        [$headerB64, $payloadB64, $signatureB64] = $parts;
-
-        $header = json_decode(base64_decode(strtr($headerB64, '-_', '+/')), true);
-        $payload = json_decode(base64_decode(strtr($payloadB64, '-_', '+/')), true);
-        $this->assertIsArray($header);
-        $this->assertIsArray($payload);
-
-        // Check required OIDC claims
-        $this->assertArrayHasKey('iss', $payload);
-        $this->assertArrayHasKey('sub', $payload);
-        $this->assertArrayHasKey('aud', $payload);
-        $this->assertArrayHasKey('exp', $payload);
-        $this->assertArrayHasKey('iat', $payload);
-        // After a long thought, and a long consultation with the RFC turns out HS256 is the only required algorithm
-        // @see https://datatracker.ietf.org/doc/html/rfc7519#section-8
-        $this->assertSame('HS256', $header['alg']);
-        $this->assertSame('JWT', $header['typ']);
-
-        // Never ever trim the contents of the hmac secret. Never. Don't do it. It's a bad idea.
-        $hmacSecret = file_get_contents(base_path('tests/Feature/test-private.key'));
-        $signedData = $headerB64.'.'.$payloadB64;
-        $expectedSignature = hash_hmac('sha256', $signedData, $hmacSecret, true);
-        $expectedSignatureB64 = rtrim(strtr(base64_encode($expectedSignature), '+/', '-_'), '=');
-
-        // Compare the base64url-encoded signature directly
-        $this->assertSame($expectedSignatureB64, $signatureB64, 'id_token signature must be valid');
+        $this->assertNull($response->json('id_token'), 'id_token must not be issued for password grant');
     }
+
 }

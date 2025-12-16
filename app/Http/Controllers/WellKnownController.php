@@ -8,23 +8,28 @@ class WellKnownController extends Controller
 {
     public function __invoke(): JsonResponse
     {
+        $issuer = rtrim(config('app.url'), '/');
+        $scopes = array_keys(config('openid.passport.tokens_can', []));
+
         return response()->json([
-            'issuer' => route('issuer'),
-            'authorization_endpoint' => route('passport.authorizations.authorize', []),
-            'token_endpoint' => route('passport.token', []),
-            'userinfo_endpoint' => route('oidc.userinfo', []),
-            'jwks_uri' => route('oidc.jwks', []),
+            'issuer' => $issuer,
+            'authorization_endpoint' => route('passport.authorizations.authorize'),
+            'token_endpoint' => route('passport.token'),
+            'userinfo_endpoint' => route('oidc.userinfo'),
+            'jwks_uri' => route('oidc.jwks'),
             'revocation_endpoint' => route('oauth.revoke'),
-            'end_session_endpoint' => route('oauth.logout', []),
-            // 'service_documentation' => route('docs'),
-            'response_types_supported' => ['code', 'token', 'id_token', 'code token', 'id_token token'],
-            'scopes_supported' => ['openid', 'profile', 'email', 'name'],
-            'claims_supported' => ['sub', 'iss', 'roles', 'acr', 'picture', 'profile'],
-            'token_endpoint_auth_methods_supported' => ['none', 'client_secret_post', 'private_key_jwt'],
-            'ui_locales_supported' => ['en-US'],
-            // Auth0 does this stuff, but I couldn't find any explicit reference to them in the defining spec.
-            //        'device_authorization_endpoint' => 'https://auth.auth0.com/oauth/device/code',
-            //        'mfa_challenge_endpoint' => 'https://auth.auth0.com/mfa/challenge',
+            'end_session_endpoint' => route('oauth.logout'),
+            'response_types_supported' => ['code'], // Passport does not expose implicit/hybrid
+            'response_modes_supported' => ['query', 'fragment', 'form_post'],
+            'grant_types_supported' => ['authorization_code', 'refresh_token'],
+            'scopes_supported' => $scopes,
+            'id_token_signing_alg_values_supported' => ['RS256'],
+            'subject_types_supported' => ['public'],
+            'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic'],
+            'code_challenge_methods_supported' => ['S256', 'plain'],
+            'claims_supported' => [
+                'sub', 'name', 'email', 'email_verified', 'picture', 'updated_at',
+            ],
         ]);
     }
 }

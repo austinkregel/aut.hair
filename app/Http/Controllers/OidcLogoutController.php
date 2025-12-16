@@ -2,13 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\KeyRepositoryContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Validator;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\UnencryptedToken;
 
 class OidcLogoutController extends Controller
 {
+    private Configuration $jwtConfig;
+
+    public function __construct(KeyRepositoryContract $keyRepository)
+    {
+        $this->jwtConfig = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::plainText($keyRepository->getPrivateKeyPem()),
+            InMemory::plainText($keyRepository->getPublicKeyPem()),
+        );
+    }
+
     /**
      * Handle OIDC end session (logout) requests.
      * Supports GET and POST as per OIDC spec.
@@ -22,17 +42,26 @@ class OidcLogoutController extends Controller
         $postLogoutRedirectUri = $request->input('post_logout_redirect_uri');
         $state = $request->input('state');
 
+        $validatedToken = null;
+        if ($idTokenHint) {
+            $validatedToken = $this->validateIdToken($idTokenHint);
+            if (! $validatedToken) {
+                // Fallback: parse without validation so we can still blacklist and proceed.
+                $validatedToken = $this->jwtConfig->parser()->parse($idTokenHint);
+            }
+        }
+
         // Log out the user (Laravel session)
         Auth::logout();
         Session::flush();
 
         // If id_token_hint is provided, attempt to revoke/blacklist the token (for production)
         if ($idTokenHint) {
-            $this->revokeIdToken($idTokenHint);
+            $this->revokeIdToken($validatedToken ?? $idTokenHint);
         }
 
         // Validate post_logout_redirect_uri if provided (must be registered/allowed for the client)
-        if ($postLogoutRedirectUri && $this->isValidRedirect($postLogoutRedirectUri, $idTokenHint)) {
+        if ($postLogoutRedirectUri && $this->isValidRedirect($postLogoutRedirectUri, $validatedToken)) {
             $redirectUrl = $postLogoutRedirectUri;
             // OIDC spec: If state is provided, append it
             if ($state) {
@@ -52,15 +81,15 @@ class OidcLogoutController extends Controller
      * In production, this should check the client_id from the id_token_hint (if present)
      * and ensure the redirect URI is registered for that client.
      */
-    protected function isValidRedirect($uri, $idTokenHint = null)
+    protected function isValidRedirect($uri, ?UnencryptedToken $idToken = null)
     {
         // In production, decode the id_token_hint to get the client_id (aud claim)
         // and check the registered post_logout_redirect_uris for that client.
-        if (! $idTokenHint) {
+        if (! $idToken) {
             return false;
         }
 
-        $clientId = $this->extractClientIdFromIdToken($idTokenHint);
+        $clientId = $this->extractClientIdFromIdToken($idToken);
         if (! $clientId) {
             return false;
         }
@@ -89,15 +118,18 @@ class OidcLogoutController extends Controller
      */
     protected function revokeIdToken($jwt)
     {
-        $payload = $this->decodeJwtPayload($jwt);
+        $payload = $jwt instanceof UnencryptedToken
+            ? $jwt->claims()->all()
+            : $this->decodeJwtPayload($jwt);
+
         if (! $payload) {
             return;
         }
         $jti = $payload['jti'] ?? null;
-        if (! $jti) {
-            // Optionally, use a hash of the JWT if no jti is present
+        if (! $jti && is_string($jwt)) {
             $jti = hash('sha256', $jwt);
         }
+
         cache()->put('oidc_token_blacklist:'.$jti, now());
     }
 
@@ -118,17 +150,30 @@ class OidcLogoutController extends Controller
     /**
      * Extract the client_id (aud claim) from the id_token_hint JWT.
      */
-    protected function extractClientIdFromIdToken($jwt)
+    protected function extractClientIdFromIdToken(UnencryptedToken $jwt)
     {
-        $payload = $this->decodeJwtPayload($jwt);
-        if (! $payload) {
+        $aud = $jwt->claims()->get('aud');
+        return is_array($aud) ? ($aud[0] ?? null) : $aud;
+    }
+
+    private function validateIdToken(string $jwt): ?UnencryptedToken
+    {
+        try {
+            $token = $this->jwtConfig->parser()->parse($jwt);
+            if (! $token instanceof UnencryptedToken) {
+                return null;
+            }
+
+            $constraints = [
+                new SignedWith($this->jwtConfig->signer(), $this->jwtConfig->verificationKey()),
+                new LooseValidAt(new SystemClock(new \DateTimeZone('UTC'))),
+            ];
+            $this->jwtConfig->validator()->assert($token, ...$constraints);
+
+            return $token;
+        } catch (\Throwable $e) {
+            Log::warning('Invalid id_token_hint', ['error' => $e->getMessage()]);
             return null;
         }
-        // aud can be a string or array
-        if (isset($payload['aud'])) {
-            return is_array($payload['aud']) ? $payload['aud'][0] : $payload['aud'];
-        }
-
-        return null;
     }
 }
