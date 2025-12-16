@@ -26,7 +26,7 @@ class WellKnownController extends Controller
             'id_token_signing_alg_values_supported' => ['RS256'],
             'subject_types_supported' => ['public'],
             'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic'],
-            'code_challenge_methods_supported' => ['S256', 'plain'],
+            'code_challenge_methods_supported' => ['S256'],
             'claims_supported' => [
                 'sub', 'name', 'email', 'email_verified', 'picture', 'updated_at',
             ],

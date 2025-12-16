@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\ClientRepository;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -108,5 +110,42 @@ class OidcFullWorkflowTest extends TestCase
             'sub', 'name', 'picture', 'email', 'email_verified',
         ]);
         $this->assertEquals($user->email, $userinfo->json('email'));
+    }
+
+    public function test_max_age_requires_recent_authentication()
+    {
+        // Simulate an older authentication time with fixed instants
+        $authInstant = Carbon::create(2024, 1, 1, 0, 0, 0, 'UTC');
+        $pastAuthTime = $authInstant->timestamp;
+        $user = User::factory()->create([
+            'email_verified_at' => now()->subDay(),
+            'password' => bcrypt('secret'),
+        ]);
+        $this->actingAs($user);
+
+        Session::put('oidc_auth_time', $pastAuthTime);
+
+        $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code MaxAge', 'http://localhost/callback');
+
+        // Move time forward beyond max_age (300s) to force re-authentication
+        Carbon::setTestNow($authInstant->copy()->addSeconds(301));
+
+        $codeVerifier = str_repeat('d', 64);
+        $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
+
+        $response = $this->get('/oauth/authorize?' . http_build_query([
+            'response_type' => 'code',
+            'client_id' => $client->id,
+            'redirect_uri' => $client->redirect,
+            'scope' => 'openid profile email',
+            'state' => 'max-age-state',
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+            'max_age' => 300, // require fresh auth (<5 minutes)
+        ]));
+
+        // Expect re-authentication is required (redirect to login)
+        $response->assertStatus(302);
+        $this->assertStringContainsString('/login', $response->headers->get('Location'));
     }
 }
