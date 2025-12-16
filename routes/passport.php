@@ -10,12 +10,12 @@ Route::post('/token', [AccessTokenController::class, 'issueToken'])
 Route::get('/authorize', [
     'uses' => 'AuthorizationController@authorize',
     'as' => 'authorizations.authorize',
-    'middleware' => 'web',
+    'middleware' => ['web', 'oidc.auth_time'],
 ]);
 
 $guard = null;
 
-Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth'])->group(function () {
+Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time'])->group(function () {
     Route::post('/token/refresh', [
         'uses' => 'TransientTokenController@refresh',
         'as' => 'token.refresh',

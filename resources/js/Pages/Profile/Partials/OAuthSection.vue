@@ -50,12 +50,11 @@
         </JetActionSection>
 
         <OAuthClients></OAuthClients>
+        <div class="oauth-footer-space"></div>
     </div>
 </template>
 
 <script>
-import {onMounted, ref} from 'vue';
-import {useForm} from '@inertiajs/vue3';
 import JetActionMessage from '@/Components/ActionMessage.vue';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
@@ -119,3 +118,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.oauth-footer-space {
+    margin-bottom: 48px;
+}
+</style>
