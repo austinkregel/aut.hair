@@ -8,9 +8,11 @@ use Illuminate\Encryption\Encrypter;
 use Laravel\Passport;
 use Laravel\Passport\Bridge\AccessTokenRepository;
 use Laravel\Passport\Bridge\ClientRepository;
+use Laravel\Passport\Passport as LaravelPassport;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use OpenIDConnect\ClaimExtractor;
 use OpenIDConnect\Grant\AuthCodeGrant;
 use OpenIDConnect\Laravel\LaravelCurrentRequestService;
@@ -40,7 +42,7 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             $kid,
         );
 
-        return new AuthorizationServer(
+        $server = new AuthorizationServer(
             app(ClientRepository::class),
             app(AccessTokenRepository::class),
             app(config('openid.repositories.scope')),
@@ -48,6 +50,18 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             $encryptionKey,
             $responseType,
         );
+
+        $server->enableGrantType(
+            $this->buildAuthCodeGrant(),
+            LaravelPassport::tokensExpireIn()
+        );
+
+        $server->enableGrantType(
+            $this->buildRefreshTokenGrant(),
+            LaravelPassport::refreshTokensExpireIn()
+        );
+
+        return $server;
     }
 
     protected function buildAuthCodeGrant()
@@ -59,6 +73,14 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             new \Nyholm\Psr7\Response(),
             $this->app->make(LaravelCurrentRequestService::class),
         );
+    }
+
+    protected function buildRefreshTokenGrant(): RefreshTokenGrant
+    {
+        $grant = new RefreshTokenGrant($this->app->make(Passport\Bridge\RefreshTokenRepository::class));
+        $grant->setRefreshTokenTTL(LaravelPassport::refreshTokensExpireIn());
+
+        return $grant;
     }
 }
 

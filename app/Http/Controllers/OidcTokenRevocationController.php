@@ -26,6 +26,11 @@ class OidcTokenRevocationController extends Controller
         if (is_string($publicKey) && file_exists($publicKey)) {
             $publicKey = file_get_contents($publicKey);
         }
+
+
+        if (empty($publicKey)) {
+            abort(500, 'Invalid public key, please check your configuration.');
+        }
         $this->publicKey = $publicKey;
     }
 
