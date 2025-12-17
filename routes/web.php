@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers;
+use App\Http\Controllers\OAuth\TeamOAuthClientController;
+use App\Http\Controllers\OAuth\ClientListController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +46,15 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
 
     Route::get('/user/oauth', Controllers\Settings\OauthLinkController::class)->name('oauth.link');
     Route::delete('/user/oauth/remove', Controllers\Settings\RemoveOauthLinkController::class)->name('oauth.link.remove');
+
+    Route::post('/teams/{team}/oauth-clients/{client}/invite-team', [TeamOAuthClientController::class, 'inviteTeam'])
+        ->name('teams.oauth.invite-team');
+    Route::delete(
+        '/teams/{team}/oauth-clients/{client}/teams/{invitedTeam}',
+        [TeamOAuthClientController::class, 'removeTeam']
+    )->name('teams.oauth.remove-team');
+
+    Route::get('/teams/{team}/oauth-clients', [ClientListController::class, 'byTeam'])->name('teams.oauth.clients');
 });
 
 Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {

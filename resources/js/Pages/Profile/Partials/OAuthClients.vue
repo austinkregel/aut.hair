@@ -1,27 +1,6 @@
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue';
-import {
-    Dialog,
-    DialogPanel,
-    DialogTitle,
-    Listbox,
-    ListboxButton,
-    ListboxOption,
-    ListboxOptions,
-    Switch,
-    TransitionChild,
-    TransitionRoot,
-} from '@headlessui/vue';
-import {
-    CheckIcon,
-    ChevronUpDownIcon,
-    DocumentDuplicateIcon,
-    ExclamationTriangleIcon,
-    PlusIcon,
-    PencilSquareIcon,
-    TrashIcon,
-    XMarkIcon,
-} from '@heroicons/vue/24/outline';
+import { computed, reactive, ref, onMounted, watch } from 'vue';
+
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
 import JetDangerButton from '@/Components/DangerButton.vue';
@@ -31,6 +10,7 @@ import JetLabel from '@/Components/Label.vue';
 import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 import JetSectionBorder from '@/Components/SectionBorder.vue';
 import dayjs from 'dayjs';
+import { usePage } from '@inertiajs/vue3';
 
 const grantProfiles = [
     {
@@ -118,7 +98,9 @@ const enhanceClient = (client) => ({
 const fetchClients = async () => {
     loadingClients.value = true;
     try {
-        const { data } = await axios.get('/oauth/clients');
+        const { data } = await axios.get('/oauth/clients', {
+            client_id: selectedTeamId.value,
+        });
         clients.value = (data || []).map(enhanceClient);
     } catch (error) {
         console.error('Failed to load clients', error);
@@ -230,8 +212,20 @@ const copyValue = async (value) => {
 
 const hasScopeError = computed(() => Boolean(createForm.errors?.scopes));
 
+const page = usePage();
+const userTeams = computed(() => page.props?.auth?.user?.all_teams ?? []);
+const selectedTeamId = ref(userTeams.value?.[0]?.id ?? null);
+const currentTeamName = computed(() => {
+    const selected = userTeams.value.find((t) => t.id === selectedTeamId.value);
+    return selected?.name ?? page.props?.auth?.user?.current_team?.name ?? 'Current team';
+});
+
 onMounted(() => {
     fetchScopes();
+    fetchClients();
+});
+
+watch(selectedTeamId, () => {
     fetchClients();
 });
 </script>
@@ -248,6 +242,20 @@ onMounted(() => {
                 <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                     Configure redirect URIs, grant profile, scopes, and PKCE in one place. This mirrors the two-column settings layout used above.
                 </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Clients are scoped to your current team: {{ currentTeamName }}
+                </p>
+                <div v-if="userTeams.length > 1" class="mt-3">
+                    <JetLabel value="Switch team" />
+                    <select
+                        v-model="selectedTeamId"
+                        class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                        <option v-for="team in userTeams" :key="team.id" :value="team.id">
+                            {{ team.name }}
+                        </option>
+                    </select>
+                </div>
             </template>
 
             <template #content>
