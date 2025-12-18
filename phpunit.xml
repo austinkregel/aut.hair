@@ -28,5 +28,7 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="PASSPORT_PRIVATE_KEY" value="/var/www/html/tests/Feature/test-private.key"/>
+        <env name="PASSPORT_PUBLIC_KEY" value="/var/www/html/tests/Feature/test-public.key"/>
     </php>
 </phpunit>
