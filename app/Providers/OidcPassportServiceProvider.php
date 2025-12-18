@@ -25,7 +25,11 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
         $signer = app(config('openid.signer'));
         $keyRepository = app(KeyRepositoryContract::class);
 
-        $kid = config('openid.kid') ?: hash('sha256', $keyRepository->getPublicKeyPem());
+        $kid = rtrim(strtr(
+            base64_encode(hash('sha256', $keyRepository->getPublicKeyPem(), true)),
+            '+/',
+            '-_'
+        ), '=');
 
         $responseType = new OidcIdTokenResponse(
             app(config('openid.repositories.identity')),

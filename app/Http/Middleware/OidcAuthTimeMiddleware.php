@@ -30,9 +30,15 @@ class OidcAuthTimeMiddleware
             }
 
             $request->attributes->set('auth_time', $authTime);
+
+            // Keep nonce available for token exchange; stored only when provided.
+            if ($request->has('nonce')) {
+                Session::put('oidc_nonce', $request->get('nonce'));
+            }
         }
 
         return $next($request);
     }
 }
+
 
