@@ -43,13 +43,14 @@ class JetstreamServiceProvider extends ServiceProvider
     protected function configurePermissions(): void
     {
         Passport::useTokenModel(Token::class);
-        // Passport tokens come from our Client tokens, not used by users
-        Passport::tokensCan($tokenPermissions = [
-            'read',
-        ]);
+        // Define Passport scopes (used by /oauth/scopes and token issuance).
+        // Must be an associative array: scope => description.
+        $scopes = config('openid.passport.tokens_can', []);
+        Passport::tokensCan($scopes);
 
+        $tokenPermissions = array_keys($scopes);
         Jetstream::permissions($tokenPermissions);
-        Jetstream::defaultApiTokenPermissions(['read']);
+        Jetstream::defaultApiTokenPermissions(in_array('openid', $tokenPermissions, true) ? ['openid'] : array_slice($tokenPermissions, 0, 1));
 
         Jetstream::role('admin', 'Administrator', [
             'create',

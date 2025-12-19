@@ -6,12 +6,13 @@ use App\Repositories\KeyRepositoryContract;
 use App\Services\Auth\OidcIdTokenResponse;
 use DateInterval;
 use Illuminate\Encryption\Encrypter;
-use Laravel\Passport;
+use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\AccessTokenRepository;
 use Laravel\Passport\Bridge\ClientRepository;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use OpenIDConnect\ClaimExtractor;
 use OpenIDConnect\Grant\AuthCodeGrant;
@@ -36,8 +37,10 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
 
     public function makeAuthorizationServer(): AuthorizationServer
     {
-        $privateCryptKey = $this->makeCryptKey('private');
-        $publicCryptKey = $this->makeCryptKey('public');
+        // Normalize key configuration (path vs file:// vs PEM contents) so we don't
+        // fail with "Invalid key supplied" when env vars include file:// or relative paths.
+        $privateCryptKey = $this->makeNormalizedCryptKey('private');
+        $publicCryptKey = $this->makeNormalizedCryptKey('public');
         $encryptionKey = app(Encrypter::class)->getKey();
         $signer = app(config('openid.signer'));
         $keyRepository = app(KeyRepositoryContract::class);
@@ -53,8 +56,8 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             app(ClaimExtractor::class),
             Configuration::forAsymmetricSigner(
                 $signer,
-                InMemory::file($privateCryptKey->getKeyPath()),
-                InMemory::file($publicCryptKey->getKeyPath()),
+                InMemory::plainText($privateCryptKey->getKeyContents()),
+                InMemory::plainText($publicCryptKey->getKeyContents()),
             ),
             app(LaravelCurrentRequestService::class),
             $encryptionKey,
@@ -74,8 +77,8 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
     protected function buildAuthCodeGrant()
     {
         return new AuthCodeGrant(
-            $this->app->make(Passport\Bridge\AuthCodeRepository::class),
-            $this->app->make(Passport\Bridge\RefreshTokenRepository::class),
+            $this->app->make(\Laravel\Passport\Bridge\AuthCodeRepository::class),
+            $this->app->make(\Laravel\Passport\Bridge\RefreshTokenRepository::class),
             new \DateInterval('PT10M'),
             new \Nyholm\Psr7\Response(),
             $this->app->make(LaravelCurrentRequestService::class),
@@ -85,6 +88,38 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
     protected function buildClientCredentialsGrant(): ClientCredentialsGrant
     {
         return new ClientCredentialsGrant();
+    }
+
+    /**
+     * Build a CryptKey from either PEM contents, a plain path, or a file:// URI.
+     * Always passes an absolute path (no file:// prefix) to CryptKey when using files.
+     */
+    private function makeNormalizedCryptKey(string $type): CryptKey
+    {
+        $raw = (string) config('passport.'.$type.'_key', '');
+        $raw = str_replace('\\n', "\n", $raw);
+
+        // If config contains PEM contents, pass through.
+        if (str_contains($raw, '-----BEGIN')) {
+            return new CryptKey($raw, null, false);
+        }
+
+        // Default to Passport's key path (absolute).
+        if ($raw === '') {
+            $raw = Passport::keyPath('oauth-'.$type.'.key');
+        }
+
+        // Normalize file:// URIs to filesystem paths.
+        if (str_starts_with($raw, 'file://')) {
+            $raw = substr($raw, strlen('file://'));
+        }
+
+        // Normalize relative paths (e.g. storage/oauth-private.key) to absolute.
+        if ($raw !== '' && ! str_starts_with($raw, '/')) {
+            $raw = base_path($raw);
+        }
+
+        return new CryptKey($raw, null, false);
     }
 }
 

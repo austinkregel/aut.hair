@@ -29,7 +29,7 @@ Aut.hair is an OAuth2 server and client for authenticating multiple social accou
 ### Additional Features
 - Install and enable new social providers via web panel (recommended for exploration/initial setup only)
 - Queue management via [Laravel Horizon](https://laravel.com/docs/10.x/horizon)
-- WebSocket support via [Laravel WebSockets](https://beyondco.de/docs/laravel-websockets)
+- WebSocket support via [Laravel Reverb](https://laravel.com/docs/10.x/reverb)
 - High-performance application server support via [Laravel Octane](https://laravel.com/docs/10.x/octane)
 
 ## Tech Stack
@@ -38,7 +38,7 @@ Aut.hair is an OAuth2 server and client for authenticating multiple social accou
 - **Frontend**: Vue 3, Inertia.js, Vite
 - **Styling**: Tailwind CSS
 - **Queue**: Laravel Horizon with Redis
-- **WebSockets**: Laravel WebSockets
+- **WebSockets**: Laravel Reverb
 - **Application Server**: Laravel Octane (RoadRunner)
 
 ## Prerequisites
@@ -137,4 +137,4 @@ Key configuration areas:
 - **Social Providers**: Install and configure social authentication providers via the web panel
 - **LDAP**: Configure in `config/ldap.php` (WIP)
 - **Queue**: Configure Horizon dashboard and workers
-- **WebSockets**: Configure in `config/websockets.php`
+- **WebSockets**: Configure in `config/reverb.php`

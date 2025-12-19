@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted, watch } from 'vue';
 import {
     Dialog,
     DialogPanel,
@@ -82,6 +82,27 @@ const editForm = reactive({
     errors: {},
     processing: false,
 });
+
+const isClientCredentialsProfile = (profile) => (profile?.id ?? '') === 'cc';
+
+const enforceGrantProfileRules = (form) => {
+    // client_credentials requires a confidential client (client_secret_* auth).
+    if (isClientCredentialsProfile(form.grantProfile)) {
+        form.pkce = false;
+    }
+};
+
+watch(
+    () => createForm.grantProfile,
+    () => enforceGrantProfileRules(createForm),
+    { immediate: true }
+);
+
+watch(
+    () => editForm.grantProfile,
+    () => enforceGrantProfileRules(editForm),
+    { immediate: true }
+);
 
 const scopeId = (scope) => scope.id ?? scope.identifier ?? scope.name ?? scope;
 const scopeLabel = (scope) => scope.description ?? scope.name ?? scope.id ?? scope;
@@ -229,6 +250,8 @@ const copyValue = async (value) => {
 };
 
 const hasScopeError = computed(() => Boolean(createForm.errors?.scopes));
+const isCreatePkceLocked = computed(() => isClientCredentialsProfile(createForm.grantProfile));
+const isEditPkceLocked = computed(() => isClientCredentialsProfile(editForm.grantProfile));
 
 onMounted(() => {
     fetchScopes();
@@ -389,6 +412,7 @@ onMounted(() => {
                                 <JetLabel value="Public client (PKCE)" />
                                 <Switch
                                     v-model="createForm.pkce"
+                                    :disabled="isCreatePkceLocked"
                                     :class="[
                                         createForm.pkce ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700',
                                         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
@@ -403,7 +427,7 @@ onMounted(() => {
                                 </Switch>
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                Enable for public/native apps that use PKCE. Disable for confidential server-side apps that will keep a secret.
+                                Enable for public/native apps that use PKCE. Client Credentials always requires a confidential client secret.
                             </p>
                         </div>
                     </div>
@@ -764,6 +788,7 @@ onMounted(() => {
                                     <JetLabel value="Public client (PKCE)" />
                                     <Switch
                                         v-model="editForm.pkce"
+                                        :disabled="isEditPkceLocked"
                                         :class="[
                                             editForm.pkce ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700',
                                             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
