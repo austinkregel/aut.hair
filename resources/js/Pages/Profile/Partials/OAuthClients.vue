@@ -292,7 +292,7 @@ onMounted(() => {
                             <Listbox v-model="createForm.grantProfile">
                                 <div class="relative mt-1">
                                     <ListboxButton
-                                        class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                                        class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left text-slate-900 dark:text-slate-200 shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
                                     >
                                         <span class="block truncate">
                                             {{ createForm.grantProfile.label }}
@@ -326,7 +326,7 @@ onMounted(() => {
                                                     </span>
                                                     <span
                                                         v-if="selected"
-                                                        class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                                                        class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 dark:text-indigo-200"
                                                     >
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
@@ -576,7 +576,7 @@ onMounted(() => {
                         <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl">
                             <DialogTitle class="text-lg font-semibold text-slate-900 dark:text-white flex items-center justify-between">
                                 Client created
-                                <button class="text-slate-400 hover:text-slate-600" @click="successModalOpen = false">
+                                <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" @click="successModalOpen = false">
                                     <XMarkIcon class="w-5 h-5" />
                                 </button>
                             </DialogTitle>
@@ -587,8 +587,8 @@ onMounted(() => {
                             <div class="mt-4 space-y-3">
                                 <div class="flex items-start justify-between gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/70 px-4 py-3">
                                     <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Client ID</p>
-                                        <p class="font-mono text-sm break-all">{{ registrationResult?.id ?? '—' }}</p>
+                                        <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Client ID</p>
+                                        <p class="font-mono text-sm break-all text-slate-900 dark:text-slate-200">{{ registrationResult?.id ?? '—' }}</p>
                                     </div>
                                     <JetSecondaryButton
                                         type="button"
@@ -602,8 +602,8 @@ onMounted(() => {
                                 </div>
                                 <div class="flex items-start justify-between gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/70 px-4 py-3">
                                     <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Client secret</p>
-                                        <p class="font-mono text-sm break-all">
+                                        <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Client secret</p>
+                                        <p class="font-mono text-sm break-all text-slate-900 dark:text-slate-200">
                                             {{ registrationResult?.secret ?? 'PKCE public client (no secret)' }}
                                         </p>
                                     </div>
@@ -677,7 +677,7 @@ onMounted(() => {
                                     <Listbox v-model="editForm.grantProfile">
                                         <div class="relative mt-1">
                                             <ListboxButton
-                                                class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                                                class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left text-slate-900 dark:text-slate-200 shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
                                             >
                                                 <span class="block truncate">
                                                     {{ editForm.grantProfile.label }}
@@ -715,7 +715,7 @@ onMounted(() => {
                                                             </span>
                                                             <span
                                                                 v-if="selected"
-                                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 dark:text-indigo-200"
                                                             >
                                                                 <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                             </span>
