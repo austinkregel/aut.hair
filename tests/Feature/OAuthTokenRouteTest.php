@@ -2,14 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class OAuthTokenRouteTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'passport.public_key' => base_path('tests/Feature/test-public.key'),
+            'passport.private_key' => base_path('tests/Feature/test-private.key'),
+        ]);
+    }
 
     public function test_oauth_token_route_is_protected_by_csrf()
     {

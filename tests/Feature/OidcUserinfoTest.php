@@ -11,6 +11,16 @@ class OidcUserinfoTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'passport.public_key' => base_path('tests/Feature/test-public.key'),
+            'passport.private_key' => base_path('tests/Feature/test-private.key'),
+        ]);
+    }
+
     public function test_userinfo_requires_openid_scope()
     {
         $user = User::factory()->create([

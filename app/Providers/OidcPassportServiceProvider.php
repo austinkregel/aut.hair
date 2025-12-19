@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Repositories\KeyRepositoryContract;
 use App\Services\Auth\OidcIdTokenResponse;
+use DateInterval;
 use Illuminate\Encryption\Encrypter;
 use Laravel\Passport;
 use Laravel\Passport\Bridge\AccessTokenRepository;
@@ -11,12 +12,28 @@ use Laravel\Passport\Bridge\ClientRepository;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use OpenIDConnect\ClaimExtractor;
 use OpenIDConnect\Grant\AuthCodeGrant;
 use OpenIDConnect\Laravel\LaravelCurrentRequestService;
 
 class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportServiceProvider
 {
+    public function boot(): void
+    {
+        parent::boot();
+
+        // Enable OAuth2 client_credentials for machine-to-machine access.
+        // Use afterResolving so we don't force AuthorizationServer construction before tests
+        // override passport key config (construction requires valid keys).
+        $this->app->afterResolving(AuthorizationServer::class, function (AuthorizationServer $server) {
+            $server->enableGrantType(
+                $this->buildClientCredentialsGrant(),
+                new DateInterval('PT1H'),
+            );
+        });
+    }
+
     public function makeAuthorizationServer(): AuthorizationServer
     {
         $privateCryptKey = $this->makeCryptKey('private');
@@ -63,6 +80,11 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             new \Nyholm\Psr7\Response(),
             $this->app->make(LaravelCurrentRequestService::class),
         );
+    }
+
+    protected function buildClientCredentialsGrant(): ClientCredentialsGrant
+    {
+        return new ClientCredentialsGrant();
     }
 }
 

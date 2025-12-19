@@ -75,3 +75,4 @@ class AuthorizeFormTest extends DuskTestCase
         Carbon::setTestNow(null);
     }
 }
+

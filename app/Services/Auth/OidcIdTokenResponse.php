@@ -70,6 +70,13 @@ class OidcIdTokenResponse extends IdTokenResponse
             return [];
         }
 
+        // For client_credentials and other non-user grants, Passport will issue an access token with no user identifier.
+        // Even if the current request parsing can't determine the grant_type (e.g. JSON request bodies),
+        // we must never attempt to build an ID token without a subject.
+        if (! $accessToken->getUserIdentifier()) {
+            return [];
+        }
+
         $user = $this->identityRepository->getByIdentifier(
             (string) $accessToken->getUserIdentifier(),
         );
