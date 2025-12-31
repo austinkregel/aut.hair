@@ -15,6 +15,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use OpenIDConnect\ClaimExtractor;
 use OpenIDConnect\Grant\AuthCodeGrant;
 use OpenIDConnect\Laravel\LaravelCurrentRequestService;
@@ -137,7 +138,7 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
   
     protected function buildRefreshTokenGrant(): RefreshTokenGrant
     {
-        $grant = new RefreshTokenGrant($this->app->make(Passport\Bridge\RefreshTokenRepository::class));
+        $grant = new RefreshTokenGrant($this->app->make(\Laravel\Passport\Bridge\RefreshTokenRepository::class));
         $grant->setRefreshTokenTTL(LaravelPassport::refreshTokensExpireIn());
 
         return $grant;
