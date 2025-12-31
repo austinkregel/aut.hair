@@ -4,6 +4,7 @@ import DeleteTeamForm from '@/Pages/Teams/Partials/DeleteTeamForm.vue';
 import JetSectionBorder from '@/Components/SectionBorder.vue';
 import TeamMemberManager from '@/Pages/Teams/Partials/TeamMemberManager.vue';
 import UpdateTeamNameForm from '@/Pages/Teams/Partials/UpdateTeamNameForm.vue';
+import OAuthClientTeamManager from '@/Pages/Teams/Partials/OAuthClientTeamManager.vue';
 
 defineProps({
     team: Object,
@@ -30,6 +31,10 @@ defineProps({
                     :available-roles="availableRoles"
                     :user-permissions="permissions"
                 />
+
+                <JetSectionBorder />
+
+                <OAuthClientTeamManager class="mt-10 sm:mt-0" :team="team" />
 
                 <template v-if="permissions.canDeleteTeam && ! team.personal_team">
                     <JetSectionBorder />

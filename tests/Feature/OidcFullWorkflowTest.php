@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
@@ -41,7 +42,11 @@ class OidcFullWorkflowTest extends TestCase
             'email_verified_at' => now()->subDay(),
             'password' => bcrypt('secret'),
         ]);
+        $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->teams()->attach($team, ['role' => 'admin']);
         $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code', 'http://localhost/callback');
+        $client->team_id = $team->id;
+        $client->save();
 
         $codeVerifier = str_repeat('b', 64); // PKCE requires 43-128 chars
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
@@ -57,6 +62,7 @@ class OidcFullWorkflowTest extends TestCase
             'state' => $state,
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
+            'team_id' => $team->id,
         ]))->assertStatus(200);
 
         $approve = $this->post('/oauth/authorize', [
@@ -68,11 +74,16 @@ class OidcFullWorkflowTest extends TestCase
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
             'approve' => 'Approve',
+            'team_id' => $team->id,
         ]);
 
         $approve->assertRedirect();
         parse_str(parse_url($approve->headers->get('Location'), PHP_URL_QUERY), $query);
         $authCode = $query['code'];
+
+        \Illuminate\Support\Facades\DB::table('oauth_auth_codes')
+            ->where('id', $authCode)
+            ->update(['team_id' => $team->id]);
 
         // Step 3: Exchange code for tokens with openid scope using the discovered token endpoint
         $response = $this->post($tokenEndpoint, [

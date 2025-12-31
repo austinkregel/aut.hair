@@ -2,7 +2,12 @@
 
 use App\Http\Controllers\AccessTokenController;
 use App\Http\Controllers\MachineTokenController;
+use App\Http\Controllers\OAuth\ApproveAuthorizationController;
+use App\Http\Controllers\OAuth\ClientController;
 use Illuminate\Support\Facades\Route;
+
+// Kept compatible with Passport's optional guard support.
+$guard = null;
 
 Route::post('/token', [AccessTokenController::class, 'issueToken'])
     ->name('token')
@@ -11,10 +16,8 @@ Route::post('/token', [AccessTokenController::class, 'issueToken'])
 Route::get('/authorize', [
     'uses' => 'AuthorizationController@authorize',
     'as' => 'authorizations.authorize',
-    'middleware' => ['web', 'oidc.auth_time'],
+    'middleware' => ['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time', 'oauth.team'],
 ]);
-
-$guard = null;
 
 Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time'])->group(function () {
     Route::post('/token/refresh', [
@@ -22,14 +25,14 @@ Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time'])->
         'as' => 'token.refresh',
     ]);
 
-    Route::post('/authorize', [
-        'uses' => 'ApproveAuthorizationController@approve',
-        'as' => 'authorizations.approve',
-    ]);
+    Route::post('/authorize', [ApproveAuthorizationController::class, 'approve'])
+        ->name('authorizations.approve')
+        ->middleware('oauth.team');
 
     Route::delete('/authorize', [
         'uses' => 'DenyAuthorizationController@deny',
         'as' => 'authorizations.deny',
+        'middleware' => ['oauth.team'],
     ]);
 
     Route::get('/tokens', [
@@ -42,25 +45,13 @@ Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time'])->
         'as' => 'tokens.destroy',
     ]);
 
-    Route::get('/clients', [
-        'uses' => 'ClientController@forUser',
-        'as' => 'clients.index',
-    ]);
+    Route::get('/clients', [ClientController::class, 'forUser'])->name('clients.index');
 
-    Route::post('/clients', [
-        'uses' => 'ClientController@store',
-        'as' => 'clients.store',
-    ]);
+    Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
 
-    Route::put('/clients/{client_id}', [
-        'uses' => 'ClientController@update',
-        'as' => 'clients.update',
-    ]);
+    Route::put('/clients/{client_id}', [ClientController::class, 'update'])->name('clients.update');
 
-    Route::delete('/clients/{client_id}', [
-        'uses' => 'ClientController@destroy',
-        'as' => 'clients.destroy',
-    ]);
+    Route::delete('/clients/{client_id}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
     Route::get('/scopes', [
         'uses' => 'ScopeController@all',
