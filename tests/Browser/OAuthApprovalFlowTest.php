@@ -96,8 +96,13 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $this->assertSame($nonce, $claims['nonce']);
         $this->assertArrayHasKey('auth_time', $claims);
 
-        $this->assertLessThan(17280, now()->diffInHours(Carbon::parse($claims['auth_time'])));
-        Carbon::setTestNow(null);
+        $authTime = $claims['auth_time'];
+        $this->assertIsInt($authTime, 'auth_time must be an integer timestamp.');
+
+        // In Dusk the app server runs in a separate process, so Carbon::setTestNow() in the test
+        // would not affect auth_time. Assert auth_time is close to the current wall clock instead.
+        $this->assertGreaterThanOrEqual($testStartedAt->subMinutes(5)->timestamp, $authTime);
+        $this->assertLessThanOrEqual(Carbon::now('UTC')->addMinutes(5)->timestamp, $authTime);
     }
 
     public function test_oauth_approval_flow_without_nonce_does_not_include_nonce(): void
