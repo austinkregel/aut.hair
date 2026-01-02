@@ -67,3 +67,4 @@ class MachineInfoController extends Controller
     }
 }
 
+

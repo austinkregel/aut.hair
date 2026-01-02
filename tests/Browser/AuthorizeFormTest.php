@@ -27,7 +27,7 @@ class AuthorizeFormTest extends DuskTestCase
     {
         Carbon::setTestNow(Carbon::create(2024, 1, 1, 0, 0, 0, 'UTC'));
 
-        $user = User::factory()->create([
+        $user = User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
@@ -35,8 +35,10 @@ class AuthorizeFormTest extends DuskTestCase
         $client = app(ClientRepository::class)->create(
             $user->id,
             'Dusk Auth Code',
-            'http://laravel.test/callback'
+            url('/callback')
         );
+        $teamId = $user->ownedTeams()->value('id');
+        $client->forceFill(['team_id' => $teamId])->save();
 
         $codeVerifier = str_repeat('z', 64);
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
@@ -67,7 +69,7 @@ class AuthorizeFormTest extends DuskTestCase
                 ->assertInputValue('code_challenge_method', 'S256')
                 ->assertInputValue('nonce', $nonce)
                 ->press('Authorize')
-                ->waitForLocation('http://laravel.test/callback', 5)
+                ->waitForLocation('/callback', 5)
                 ->assertQueryStringHas('state', $state)
                 ->assertQueryStringHas('code');
         });
@@ -75,4 +77,5 @@ class AuthorizeFormTest extends DuskTestCase
         Carbon::setTestNow(null);
     }
 }
+
 

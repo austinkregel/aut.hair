@@ -53,12 +53,16 @@ class JwksEndpointTest extends TestCase
             'passport.private_key' => base_path('tests/Feature/test-private.key'),
         ]);
 
-        $user = \App\Models\User::factory()->create([
+        $user = \App\Models\User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
 
+        $team = $user->ownedTeams()->first();
+        $this->assertNotNull($team, 'Test user must have a team for oauth.team middleware.');
+
         $client = app(\Laravel\Passport\ClientRepository::class)->create($user->id, 'Test Auth Code JWKS', 'http://localhost/callback');
+        $client->forceFill(['team_id' => $team->id])->save();
 
         $codeVerifier = str_repeat('k', 64);
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
