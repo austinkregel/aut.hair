@@ -29,7 +29,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="BROADCAST_DRIVER" value="null"/>
-        <env name="PASSPORT_PUBLIC_KEY" value="/var/www/html/tests/Feature/test-public.key"/>
-        <env name="PASSPORT_PRIVATE_KEY" value="/var/www/html/tests/Feature/test-private.key"/>
+        <env name="PASSPORT_PUBLIC_KEY" value="tests/Feature/test-public.key"/>
+        <env name="PASSPORT_PRIVATE_KEY" value="tests/Feature/test-private.key"/>
     </php>
 </phpunit>
