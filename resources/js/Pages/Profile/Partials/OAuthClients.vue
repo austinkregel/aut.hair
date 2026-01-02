@@ -1,6 +1,27 @@
 <script setup>
 import { computed, reactive, ref, onMounted, watch } from 'vue';
-
+import {
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+    Listbox,
+    ListboxButton,
+    ListboxOption,
+    ListboxOptions,
+    Switch,
+    TransitionChild,
+    TransitionRoot,
+} from '@headlessui/vue';
+import {
+    CheckIcon,
+    ChevronUpDownIcon,
+    DocumentDuplicateIcon,
+    ExclamationTriangleIcon,
+    PlusIcon,
+    PencilSquareIcon,
+    TrashIcon,
+    XMarkIcon,
+} from '@heroicons/vue/24/outline';
 import JetActionSection from '@/Components/ActionSection.vue';
 import JetButton from '@/Components/Button.vue';
 import JetDangerButton from '@/Components/DangerButton.vue';
@@ -62,6 +83,27 @@ const editForm = reactive({
     errors: {},
     processing: false,
 });
+
+const isClientCredentialsProfile = (profile) => (profile?.id ?? '') === 'cc';
+
+const enforceGrantProfileRules = (form) => {
+    // client_credentials requires a confidential client (client_secret_* auth).
+    if (isClientCredentialsProfile(form.grantProfile)) {
+        form.pkce = false;
+    }
+};
+
+watch(
+    () => createForm.grantProfile,
+    () => enforceGrantProfileRules(createForm),
+    { immediate: true }
+);
+
+watch(
+    () => editForm.grantProfile,
+    () => enforceGrantProfileRules(editForm),
+    { immediate: true }
+);
 
 const scopeId = (scope) => scope.id ?? scope.identifier ?? scope.name ?? scope;
 const scopeLabel = (scope) => scope.description ?? scope.name ?? scope.id ?? scope;
@@ -211,6 +253,8 @@ const copyValue = async (value) => {
 };
 
 const hasScopeError = computed(() => Boolean(createForm.errors?.scopes));
+const isCreatePkceLocked = computed(() => isClientCredentialsProfile(createForm.grantProfile));
+const isEditPkceLocked = computed(() => isClientCredentialsProfile(editForm.grantProfile));
 
 const page = usePage();
 const userTeams = computed(() => page.props?.auth?.user?.all_teams ?? []);
@@ -277,7 +321,7 @@ watch(selectedTeamId, () => {
                             <Listbox v-model="createForm.grantProfile">
                                 <div class="relative mt-1">
                                     <ListboxButton
-                                        class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                                        class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left text-slate-900 dark:text-slate-200 shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
                                     >
                                         <span class="block truncate">
                                             {{ createForm.grantProfile.label }}
@@ -311,7 +355,7 @@ watch(selectedTeamId, () => {
                                                     </span>
                                                     <span
                                                         v-if="selected"
-                                                        class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                                                        class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 dark:text-indigo-200"
                                                     >
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
@@ -397,6 +441,7 @@ watch(selectedTeamId, () => {
                                 <JetLabel value="Public client (PKCE)" />
                                 <Switch
                                     v-model="createForm.pkce"
+                                    :disabled="isCreatePkceLocked"
                                     :class="[
                                         createForm.pkce ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700',
                                         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',
@@ -411,7 +456,7 @@ watch(selectedTeamId, () => {
                                 </Switch>
                             </div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                Enable for public/native apps that use PKCE. Disable for confidential server-side apps that will keep a secret.
+                                Enable for public/native apps that use PKCE. Client Credentials always requires a confidential client secret.
                             </p>
                         </div>
                     </div>
@@ -560,7 +605,7 @@ watch(selectedTeamId, () => {
                         <DialogPanel class="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl">
                             <DialogTitle class="text-lg font-semibold text-slate-900 dark:text-white flex items-center justify-between">
                                 Client created
-                                <button class="text-slate-400 hover:text-slate-600" @click="successModalOpen = false">
+                                <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" @click="successModalOpen = false">
                                     <XMarkIcon class="w-5 h-5" />
                                 </button>
                             </DialogTitle>
@@ -571,8 +616,8 @@ watch(selectedTeamId, () => {
                             <div class="mt-4 space-y-3">
                                 <div class="flex items-start justify-between gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/70 px-4 py-3">
                                     <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Client ID</p>
-                                        <p class="font-mono text-sm break-all">{{ registrationResult?.id ?? '—' }}</p>
+                                        <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Client ID</p>
+                                        <p class="font-mono text-sm break-all text-slate-900 dark:text-slate-200">{{ registrationResult?.id ?? '—' }}</p>
                                     </div>
                                     <JetSecondaryButton
                                         type="button"
@@ -586,8 +631,8 @@ watch(selectedTeamId, () => {
                                 </div>
                                 <div class="flex items-start justify-between gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/70 px-4 py-3">
                                     <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Client secret</p>
-                                        <p class="font-mono text-sm break-all">
+                                        <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Client secret</p>
+                                        <p class="font-mono text-sm break-all text-slate-900 dark:text-slate-200">
                                             {{ registrationResult?.secret ?? 'PKCE public client (no secret)' }}
                                         </p>
                                     </div>
@@ -661,7 +706,7 @@ watch(selectedTeamId, () => {
                                     <Listbox v-model="editForm.grantProfile">
                                         <div class="relative mt-1">
                                             <ListboxButton
-                                                class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                                                class="relative w-full cursor-default rounded-md bg-white dark:bg-slate-800 py-2 pl-3 pr-10 text-left text-slate-900 dark:text-slate-200 shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
                                             >
                                                 <span class="block truncate">
                                                     {{ editForm.grantProfile.label }}
@@ -699,7 +744,7 @@ watch(selectedTeamId, () => {
                                                             </span>
                                                             <span
                                                                 v-if="selected"
-                                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                                                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 dark:text-indigo-200"
                                                             >
                                                                 <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                             </span>
@@ -772,6 +817,7 @@ watch(selectedTeamId, () => {
                                     <JetLabel value="Public client (PKCE)" />
                                     <Switch
                                         v-model="editForm.pkce"
+                                        :disabled="isEditPkceLocked"
                                         :class="[
                                             editForm.pkce ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700',
                                             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900',

@@ -217,6 +217,8 @@ class OidcTokenEndpointTest extends TestCase
 
         $jwt = (new Parser(new JoseEncoder()))->parse($idToken);
         $claims = $jwt->claims()->all();
+
+        $this->assertNotNull($claims['nonce'] ?? null);
         $this->assertEquals($nonce, $claims['nonce'] ?? null);
         $this->assertArrayHasKey('auth_time', $claims);
         $this->assertTrue(abs($claims['auth_time'] - $fixedNow->timestamp) < 10, 'auth_time should be near now');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MachineInfoController;
 use App\Http\Controllers\UserinfoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,3 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['auth:api'])->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
+
+Route::middleware([\Laravel\Passport\Http\Middleware\CheckClientCredentials::class])
+    ->get('machine-info', MachineInfoController::class)
+    ->name('oidc.machine_info');

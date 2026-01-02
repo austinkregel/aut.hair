@@ -47,10 +47,16 @@ return [
      * Can be Ecdsa, Hmac or RSA
      */
     'signer' => \Lcobucci\JWT\Signer\Rsa\Sha256::class,
-
-    /*
-     * Optional static key id (kid) for JWKS and ID tokens.
-     * If null, the application derives a SHA-256 fingerprint of the public key.
-     */
-    'kid' => env('OIDC_KEY_ID'),
+    'routes' => [
+        /**
+         * When set to true, this package will expose the OpenID Connect Discovery endpoint.
+         *  - /.well-known/openid-configuration
+         */
+        'discovery' => false,
+        /**
+         * When set to true, this package will expose the JSON Web Key Set endpoint.
+         * - /oauth/jwks
+         */
+        'jwks' => false,
+    ]
 ];

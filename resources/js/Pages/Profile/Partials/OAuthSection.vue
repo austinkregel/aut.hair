@@ -24,11 +24,12 @@
                             {{ service.name }}
                         </div>
 
-                        <div class="flex flex-col text-sm pt-2 flex-col gap-1" v-if="linked(service.value).length > 0">
+                        <div class="flex flex-col text-sm pt-2 gap-1" v-if="linked(service.value).length > 0">
                             <span>Already linked with</span>
                             <div
                                 class="border border-slate-400 dark:border-slate-500 p-4 rounded w-full flex flex-wrap gap-2 items-center"
-                                v-for="link in linked(service.value)">
+                                v-for="link in linked(service.value)"
+                                :key="link.id">
                                 <button @click="() => removeSocialAccount(service, link)" class="relative flex">
                                     <TrashIcon class="w-5 h-5 fill-current text-red-400" />
                                 </button>
@@ -50,6 +51,7 @@
         </JetActionSection>
 
         <OAuthClients></OAuthClients>
+        <MachineTokens></MachineTokens>
         <div class="oauth-footer-space"></div>
     </div>
 </template>
@@ -64,10 +66,12 @@ import JetInputError from '@/Components/InputError.vue';
 import JetSecondaryButton from '@/Components/SecondaryButton.vue';
 import {UserIcon, LinkIcon, TrashIcon} from '@heroicons/vue/20/solid'
 import OAuthClients from "./OAuthClients.vue";
+import MachineTokens from "./MachineTokens.vue";
 
 export default {
     components: {
         OAuthClients,
+        MachineTokens,
         UserIcon, LinkIcon, TrashIcon,
         JetActionMessage,
         JetActionSection,

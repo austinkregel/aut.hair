@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\KeyRepositoryContract;
 use Illuminate\Http\JsonResponse;
 use phpseclib3\Crypt\Common\AsymmetricKey;
-use phpseclib3\Crypt\Common\PublicKey;
 use phpseclib3\Crypt\PublicKeyLoader;
-use phpseclib3\Crypt\RSA;
 
 class JsonWebKeysController extends Controller
 {
@@ -31,8 +29,7 @@ class JsonWebKeysController extends Controller
         // ---
 
         [$modulusBase64Url, $exponentBase64Url] = $this->extractModulusExponentFromPublicKey($publicKey);
-        $keyId = config('openid.kid')
-            ?? 'laravel-passport';
+        $keyId = $this->determineKeyId($publicKeyPem);
 
         $jwks = [
             'keys' => [
@@ -48,6 +45,17 @@ class JsonWebKeysController extends Controller
         ];
 
         return response()->json($jwks);
+    }
+
+    /**
+    * Build a stable kid. Prefer configured kid; otherwise derive a base64url
+    * SHA-256 fingerprint of the public key PEM.
+    */
+    private function determineKeyId(string $publicKeyPem): string
+    {
+        $fingerprint = hash('sha256', $publicKeyPem, true);
+
+        return rtrim(strtr(base64_encode($fingerprint), '+/', '-_'), '=');
     }
 
     /**

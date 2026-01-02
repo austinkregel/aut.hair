@@ -17,9 +17,9 @@ class CreateApiTokenTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Passport::tokensCan([
+        Passport::tokensCan(array_fill_keys([
             'read', 'write', 'delete', 'create', 'update',
-        ]);
+        ], ''));
     }
 
     public function test_api_tokens_can_be_created(): void

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccessTokenController;
+use App\Http\Controllers\MachineTokenController;
 use App\Http\Controllers\OAuth\ApproveAuthorizationController;
 use App\Http\Controllers\OAuth\ClientController;
 use Illuminate\Support\Facades\Route;
@@ -71,4 +72,16 @@ Route::middleware(['web', $guard ? 'auth:'.$guard : 'auth', 'oidc.auth_time'])->
         'uses' => 'PersonalAccessTokenController@destroy',
         'as' => 'personal.tokens.destroy',
     ]);
+
+    Route::get('/machine-tokens/clients', [MachineTokenController::class, 'clients'])
+        ->name('machine.tokens.clients');
+
+    Route::post('/machine-tokens/generate', [MachineTokenController::class, 'generate'])
+        ->name('machine.tokens.generate');
+
+    Route::get('/machine-tokens/{client_id}/tokens', [MachineTokenController::class, 'tokens'])
+        ->name('machine.tokens.index');
+
+    Route::delete('/machine-tokens/tokens/{token_id}', [MachineTokenController::class, 'revoke'])
+        ->name('machine.tokens.destroy');
 });

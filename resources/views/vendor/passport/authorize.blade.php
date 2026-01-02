@@ -66,7 +66,7 @@
                     </div>
                     <div class="flex flex-wrap justify-between gap-4 mt-4">
                         <!-- Cancel Button -->
-                        <form method="post" action="{{ route('passport.authorizations.deny') }}">
+                        <form method="post" action="{{ route('passport.authorizations.deny', ['nonce' => $request->nonce]) }}">
                             @csrf
                             @method('DELETE')
 
@@ -78,14 +78,22 @@
                             @endif
                             <button class="flex justify-center rounded-md border-2 border-red-600 text-red-600 dark:border-red-400 dark:text-red-400 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Cancel</button>
                         </form>
-
                         <!-- Authorize Button -->
-                        <form method="post" id="approve-form" action="{{ route('passport.authorizations.approve') }}">
+                        <form method="post" action="{{ route('passport.authorizations.approve', ['nonce' => $request->nonce]) }}">
                             @csrf
 
                             <input type="hidden" name="state" value="{{ $request->state }}">
                             <input type="hidden" name="client_id" value="{{ $client->id }}">
+                            <input type="hidden" name="redirect_uri" value="{{ $request->redirect_uri }}">
+                            <input type="hidden" name="response_type" value="{{ $request->response_type }}">
+                            <input type="hidden" name="scope" value="{{ $request->scope }}">
+                            <input type="hidden" name="code_challenge" value="{{ $request->code_challenge }}">
+                            <input type="hidden" name="code_challenge_method" value="{{ $request->code_challenge_method }}">
                             <input type="hidden" name="auth_token" value="{{ $authToken }}">
+                            <input type="hidden" name="nonce" value="{{ $request->nonce }}">
+                            <input type="hidden" name="max_age" value="{{ $request->max_age }}">
+                            <input type="hidden" name="prompt" value="{{ $request->prompt }}">
+                            <input type="hidden" name="claims" value="{{ $request->claims }}">
                             @if($selectedTeam)
                                 <input type="hidden" name="team_id" value="{{ $selectedTeam->id }}">
                             @endif

@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Repositories\KeyRepository;
 use App\Repositories\KeyRepositoryContract;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 
@@ -24,8 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('viewWebSocketsDashboard', function ($user = null) {
-            return in_array($user->email, config('auth.admin_emails'));
-        });
+        //
     }
 }
