@@ -144,4 +144,3 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
         return $grant;
     }
 }
-
