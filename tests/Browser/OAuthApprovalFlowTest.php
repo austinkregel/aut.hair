@@ -32,7 +32,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $now = Carbon::create(2024, 1, 1, 0, 0, 0, 'UTC');
         Carbon::setTestNow($now);
 
-        $user = User::factory()->create([
+        $user = User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
@@ -40,8 +40,10 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $client = app(ClientRepository::class)->create(
             $user->id,
             'Dusk Auth Code Nonce',
-            'http://laravel.test/callback'
+            url('/callback')
         );
+        $teamId = $user->ownedTeams()->value('id');
+        $client->forceFill(['team_id' => $teamId])->save();
 
         [$codeVerifier, $codeChallenge] = $this->makePkce();
         $nonce = 'dusk-nonce-claims';
@@ -94,13 +96,18 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $this->assertSame($nonce, $claims['nonce']);
         $this->assertArrayHasKey('auth_time', $claims);
 
-        $this->assertLessThan(17280, now()->diffInHours(Carbon::parse($claims['auth_time'])));
-        Carbon::setTestNow(null);
+        $authTime = $claims['auth_time'];
+        $this->assertIsInt($authTime, 'auth_time must be an integer timestamp.');
+
+        // In Dusk the app server runs in a separate process, so Carbon::setTestNow() in the test
+        // would not affect auth_time. Assert auth_time is close to the current wall clock instead.
+        $this->assertGreaterThanOrEqual($testStartedAt->subMinutes(5)->timestamp, $authTime);
+        $this->assertLessThanOrEqual(Carbon::now('UTC')->addMinutes(5)->timestamp, $authTime);
     }
 
     public function test_oauth_approval_flow_without_nonce_does_not_include_nonce(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
@@ -108,8 +115,10 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $client = app(ClientRepository::class)->create(
             $user->id,
             'Dusk Auth Code No Nonce',
-            'http://laravel.test/callback'
+            url('/callback')
         );
+        $teamId = $user->ownedTeams()->value('id');
+        $client->forceFill(['team_id' => $teamId])->save();
 
         [$codeVerifier, $codeChallenge] = $this->makePkce();
         $state = 'state-no-nonce';
@@ -159,7 +168,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
     public function test_oauth_approval_flow_preserves_state_parameter(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
@@ -167,8 +176,10 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $client = app(ClientRepository::class)->create(
             $user->id,
             'Dusk Auth Code State',
-            'http://laravel.test/callback'
+            url('/callback')
         );
+        $teamId = $user->ownedTeams()->value('id');
+        $client->forceFill(['team_id' => $teamId])->save();
 
         [$codeVerifier, $codeChallenge] = $this->makePkce();
         $state = 'dusk-state-keep';
@@ -215,7 +226,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
     public function test_oauth_approval_flow_with_pkce_validates_code_verifier(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->withPersonalTeam()->create([
             'email_verified_at' => now(),
             'password' => bcrypt('secret'),
         ]);
@@ -223,8 +234,10 @@ class OAuthApprovalFlowTest extends DuskTestCase
         $client = app(ClientRepository::class)->create(
             $user->id,
             'Dusk Auth Code PKCE',
-            'http://laravel.test/callback'
+            url('/callback')
         );
+        $teamId = $user->ownedTeams()->value('id');
+        $client->forceFill(['team_id' => $teamId])->save();
 
         [$codeVerifier, $codeChallenge] = $this->makePkce();
         $state = 'pkce-state';

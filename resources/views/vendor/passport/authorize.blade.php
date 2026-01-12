@@ -24,8 +24,31 @@
             <form class="space-y-6" action="#" method="POST">
 
                 <div class="card-body">
+                    @php
+                        $service = app(\App\Services\OAuth\TeamAuthorizationService::class);
+                        $accessibleTeams = $service->getUserTeamsWithAccess(auth()->user(), $client);
+                        $selectedTeam = $accessibleTeams->firstWhere('id', request('team_id'))
+                            ?? request()->attributes->get('oauth_team')
+                            ?? $accessibleTeams->first();
+                    @endphp
                     <!-- Introduction -->
                     <p><strong>{{ $client->name }}</strong> is requesting permission to access your account. They'll be redirecting you to <strong>{{ $client->redirect }}</strong></p>
+                    @if ($accessibleTeams->count() > 1)
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Authorize as team</label>
+                            <select name="team_id" form="approve-form" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach ($accessibleTeams as $team)
+                                    <option value="{{ $team->id }}" @selected($selectedTeam && $selectedTeam->id === $team->id)>
+                                        {{ $team->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @elseif($selectedTeam)
+                        <div class="mt-4 text-sm text-slate-600 dark:text-slate-300">
+                            Authorizing as team: <strong>{{ $selectedTeam->name }}</strong>
+                        </div>
+                    @endif
                     <!-- Scope List -->
                     @if (count($scopes) > 0)
                         <div class="scopes">
@@ -50,6 +73,9 @@
                             <input type="hidden" name="state" value="{{ $request->state }}">
                             <input type="hidden" name="client_id" value="{{ $client->id }}">
                             <input type="hidden" name="auth_token" value="{{ $authToken }}">
+                            @if($selectedTeam)
+                                <input type="hidden" name="team_id" value="{{ $selectedTeam->id }}">
+                            @endif
                             <button class="flex justify-center rounded-md border-2 border-red-600 text-red-600 dark:border-red-400 dark:text-red-400 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Cancel</button>
                         </form>
                         <!-- Authorize Button -->
@@ -68,6 +94,9 @@
                             <input type="hidden" name="max_age" value="{{ $request->max_age }}">
                             <input type="hidden" name="prompt" value="{{ $request->prompt }}">
                             <input type="hidden" name="claims" value="{{ $request->claims }}">
+                            @if($selectedTeam)
+                                <input type="hidden" name="team_id" value="{{ $selectedTeam->id }}">
+                            @endif
                             <button type="submit" class="flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Authorize</button>
                         </form>
                     </div>

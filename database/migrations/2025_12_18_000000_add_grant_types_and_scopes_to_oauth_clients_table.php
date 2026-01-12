@@ -21,9 +21,12 @@ return new class extends Migration
     public function up(): void
     {
         $this->schema->table('oauth_clients', function (Blueprint $table) {
-            // Use text for broad DB compatibility (sqlite/json support differs).
-            $table->text('grant_types')->nullable();
-            $table->text('scopes')->nullable();
+            if (!Schema::hasColumn('oauth_clients', 'grant_types')) {
+                $table->text('grant_types')->nullable();
+            }
+            if (!Schema::hasColumn('oauth_clients', 'scopes')) {
+                $table->text('scopes')->nullable();
+            }
         });
     }
 
@@ -39,4 +42,3 @@ return new class extends Migration
         return config('passport.storage.database.connection');
     }
 };
-

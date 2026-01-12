@@ -2,60 +2,63 @@
 
 namespace App\Repositories;
 
+use Laravel\Passport\Passport;
+
 class KeyRepository implements KeyRepositoryContract
 {
     public function getPublicKeyPem(): string
     {
-        if (app()->environment('testing')) {
-            return env('TEST_OIDC_PUBLIC_KEY', $this->testPublicKey());
-        } else {
-            $path = base_path('storage/oauth-public.key');
-        }
-
-        return file_get_contents($path);
+        return $this->resolveKeyContents('public');
     }
 
     public function getPrivateKeyPem(): string
     {
-        if (app()->environment('testing')) {
-            return env('TEST_OIDC_PRIVATE_KEY', $this->testPrivateKey());
-        } else {
-            $path = base_path('storage/oauth-private.key');
+        return $this->resolveKeyContents('private');
+    }
+
+    /**
+     * Resolve a key to PEM contents.
+     *
+     * Supports:
+     * - PEM contents in config/env
+     * - file paths (absolute or relative to base_path)
+     * - file:// URIs
+     *
+     * Defaults to Passport's key path when not configured.
+     */
+    private function resolveKeyContents(string $type): string
+    {
+        $configKey = 'passport.'.$type.'_key';
+        $envKey = 'TEST_OIDC_'.strtoupper($type).'_KEY';
+
+        $raw = (string) config($configKey, '');
+        if ($raw === '') {
+            $raw = (string) env($envKey, '');
         }
 
-        return file_get_contents($path);
+        $raw = str_replace('\\n', "\n", $raw);
+
+        // PEM contents provided directly.
+        if ($raw !== '' && str_contains($raw, '-----BEGIN')) {
+            return $raw;
+        }
+
+        // Default to Passport's key path.
+        if ($raw === '') {
+            $raw = Passport::keyPath('oauth-'.$type.'.key');
+        }
+
+        // Normalize file:// URIs to filesystem paths.
+        if (str_starts_with($raw, 'file://')) {
+            $raw = substr($raw, strlen('file://'));
+        }
+
+        // Normalize relative paths (e.g. storage/oauth-public.key) to absolute.
+        if ($raw !== '' && ! str_starts_with($raw, '/')) {
+            $raw = base_path($raw);
+        }
+
+        return file_get_contents($raw);
     }
 
-    private function testPublicKey(): string
-    {
-        return <<<'KEY'
------BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEiAfDdc0AGJi/7luWGINuD/7+
-+UZ5EONosFVJeFt3PcTJS3BMqzirSolFFIZF5jfXEbnY1r83DNCDOr3LxaVTm160
-exa1Jt/EhVsaMNi2fLZKwlVxR7x8D66zCFAaj6MqFmoVoeAQMtk0iA0WIMRqjYOE
-oTP0TO+cdLXx+3CXywIDAQAB
------END PUBLIC KEY-----
-KEY;
-    }
-
-    private function testPrivateKey(): string
-    {
-        return <<<'KEY'
------BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQDEiAfDdc0AGJi/7luWGINuD/7++UZ5EONosFVJeFt3PcTJS3BM
-qzirSolFFIZF5jfXEbnY1r83DNCDOr3LxaVTm160exa1Jt/EhVsaMNi2fLZKwlVx
-R7x8D66zCFAaj6MqFmoVoeAQMtk0iA0WIMRqjYOEoTP0TO+cdLXx+3CXywIDAQAB
-AoGBAKpLXw++ImQxGc1dQc5sKXc5teLoI0lp4rWuHwoMvVJE9idh+NROm4tW7x1Y
-SOI9wO00SsRKIYYNP6calKZYpFYuZUCDq5ZPkNcaUVbn8NKiWkjOfE7wsBhb1kKE
-n2AFD+a83H8XTur2qxGn8pY/+bexdFv+DE5jBqFaUG2Rgl2BAkEA6WXT14BMWrM8
-pvN8MPmMXxMvmFo0xSg6u40qCMgfHdCqkfNNpJBWlAbIYW/W2PASi6DPd7OJbRRs
-IOSk5pz50QJBAN5aXoaZySUdkGFUTkOcJCIZy9FHn5Vf3L7hIwrKyYVJZZzKzbwQ
-vurIWBLL8GMDIS9ZhDJW60Trw7O3cu6UytUCQQCZ9h5pz50jdK5Zk90un0nLBKBP
-n1HULICwhf66A1VpzwuNFuIBqmoeZaZX6mE6xPD58Ll35H0TADaBrZEcD3jpAkB7
-1LdystD5nq2WEYLRh1SeDsICoZ6irMUiP+6JGZveHFkNjEcNWef39/C4R2tQeM+c
-K91tIbp1KUKf5pFwch5hAkBlZG9wirtmHg56k97X3CJidb8sRP/6IDdnh3oX1N1C
-ccahJgN9zeps2sonMSKcwk3Y8ZndKyGKoU9pYNCXS6tl
------END RSA PRIVATE KEY-----
-KEY;
-    }
 }

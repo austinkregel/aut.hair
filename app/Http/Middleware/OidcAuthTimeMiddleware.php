@@ -40,6 +40,3 @@ class OidcAuthTimeMiddleware
         return $next($request);
     }
 }
-
-
-

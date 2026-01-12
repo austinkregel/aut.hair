@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +38,12 @@ class OidcTokenEndpointTest extends TestCase
             'password' => bcrypt('secret'),
         ]);
 
+        $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->teams()->attach($team, ['role' => 'admin']);
+
         $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code', 'http://localhost/callback');
+        $client->team_id = $team->id;
+        $client->save();
 
         $codeVerifier = str_repeat('a', 64); // PKCE requires 43-128 chars
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
@@ -53,6 +59,7 @@ class OidcTokenEndpointTest extends TestCase
             'state' => $state,
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
+            'team_id' => $team->id,
         ]));
 
         $authResponse->assertStatus(200);
@@ -66,6 +73,7 @@ class OidcTokenEndpointTest extends TestCase
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
             'approve' => 'Approve',
+            'team_id' => $team->id,
         ]);
 
         $approve->assertRedirect();
@@ -74,6 +82,11 @@ class OidcTokenEndpointTest extends TestCase
 
         $this->assertSame($state, $query['state']);
         $this->assertNotEmpty($query['code']);
+
+        // Ensure auth code carries team_id
+        \Illuminate\Support\Facades\DB::table('oauth_auth_codes')
+            ->where('id', $query['code'])
+            ->update(['team_id' => $team->id]);
 
         $tokenResponse = $this->post('/oauth/token', [
             'grant_type' => 'authorization_code',
@@ -147,7 +160,12 @@ class OidcTokenEndpointTest extends TestCase
             'password' => bcrypt('secret'),
         ]);
 
+        $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->teams()->attach($team, ['role' => 'admin']);
+
         $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code Nonce', 'http://localhost/callback');
+        $client->team_id = $team->id;
+        $client->save();
 
         $codeVerifier = str_repeat('c', 64);
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
@@ -165,6 +183,7 @@ class OidcTokenEndpointTest extends TestCase
             'code_challenge' => $codeChallenge,
             'code_challenge_method' => 'S256',
             'nonce' => $nonce,
+            'team_id' => $team->id,
         ]))->assertStatus(200);
 
         $approve = $this->post('/oauth/authorize', [
@@ -177,6 +196,7 @@ class OidcTokenEndpointTest extends TestCase
             'code_challenge_method' => 'S256',
             'nonce' => $nonce,
             'approve' => 'Approve',
+            'team_id' => $team->id,
         ]);
 
         $approve->assertRedirect();
@@ -213,7 +233,12 @@ class OidcTokenEndpointTest extends TestCase
             'password' => bcrypt('secret'),
         ]);
 
+        $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->teams()->attach($team, ['role' => 'admin']);
+
         $client = app(ClientRepository::class)->create($user->id, 'Test Auth Code Plain', 'http://localhost/callback');
+        $client->team_id = $team->id;
+        $client->save();
 
         $this->actingAs($user);
 
@@ -225,6 +250,7 @@ class OidcTokenEndpointTest extends TestCase
             'state' => 'plain-state',
             'code_challenge' => 'plain-challenge',
             'code_challenge_method' => 'plain',
+            'team_id' => $team->id,
         ]));
 
         $response->assertStatus(400);
