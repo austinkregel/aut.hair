@@ -60,4 +60,5 @@ class KeyRepository implements KeyRepositoryContract
 
         return file_get_contents($raw);
     }
+
 }

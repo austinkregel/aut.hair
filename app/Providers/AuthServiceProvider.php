@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Policies\OAuthClientPolicy;
 use App\Models\Team;
 use App\Policies\OAuthClientPolicy;
 use App\Policies\TeamPolicy;

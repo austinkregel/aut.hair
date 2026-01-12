@@ -22,7 +22,7 @@ class OidcTokenRevocationController extends Controller
 
     public function __construct()
     {
-        $this->signer = new Sha256;
+        $this->signer = new Sha256();
         $publicKey = config('passport.public_key');
         if (is_string($publicKey) && file_exists($publicKey)) {
             $publicKey = file_get_contents($publicKey);
