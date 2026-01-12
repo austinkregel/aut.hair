@@ -5,8 +5,8 @@ namespace App\Http\Middleware;
 use App\Services\OAuth\TeamAuthorizationService;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Laravel\Passport\Client;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckOAuthTeamAccess
 {
@@ -61,4 +61,3 @@ class CheckOAuthTeamAccess
         return $next($request);
     }
 }
-

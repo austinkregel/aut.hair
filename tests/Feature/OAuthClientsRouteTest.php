@@ -191,4 +191,3 @@ class OAuthClientsRouteTest extends TestCase
         $this->delete('/oauth/clients/'.$victimClient->id)->assertForbidden();
     }
 }
-

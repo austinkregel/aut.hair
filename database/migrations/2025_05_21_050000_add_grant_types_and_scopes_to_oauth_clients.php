@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('oauth_clients', function (Blueprint $table) {
-            $table->json('grant_types')->nullable()->after('redirect');
-            $table->json('scopes')->nullable()->after('grant_types');
+            if (!Schema::hasColumn('oauth_clients', 'grant_types')) {
+                $table->json('grant_types')->nullable()->after('redirect');
+            }
+            if (!Schema::hasColumn('oauth_clients', 'scopes')) {
+                $table->json('scopes')->nullable()->after('grant_types');
+            }
         });
     }
 

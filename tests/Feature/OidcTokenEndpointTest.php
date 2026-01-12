@@ -51,7 +51,7 @@ class OidcTokenEndpointTest extends TestCase
 
         $this->actingAs($user);
 
-        $authResponse = $this->get('/oauth/authorize?' . http_build_query([
+        $authResponse = $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,
@@ -109,14 +109,14 @@ class OidcTokenEndpointTest extends TestCase
         $idToken = $tokenResponse->json('id_token');
         $this->assertNotEmpty($idToken);
 
-        $parser = new Parser(new JoseEncoder());
+        $parser = new Parser(new JoseEncoder);
         $jwt = $parser->parse($idToken);
-        $validator = new Validator();
+        $validator = new Validator;
         $validator->assert(
             $jwt,
             new LooseValidAt(new SystemClock(new \DateTimeZone('UTC'))),
             new SignedWith(
-                new Sha256(),
+                new Sha256,
                 InMemory::file(base_path('tests/Feature/test-public.key'))
             )
         );
@@ -174,7 +174,7 @@ class OidcTokenEndpointTest extends TestCase
 
         $this->actingAs($user);
 
-        $this->get('/oauth/authorize?' . http_build_query([
+        $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,
@@ -215,7 +215,7 @@ class OidcTokenEndpointTest extends TestCase
         $idToken = $tokenResponse->json('id_token');
         $this->assertNotEmpty($idToken);
 
-        $jwt = (new Parser(new JoseEncoder()))->parse($idToken);
+        $jwt = (new Parser(new JoseEncoder))->parse($idToken);
         $claims = $jwt->claims()->all();
 
         $this->assertNotNull($claims['nonce'] ?? null);
@@ -242,7 +242,7 @@ class OidcTokenEndpointTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get('/oauth/authorize?' . http_build_query([
+        $response = $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,

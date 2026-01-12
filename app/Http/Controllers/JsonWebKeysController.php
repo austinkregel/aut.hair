@@ -48,9 +48,9 @@ class JsonWebKeysController extends Controller
     }
 
     /**
-    * Build a stable kid. Prefer configured kid; otherwise derive a base64url
-    * SHA-256 fingerprint of the public key PEM.
-    */
+     * Build a stable kid. Prefer configured kid; otherwise derive a base64url
+     * SHA-256 fingerprint of the public key PEM.
+     */
     private function determineKeyId(string $publicKeyPem): string
     {
         $fingerprint = hash('sha256', $publicKeyPem, true);

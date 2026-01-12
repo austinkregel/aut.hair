@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Http\Middleware\OidcTokenBlacklistMiddleware;
-use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;

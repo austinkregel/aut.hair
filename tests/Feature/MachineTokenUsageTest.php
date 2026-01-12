@@ -112,5 +112,3 @@ class MachineTokenUsageTest extends TestCase
             ]);
     }
 }
-
-

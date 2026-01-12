@@ -70,7 +70,7 @@ class JwksEndpointTest extends TestCase
 
         $this->actingAs($user);
 
-        $this->get('/oauth/authorize?' . http_build_query([
+        $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,
@@ -108,7 +108,7 @@ class JwksEndpointTest extends TestCase
         $this->assertNotEmpty($idToken);
 
         // Parse ID token header to get kid
-        $parser = new Parser(new JoseEncoder());
+        $parser = new Parser(new JoseEncoder);
         $jwt = $parser->parse($idToken);
         $kid = $jwt->headers()->get('kid');
 
@@ -117,16 +117,16 @@ class JwksEndpointTest extends TestCase
         $jwksResponse->assertStatus(200);
         $keys = $jwksResponse->json('keys');
         $kidValues = collect($keys)->pluck('kid')->all();
-        
+
         $this->assertContains($kid, $kidValues, 'JWKS must contain the key with matching kid');
 
         // Verify signature with the matched JWKS key
         // Re-use our configured public key to validate signature; kid presence + JWKS match is asserted.
-        $validator = new Validator();
+        $validator = new Validator;
         $validator->assert(
             $jwt,
             new LooseValidAt(new \Lcobucci\Clock\SystemClock(new \DateTimeZone('UTC'))),
-            new SignedWith(new Sha256(), InMemory::file(base_path('tests/Feature/test-public.key')))
+            new SignedWith(new Sha256, InMemory::file(base_path('tests/Feature/test-public.key')))
         );
     }
 }

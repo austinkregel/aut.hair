@@ -22,4 +22,3 @@ class TeamOAuthMigrationsTest extends TestCase
         $this->assertTrue(Schema::hasColumn('oauth_clients', 'scopes'));
     }
 }
-

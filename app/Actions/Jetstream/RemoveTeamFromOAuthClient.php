@@ -43,11 +43,10 @@ class RemoveTeamFromOAuthClient
                 'required',
                 Rule::exists('oauth_clients', 'id'),
             ],
-        ])->after(function ($validator) use ($invitingTeam, $invitedTeam, $client) {
+        ])->after(function ($validator) use ($invitingTeam, $client) {
             if ($client->team_id !== $invitingTeam->id) {
                 $validator->errors()->add('oauth_client_id', __('This client is not owned by the inviting team.'));
             }
         })->validate();
     }
 }
-

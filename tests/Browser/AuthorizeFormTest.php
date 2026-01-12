@@ -5,9 +5,9 @@ namespace Tests\Browser;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Laravel\Dusk\Browser;
 use Laravel\Passport\ClientRepository;
 use Tests\DuskTestCase;
-use Laravel\Dusk\Browser;
 
 class AuthorizeFormTest extends DuskTestCase
 {
@@ -61,7 +61,7 @@ class AuthorizeFormTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $query, $state, $codeChallenge, $nonce) {
             $browser->loginAs($user)
-                ->visit('/oauth/authorize?' . $query)
+                ->visit('/oauth/authorize?'.$query)
                 ->assertInputValue('state', $state)
                 ->assertInputValue('response_type', 'code')
                 ->assertInputValue('scope', 'openid profile email')
@@ -77,5 +77,3 @@ class AuthorizeFormTest extends DuskTestCase
         Carbon::setTestNow(null);
     }
 }
-
-

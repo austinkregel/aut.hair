@@ -42,4 +42,3 @@ class TeamOAuthClientController extends Controller
         return response()->noContent();
     }
 }
-

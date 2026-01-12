@@ -128,4 +128,3 @@ class ClientController extends Controller
         return $user?->currentTeam ?? $user?->allTeams()->first();
     }
 }
-

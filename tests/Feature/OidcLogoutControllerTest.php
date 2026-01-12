@@ -6,7 +6,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Client;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
@@ -108,7 +107,7 @@ class OidcLogoutControllerTest extends TestCase
     private function encodeSignedJwt(array $payload): string
     {
         $config = Configuration::forAsymmetricSigner(
-            new Sha256(),
+            new Sha256,
             InMemory::file(config('passport.private_key')),
             InMemory::file(config('passport.public_key'))
         );
@@ -118,8 +117,8 @@ class OidcLogoutControllerTest extends TestCase
             ->permittedFor((string) $payload['aud'])
             ->identifiedBy($payload['jti'])
             ->relatedTo((string) $payload['sub'])
-            ->issuedAt(new \DateTimeImmutable())
-            ->expiresAt((new \DateTimeImmutable())->setTimestamp($payload['exp']));
+            ->issuedAt(new \DateTimeImmutable)
+            ->expiresAt((new \DateTimeImmutable)->setTimestamp($payload['exp']));
 
         // Add any non-registered claims
         foreach ($payload as $key => $value) {

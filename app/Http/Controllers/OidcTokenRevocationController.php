@@ -17,16 +17,16 @@ use Lcobucci\JWT\Validation\Validator;
 class OidcTokenRevocationController extends Controller
 {
     private Sha256 $signer;
+
     private string $publicKey;
 
     public function __construct()
     {
-        $this->signer = new Sha256();
+        $this->signer = new Sha256;
         $publicKey = config('passport.public_key');
         if (is_string($publicKey) && file_exists($publicKey)) {
             $publicKey = file_get_contents($publicKey);
         }
-
 
         if (empty($publicKey)) {
             abort(500, 'Invalid public key, please check your configuration.');
@@ -153,7 +153,8 @@ class OidcTokenRevocationController extends Controller
                 return false;
             }
             $jti = $jwt->claims()->get('jti');
-            Cache::put('oidc_token_blacklist:' . $jti, true, now()->addDay());
+            Cache::put('oidc_token_blacklist:'.$jti, true, now()->addDay());
+
             return true;
         } catch (\Throwable) {
             return false;
@@ -162,9 +163,9 @@ class OidcTokenRevocationController extends Controller
 
     private function parseJwt(string $token): ?\Lcobucci\JWT\Token
     {
-        $parser = new Parser(new JoseEncoder());
+        $parser = new Parser(new JoseEncoder);
         $jwt = $parser->parse($token);
-        $validator = new Validator();
+        $validator = new Validator;
         $validator->assert(
             $jwt,
             new LooseValidAt(new SystemClock(new \DateTimeZone('UTC'))),
@@ -177,4 +178,3 @@ class OidcTokenRevocationController extends Controller
         return $jwt;
     }
 }
-

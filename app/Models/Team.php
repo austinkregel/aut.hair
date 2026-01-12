@@ -7,10 +7,10 @@ use App\Models\Contracts\Owner;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use Laravel\Passport\Client;
 

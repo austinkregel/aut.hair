@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Repositories\KeyRepositoryContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Http\Controllers\AccessTokenController as PassportAccessTokenController;
 use Laravel\Passport\TokenRepository;
 use League\OAuth2\Server\AuthorizationServer;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
 
 class AccessTokenController extends PassportAccessTokenController

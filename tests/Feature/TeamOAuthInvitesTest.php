@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Client;
 use Tests\TestCase;
 

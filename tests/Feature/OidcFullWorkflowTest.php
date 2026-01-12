@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Session;
 use Laravel\Passport\ClientRepository;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
@@ -54,7 +54,7 @@ class OidcFullWorkflowTest extends TestCase
 
         $this->actingAs($user);
 
-        $this->get('/oauth/authorize?' . http_build_query([
+        $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,
@@ -107,13 +107,13 @@ class OidcFullWorkflowTest extends TestCase
         $this->assertNotEmpty($response->json('id_token'));
 
         // Ensure ID token corresponds to user sub
-        $parser = new Parser(new JoseEncoder());
+        $parser = new Parser(new JoseEncoder);
         $idToken = $parser->parse($response->json('id_token'));
         $this->assertEquals((string) $user->id, $idToken->claims()->get('sub'));
 
         // Step 4: Use the access token to fetch userinfo from the discovered userinfo endpoint
         $userinfo = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $accessToken,
+            'Authorization' => 'Bearer '.$accessToken,
         ])->getJson($userinfoEndpoint);
 
         $userinfo->assertStatus(200);
@@ -144,7 +144,7 @@ class OidcFullWorkflowTest extends TestCase
         $codeVerifier = str_repeat('d', 64);
         $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
 
-        $response = $this->get('/oauth/authorize?' . http_build_query([
+        $response = $this->get('/oauth/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $client->id,
             'redirect_uri' => $client->redirect,

@@ -54,4 +54,3 @@ class OidcUserinfoTest extends TestCase
         $response->assertJsonStructure(['sub', 'name', 'picture', 'email', 'email_verified']);
     }
 }
-

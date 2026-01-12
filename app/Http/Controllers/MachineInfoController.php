@@ -52,7 +52,7 @@ class MachineInfoController extends Controller
     private function extractTokenId(string $jwtString): ?string
     {
         try {
-            $parser = new Parser(new JoseEncoder());
+            $parser = new Parser(new JoseEncoder);
             $jwt = $parser->parse($jwtString);
 
             if (! $jwt instanceof Plain) {
@@ -60,11 +60,10 @@ class MachineInfoController extends Controller
             }
 
             $jti = $jwt->claims()->get('jti');
+
             return is_string($jti) && $jti !== '' ? $jti : null;
         } catch (Throwable) {
             return null;
         }
     }
 }
-
-

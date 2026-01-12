@@ -109,5 +109,3 @@ class OidcClientCredentialsTest extends TestCase
         ]);
     }
 }
-
-

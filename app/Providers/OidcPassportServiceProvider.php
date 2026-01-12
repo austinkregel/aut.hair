@@ -6,9 +6,9 @@ use App\Repositories\KeyRepositoryContract;
 use App\Services\Auth\OidcIdTokenResponse;
 use DateInterval;
 use Illuminate\Encryption\Encrypter;
-use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\AccessTokenRepository;
 use Laravel\Passport\Bridge\ClientRepository;
+use Laravel\Passport\Passport;
 use Laravel\Passport\Passport as LaravelPassport;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
@@ -94,14 +94,14 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
             $this->app->make(\Laravel\Passport\Bridge\AuthCodeRepository::class),
             $this->app->make(\Laravel\Passport\Bridge\RefreshTokenRepository::class),
             new \DateInterval('PT10M'),
-            new \Nyholm\Psr7\Response(),
+            new \Nyholm\Psr7\Response,
             $this->app->make(LaravelCurrentRequestService::class),
         );
     }
 
     protected function buildClientCredentialsGrant(): ClientCredentialsGrant
     {
-        return new ClientCredentialsGrant();
+        return new ClientCredentialsGrant;
     }
 
     /**
@@ -135,7 +135,7 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
 
         return new CryptKey($raw, null, false);
     }
-  
+
     protected function buildRefreshTokenGrant(): RefreshTokenGrant
     {
         $grant = new RefreshTokenGrant($this->app->make(\Laravel\Passport\Bridge\RefreshTokenRepository::class));
@@ -144,4 +144,3 @@ class OidcPassportServiceProvider extends \OpenIDConnect\Laravel\PassportService
         return $grant;
     }
 }
-

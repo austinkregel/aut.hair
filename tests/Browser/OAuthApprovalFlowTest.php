@@ -65,7 +65,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $query, &$authCode, $state) {
             $browser->loginAs($user)
-                ->visit('/oauth/authorize?' . $query)
+                ->visit('/oauth/authorize?'.$query)
                 ->press('Authorize')
                 ->waitForLocation('/callback', 5)
                 ->assertQueryStringHas('state', $state)
@@ -138,7 +138,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $query, &$authCode, $state) {
             $browser->loginAs($user)
-                ->visit('/oauth/authorize?' . $query)
+                ->visit('/oauth/authorize?'.$query)
                 ->press('Authorize')
                 ->waitForLocation('/callback', 5)
                 ->assertQueryStringHas('state', $state)
@@ -200,7 +200,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $query, &$authCode, &$callbackQuery, $state) {
             $browser->loginAs($user)
-                ->visit('/oauth/authorize?' . $query)
+                ->visit('/oauth/authorize?'.$query)
                 ->press('Authorize')
                 ->waitForLocation('/callback', 5)
                 ->assertQueryStringHas('state', $state)
@@ -257,7 +257,7 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($user, $query, &$authCode, $state) {
             $browser->loginAs($user)
-                ->visit('/oauth/authorize?' . $query)
+                ->visit('/oauth/authorize?'.$query)
                 ->press('Authorize')
                 ->waitForLocation('/callback', 5)
                 ->assertQueryStringHas('state', $state)
@@ -312,7 +312,6 @@ class OAuthApprovalFlowTest extends DuskTestCase
 
     private function parseIdToken(string $idToken): UnencryptedToken
     {
-        return (new Parser(new JoseEncoder()))->parse($idToken);
+        return (new Parser(new JoseEncoder))->parse($idToken);
     }
 }
-

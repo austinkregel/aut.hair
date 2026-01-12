@@ -25,6 +25,7 @@ class ApproveAuthorizationController extends PassportApproveAuthorizationControl
         $codeFromRedirect = $this->extractCodeFromRedirect($response);
         if ($codeFromRedirect) {
             $this->setTeamOnCode($codeFromRedirect, $teamId);
+
             return $response;
         }
 
@@ -64,4 +65,3 @@ class ApproveAuthorizationController extends PassportApproveAuthorizationControl
             ->update(['team_id' => $teamId]);
     }
 }
-

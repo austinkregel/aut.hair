@@ -7,14 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
-use Lcobucci\JWT\Validation\Validator;
-use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\UnencryptedToken;
 
 class OidcLogoutController extends Controller
 {
@@ -23,7 +22,7 @@ class OidcLogoutController extends Controller
     public function __construct(KeyRepositoryContract $keyRepository)
     {
         $this->jwtConfig = Configuration::forAsymmetricSigner(
-            new Sha256(),
+            new Sha256,
             InMemory::plainText($keyRepository->getPrivateKeyPem()),
             InMemory::plainText($keyRepository->getPublicKeyPem()),
         );
@@ -153,6 +152,7 @@ class OidcLogoutController extends Controller
     protected function extractClientIdFromIdToken(UnencryptedToken $jwt)
     {
         $aud = $jwt->claims()->get('aud');
+
         return is_array($aud) ? ($aud[0] ?? null) : $aud;
     }
 
@@ -173,6 +173,7 @@ class OidcLogoutController extends Controller
             return $token;
         } catch (\Throwable $e) {
             Log::warning('Invalid id_token_hint', ['error' => $e->getMessage()]);
+
             return null;
         }
     }

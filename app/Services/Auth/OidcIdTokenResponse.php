@@ -3,18 +3,19 @@
 namespace App\Services\Auth;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\Session;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Configuration;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use Illuminate\Support\Facades\Session;
-use OpenIDConnect\Interfaces\IdentityEntityInterface;
-use OpenIDConnect\Interfaces\CurrentRequestServiceInterface;
 use OpenIDConnect\IdTokenResponse;
+use OpenIDConnect\Interfaces\CurrentRequestServiceInterface;
+use OpenIDConnect\Interfaces\IdentityEntityInterface;
 
 class OidcIdTokenResponse extends IdTokenResponse
 {
     protected Configuration $config;
+
     /**
      * Keep a local reference to the current request service to avoid dynamic property access issues.
      */
@@ -112,7 +113,7 @@ class OidcIdTokenResponse extends IdTokenResponse
 
         $authTime = isset($authCodePayload['auth_time'])
             ? (int) $authCodePayload['auth_time']
-            : (int) Session::get('oidc_auth_time', (new DateTimeImmutable())->getTimestamp());
+            : (int) Session::get('oidc_auth_time', (new DateTimeImmutable)->getTimestamp());
 
         $builder = $builder->withClaim('auth_time', $authTime);
 
@@ -145,4 +146,3 @@ class OidcIdTokenResponse extends IdTokenResponse
         return false;
     }
 }
-

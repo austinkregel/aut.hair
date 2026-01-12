@@ -62,8 +62,8 @@ class AccessTokenTeamContextTest extends TestCase
 
         $tokenPayload = base64_encode(json_encode(['alg' => 'none']));
         $accessPayload = base64_encode(json_encode(['jti' => 'jti123']));
-        $fakeToken = rtrim(strtr($tokenPayload, '+/', '-_'), '=') . '.' .
-            rtrim(strtr($accessPayload, '+/', '-_'), '=') . '.sig';
+        $fakeToken = rtrim(strtr($tokenPayload, '+/', '-_'), '=').'.'.
+            rtrim(strtr($accessPayload, '+/', '-_'), '=').'.sig';
 
         $this->mock(AuthorizationServer::class, function ($mock) use ($fakeToken) {
             $psrResponse = new Psr7Response(

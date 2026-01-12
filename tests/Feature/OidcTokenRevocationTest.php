@@ -52,7 +52,7 @@ class OidcTokenRevocationTest extends TestCase
 
         $revocation->assertStatus(200)->assertJson(['revoked' => true]);
 
-        $parser = new Parser(new JoseEncoder());
+        $parser = new Parser(new JoseEncoder);
         $jti = $parser->parse($accessToken)->claims()->get('jti');
         $this->assertDatabaseHas('oauth_access_tokens', [
             'id' => $jti,
@@ -69,4 +69,3 @@ class OidcTokenRevocationTest extends TestCase
         $response->assertStatus(401);
     }
 }
-

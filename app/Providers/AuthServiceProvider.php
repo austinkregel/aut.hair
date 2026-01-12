@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Policies\OAuthClientPolicy;
 use App\Models\Team;
+use App\Policies\OAuthClientPolicy;
 use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Passport\Client;

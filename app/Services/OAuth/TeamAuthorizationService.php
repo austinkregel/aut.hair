@@ -53,4 +53,3 @@ class TeamAuthorizationService
         return $team->getEffectivePermissionsForClient($client->id);
     }
 }
-

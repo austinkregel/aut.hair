@@ -69,4 +69,3 @@ class OAuthClientPolicy
         return $this->inviteTeam($user, $client, $invitingTeam);
     }
 }
-

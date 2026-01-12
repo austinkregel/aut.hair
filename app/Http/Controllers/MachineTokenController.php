@@ -9,16 +9,15 @@ use Illuminate\Validation\Rule;
 use Laravel\Passport\Client;
 use Laravel\Passport\Token;
 use Lcobucci\JWT\Encoding\JoseEncoder;
-use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\Token\Plain;
 use Psr\Http\Message\ServerRequestInterface;
 
 class MachineTokenController extends Controller
 {
     public function __construct(
         private readonly AccessTokenController $accessTokenController,
-    ) {
-    }
+    ) {}
 
     /**
      * List the current user's client_credentials clients.
@@ -176,7 +175,7 @@ class MachineTokenController extends Controller
         }
 
         $token->revoke();
-        Cache::put('oidc_token_blacklist:' . $token->id, true, now()->addDay());
+        Cache::put('oidc_token_blacklist:'.$token->id, true, now()->addDay());
 
         return response()->json(['revoked' => true]);
     }
@@ -184,17 +183,17 @@ class MachineTokenController extends Controller
     private function extractTokenId(string $jwtString): ?string
     {
         try {
-            $parser = new Parser(new JoseEncoder());
+            $parser = new Parser(new JoseEncoder);
             $jwt = $parser->parse($jwtString);
             if (! $jwt instanceof Plain) {
                 return null;
             }
 
             $jti = $jwt->claims()->get('jti');
+
             return is_string($jti) && $jti !== '' ? $jti : null;
         } catch (\Throwable) {
             return null;
         }
     }
 }
-

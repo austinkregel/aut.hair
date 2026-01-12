@@ -26,4 +26,3 @@ class OAuthTokenRouteTest extends TestCase
         $response->assertStatus(400);
     }
 }
-
