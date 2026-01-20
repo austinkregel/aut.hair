@@ -33,14 +33,20 @@ class AccessTokenController extends PassportAccessTokenController
         $teamIdForFlow = null;
         if ($grantType === 'authorization_code') {
             $code = $payload['code'] ?? '';
-            $clientId = $payload['client_id'] ?? '';
 
-            if ($code === '' || $clientId === '') {
+            // code is always required for authorization_code grant
+            if ($code === '') {
                 return new SymfonyJsonResponse([
                     'error' => 'invalid_request',
-                    'error_description' => 'code and client_id are required for authorization_code.',
-                ], 422);
+                    'error_description' => 'code is required for authorization_code.',
+                ], 400);
             }
+
+            // client_id may come from:
+            // 1. The request body (client_secret_post)
+            // 2. The Authorization header (client_secret_basic)
+            // 3. The auth code record (inferred)
+            $clientId = $payload['client_id'] ?? $this->extractClientIdFromBasicAuth($request) ?? '';
 
             if (! $this->enrichTeamContext($code, $clientId, $teamIdForFlow)) {
                 return new SymfonyJsonResponse([
@@ -59,6 +65,29 @@ class AccessTokenController extends PassportAccessTokenController
 
             return new JsonResponse($data, $laravelResponse->getStatusCode(), $laravelResponse->headers->all());
         });
+    }
+
+    /**
+     * Extract client_id from HTTP Basic Authorization header (client_secret_basic auth method).
+     */
+    private function extractClientIdFromBasicAuth(ServerRequestInterface $request): ?string
+    {
+        $authHeader = $request->getHeaderLine('Authorization');
+        if (empty($authHeader) || ! str_starts_with($authHeader, 'Basic ')) {
+            return null;
+        }
+
+        $credentials = base64_decode(substr($authHeader, 6), true);
+        if ($credentials === false) {
+            return null;
+        }
+
+        $parts = explode(':', $credentials, 2);
+        if (count($parts) < 1 || $parts[0] === '') {
+            return null;
+        }
+
+        return urldecode($parts[0]);
     }
 
     private function enrichTeamContext(?string $code, ?string &$clientId, ?int &$teamIdForFlow): bool

@@ -255,4 +255,93 @@ class OidcTokenEndpointTest extends TestCase
 
         $response->assertStatus(400);
     }
+
+    /**
+     * Test that the token endpoint accepts client_secret_basic authentication
+     * where client_id and client_secret are provided in the Authorization header
+     * rather than in the request body.
+     */
+    public function test_auth_code_with_client_secret_basic_auth_succeeds()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+            'password' => bcrypt('secret'),
+        ]);
+
+        $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->teams()->attach($team, ['role' => 'admin']);
+
+        $client = app(ClientRepository::class)->create($user->id, 'Test Basic Auth', 'http://localhost/callback');
+        $client->team_id = $team->id;
+        $client->save();
+
+        $codeVerifier = str_repeat('b', 64);
+        $codeChallenge = rtrim(strtr(base64_encode(hash('sha256', $codeVerifier, true)), '+/', '-_'), '=');
+        $state = 'basic-auth-state';
+
+        $this->actingAs($user);
+
+        $authResponse = $this->get('/oauth/authorize?' . http_build_query([
+            'response_type' => 'code',
+            'client_id' => $client->id,
+            'redirect_uri' => $client->redirect,
+            'scope' => 'openid profile email',
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+            'team_id' => $team->id,
+        ]));
+
+        $authResponse->assertStatus(200);
+
+        $approve = $this->post('/oauth/authorize', [
+            'state' => $state,
+            'client_id' => $client->id,
+            'response_type' => 'code',
+            'redirect_uri' => $client->redirect,
+            'scope' => 'openid profile email',
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+            'approve' => 'Approve',
+            'team_id' => $team->id,
+        ]);
+
+        $approve->assertRedirect();
+        $location = $approve->headers->get('Location');
+        parse_str(parse_url($location, PHP_URL_QUERY), $query);
+
+        $this->assertSame($state, $query['state']);
+        $this->assertNotEmpty($query['code']);
+
+        // Ensure auth code carries team_id
+        \Illuminate\Support\Facades\DB::table('oauth_auth_codes')
+            ->where('id', $query['code'])
+            ->update(['team_id' => $team->id]);
+
+        // Use HTTP Basic auth (client_secret_basic) instead of client_id/client_secret in body.
+        // This is a standard OAuth2 authentication method per RFC 6749 Section 2.3.1.
+        $basicAuth = base64_encode($client->id . ':' . $client->secret);
+
+        $tokenResponse = $this->withHeaders([
+            'Authorization' => 'Basic ' . $basicAuth,
+        ])->post('/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'redirect_uri' => $client->redirect,
+            'code' => $query['code'],
+            'code_verifier' => $codeVerifier,
+            // Notably: client_id is NOT in the body - it's in the Authorization header
+        ]);
+
+        $tokenResponse->assertStatus(200);
+        $tokenResponse->assertJsonStructure([
+            'token_type',
+            'expires_in',
+            'access_token',
+            'refresh_token',
+            'id_token',
+        ]);
+
+        $idToken = $tokenResponse->json('id_token');
+        $this->assertNotEmpty($idToken);
+    }
 }
