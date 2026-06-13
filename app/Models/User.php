@@ -6,6 +6,7 @@ use App\Models\Contracts\CrudContract;
 use App\Models\Contracts\Owner;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -73,6 +74,11 @@ class User extends Authenticatable implements CrudContract, LdapAuthenticatable,
     public function socials(): MorphMany
     {
         return $this->morphMany(Social::class, 'ownable');
+    }
+
+    public function syncSeed(): HasOne
+    {
+        return $this->hasOne(SyncSeed::class);
     }
 
     public function getActivitylogOptions(): LogOptions

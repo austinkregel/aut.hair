@@ -15,6 +15,7 @@ return [
             'profile' => 'Information about your profile',
             'email' => 'Information about your email address',
             'address' => 'Information about your address',
+            'sync' => 'Release your sync-chain seed for self-hosted device sync',
             // 'login' => 'See your login information',
         ],
     ],
