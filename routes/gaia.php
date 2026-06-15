@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccessTokenController;
+use App\Http\Controllers\Gaia\EmbeddedSetupController;
 use App\Http\Controllers\Gaia\UserinfoController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,8 +17,9 @@ use Illuminate\Support\Facades\Route;
 | RouteServiceProvider (GAIA paths are root-relative). See the fyde-fork repo's
 | docs/gaia-shim-spike.md for the full surface.
 |
-| This file is the token half (device-independent). The sign-in webview page
-| (embedded/setup/v2/chromeos) lands in a later slice.
+| Includes the token endpoints and the sign-in webview page
+| (embedded/setup/v2/chromeos). Token redemption with a real Passport auth code
+| is slice 2b.
 */
 
 // Token endpoint (apis origin) — authorization_code and refresh_token grants.
@@ -36,3 +38,11 @@ Route::post('oauth2/v4/token', [AccessTokenController::class, 'issueToken'])
 Route::middleware('auth:api')
     ->get('oauth2/v1/userinfo', UserinfoController::class)
     ->name('userinfo');
+
+// Sign-in webview page (GAIA origin) — served to the OOBE <webview>. Behind
+// web/auth: an unauthenticated device hits aut.hair's normal login (creds +
+// 2FA) first, then returns here. The google-accounts-signin header + oauth_code
+// cookie ride on this response; the page posts userInfo -> closeView.
+Route::middleware(['web', 'auth'])
+    ->get('embedded/setup/v2/chromeos', EmbeddedSetupController::class)
+    ->name('embedded-setup');
