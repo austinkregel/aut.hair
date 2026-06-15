@@ -44,6 +44,12 @@ class RouteServiceProvider extends ServiceProvider
                 Route::prefix('oauth')
                     ->group(base_path('routes/passport.php'));
             });
+
+            // GAIA-compat (openFyde / ChromeOS): root-relative endpoints, no
+            // prefix (Chromium calls e.g. /oauth2/v4/token, /oauth2/v1/userinfo).
+            // Per-route middleware is set in the file.
+            Route::as('gaia.')
+                ->group(base_path('routes/gaia.php'));
         });
     }
 }
