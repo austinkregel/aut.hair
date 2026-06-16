@@ -71,5 +71,18 @@ class GaiaSignInFlowTest extends TestCase
 
         $token->assertStatus(200);
         $token->assertJsonStructure(['token_type', 'expires_in', 'access_token', 'refresh_token']);
+
+        // The redeemed token must carry a GAIA scope — locks in the
+        // GaiaScopeRepository -> finalizeScopes propagation so a refactor can't
+        // silently drop it (which would break Chrome Sync).
+        $claims = json_decode(
+            base64_decode(strtr(explode('.', $token->json('access_token'))[1], '-_', '+/')) ?: '[]',
+            true
+        );
+        $this->assertContains(
+            'https://www.googleapis.com/auth/chromesync',
+            $claims['scopes'] ?? [],
+            'access token must carry the chromesync scope'
+        );
     }
 }

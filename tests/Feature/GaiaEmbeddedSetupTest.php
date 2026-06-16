@@ -63,6 +63,23 @@ class GaiaEmbeddedSetupTest extends TestCase
         $response->assertSee('closeView', false);
     }
 
+    public function test_misconfigured_client_renders_error_page_not_500(): void
+    {
+        // A provisioning mistake (here: gaia.client_id points at a client that
+        // doesn't exist) must surface as a clean error page, not a 500 mid-OOBE.
+        config(['gaia.client_id' => 'does-not-exist']);
+
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $response = $this->actingAs($user)->get(route('gaia.embedded-setup'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Sign-in is temporarily unavailable', false);
+        // It must NOT pretend to complete: no completion wiring, no auth cookie.
+        $response->assertDontSee('closeView', false);
+        $response->assertCookieMissing('oauth_code');
+    }
+
     public function test_oauth_code_cookie_is_not_empty(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
