@@ -53,16 +53,6 @@ class Team extends JetstreamTeam implements CrudContract, Owner
         return $this->hasMany(Client::class, 'team_id');
     }
 
-    public function invitedTeams(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Team::class,
-            'oauth_client_team_invitations',
-            'inviting_team_id',
-            'invited_team_id'
-        )->withPivot(['oauth_client_id', 'role'])->withTimestamps();
-    }
-
     public function invitingTeams(): BelongsToMany
     {
         return $this->belongsToMany(
