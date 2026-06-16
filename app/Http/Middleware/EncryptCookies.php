@@ -12,6 +12,9 @@ class EncryptCookies extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // openFyde/ChromeOS reads this cookie raw (it's the GAIA oauth_code the
+        // device exchanges at oauth2/v4/token), so it must NOT be Laravel-
+        // encrypted. See app/Http/Controllers/Gaia/EmbeddedSetupController.
+        'oauth_code',
     ];
 }

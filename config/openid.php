@@ -17,6 +17,18 @@ return [
             'address' => 'Information about your address',
             'sync' => 'Release your sync-chain seed for self-hosted device sync',
             // 'login' => 'See your login information',
+
+            // ChromeOS / GAIA-compat scopes. openFyde's Chromium requests these
+            // literal Google scope strings verbatim during sign-in, Chrome Sync,
+            // and device management (it speaks GAIA, repointed at us via
+            // --fydeos-gaia-url/--fydeos-apis-url). Registered so Passport will
+            // mint tokens for them. See the fyde-fork repo's docs/gaia-shim-spike.md.
+            'https://www.google.com/accounts/OAuthLogin' => 'Sign in to your openFyde device',
+            'https://www.googleapis.com/auth/chromesync' => 'Sync your openFyde browser and OS state',
+            'https://www.googleapis.com/auth/userinfo.email' => 'See your email address (openFyde)',
+            'https://www.googleapis.com/auth/userinfo.profile' => 'See your basic profile info (openFyde)',
+            // Deferred (enterprise enrollment only; consumer sign-in skips DM):
+            'https://www.googleapis.com/auth/chromeosdevicemanagement' => 'Enroll this device in management',
         ],
     ],
 
@@ -40,7 +52,10 @@ return [
      */
     'repositories' => [
         'identity' => \OpenIDConnect\Repositories\IdentityRepository::class,
-        'scope' => \OpenIDConnect\Repositories\ScopeRepository::class,
+        // GaiaScopeRepository extends the OIDC one to also accept the GAIA
+        // scopes (from tokens_can above) — the vendor repo hardcodes only the
+        // 5 OIDC scopes and would reject chromesync/OAuthLogin/etc.
+        'scope' => \App\Repositories\GaiaScopeRepository::class,
     ],
 
     /**
