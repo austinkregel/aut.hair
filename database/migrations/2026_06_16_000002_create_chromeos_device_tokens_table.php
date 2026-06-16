@@ -21,8 +21,9 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(ChromeosDevice::class)->nullable()->constrained()->cascadeOnDelete();
             // jti of an access token == oauth_access_tokens.id (revoke target).
-            // Null for refresh tokens (opaque, not a JWT).
-            $table->string('jti')->nullable()->index();
+            // Null for refresh tokens (opaque, not a JWT). Unique so a duplicate
+            // capture (e.g. retry) can't produce two rows for the same token.
+            $table->string('jti')->nullable()->unique();
             $table->string('token_hash', 64);
             $table->string('type'); // access | refresh
             // sha256 of the oauth_code presented at the token endpoint — links the

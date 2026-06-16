@@ -1,5 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { Link } from '@inertiajs/vue3';
 
 defineProps({
     devices: Object,
@@ -78,6 +79,31 @@ const prettyDate = (value) => (value ? new Date(value).toLocaleString() : '—')
                             No ChromeOS devices have signed in yet.
                         </li>
                     </ul>
+
+                    <!-- Pagination -->
+                    <div v-if="devices?.links?.length > 3" class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm">
+                        <p class="text-slate-500 dark:text-slate-300">
+                            Showing {{ devices.from }}–{{ devices.to }} of {{ devices.total }}
+                        </p>
+                        <div class="flex gap-1">
+                            <template v-for="link in devices.links" :key="link.label">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    class="px-3 py-1 rounded border text-xs"
+                                    :class="link.active
+                                        ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-800 dark:border-slate-100'
+                                        : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                                    v-html="link.label"
+                                />
+                                <span
+                                    v-else
+                                    class="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-400 dark:text-slate-500"
+                                    v-html="link.label"
+                                />
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

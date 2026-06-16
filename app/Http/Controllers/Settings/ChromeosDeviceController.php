@@ -20,7 +20,7 @@ class ChromeosDeviceController extends Controller
         return Inertia::render('Admin/ChromeosDevices', [
             'devices' => QueryBuilder::for(ChromeosDevice::class)
                 ->allowedSorts(['id', 'last_seen_at', 'approved'])
-                ->with(['user:id,name,email', 'team:id,name', 'tokens'])
+                ->with(['user:id,name,email', 'team:id,name', 'tokens' => fn ($q) => $q->latest('issued_at')->limit(20)])
                 ->defaultSort('-last_seen_at')
                 ->paginate()
                 ->appends(request()->query()),
