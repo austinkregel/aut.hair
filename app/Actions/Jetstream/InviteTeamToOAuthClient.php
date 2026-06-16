@@ -18,12 +18,28 @@ class InviteTeamToOAuthClient
 
         $this->validate($invitingTeam, $invitedTeam, $client, $role);
 
-        $invitingTeam->invitedTeams()->syncWithoutDetaching([
-            $invitedTeam->id => [
-                'oauth_client_id' => $client->id,
+        // Each invitation is unique per (inviting team, invited team, client).
+        // A belongsToMany sync keys only on invited_team_id, so it would overwrite
+        // an existing grant when the same team is invited to a second client.
+        $keys = [
+            'inviting_team_id' => $invitingTeam->id,
+            'invited_team_id' => $invitedTeam->id,
+            'oauth_client_id' => $client->id,
+        ];
+
+        $existing = DB::table('oauth_client_team_invitations')->where($keys)->first();
+
+        if ($existing) {
+            DB::table('oauth_client_team_invitations')
+                ->where('id', $existing->id)
+                ->update(['role' => $role, 'updated_at' => now()]);
+        } else {
+            DB::table('oauth_client_team_invitations')->insert($keys + [
                 'role' => $role,
-            ],
-        ]);
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     protected function validate(Team $invitingTeam, Team $invitedTeam, Client $client, ?string $role): void

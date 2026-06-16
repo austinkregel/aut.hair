@@ -28,7 +28,7 @@ class MachineTokenController extends Controller
         $user = $request->user();
 
         $clients = Client::query()
-            ->where('user_id', $user->id)
+            ->whereIn('team_id', $user->allTeams()->pluck('id'))
             ->where('revoked', false)
             ->get()
             ->filter(fn (Client $client) => $client->hasGrantType('client_credentials') && $client->confidential())
@@ -67,7 +67,7 @@ class MachineTokenController extends Controller
 
         $client = Client::query()
             ->where('id', $validated['client_id'])
-            ->where('user_id', $request->user()->id)
+            ->whereIn('team_id', $request->user()->allTeams()->pluck('id'))
             ->where('revoked', false)
             ->first();
 
@@ -122,7 +122,7 @@ class MachineTokenController extends Controller
     {
         $client = Client::query()
             ->where('id', $clientId)
-            ->where('user_id', $request->user()->id)
+            ->whereIn('team_id', $request->user()->allTeams()->pluck('id'))
             ->where('revoked', false)
             ->first();
 
@@ -171,7 +171,7 @@ class MachineTokenController extends Controller
 
         /** @var Client|null $client */
         $client = Client::find($token->client_id);
-        if (! $client || (string) $client->user_id !== (string) $request->user()->id) {
+        if (! $client || ! $request->user()->allTeams()->pluck('id')->contains($client->team_id)) {
             return response()->json(['error' => 'invalid_client'], 404);
         }
 

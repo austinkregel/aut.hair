@@ -633,7 +633,7 @@ watch(selectedTeamId, () => {
                                     <div>
                                         <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Client secret</p>
                                         <p class="font-mono text-sm break-all text-slate-900 dark:text-slate-200">
-                                            {{ registrationResult?.secret ?? 'PKCE public client (no secret)' }}
+                                            {{ registrationResult?.secret ?? (registrationResult?.confidential ? 'Secret unavailable — regenerate the client to obtain one' : 'PKCE public client (no secret)') }}
                                         </p>
                                     </div>
                                     <JetSecondaryButton
