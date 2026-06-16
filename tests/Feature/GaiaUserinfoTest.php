@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Gaia\GaiaIdentity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
@@ -44,10 +45,13 @@ class GaiaUserinfoTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertExactJson([
-            'id' => (string) $user->id,
+            'id' => GaiaIdentity::for($user),
             'email' => 'user@aut.hair',
             'verified_email' => true,
         ]);
+
+        // The id must be opaque, not the enumerable primary key.
+        $this->assertNotEquals((string) $user->id, $response->json('id'));
     }
 
     public function test_userinfo_omits_hosted_domain_so_consumer_skips_dm(): void

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Gaia\GaiaIdentity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,7 +52,9 @@ class GaiaEmbeddedSetupTest extends TestCase
         $header = $response->headers->get('google-accounts-signin');
         $this->assertNotNull($header, 'google-accounts-signin header must be present');
         $this->assertStringContainsString('email="user@aut.hair"', $header);
-        $this->assertStringContainsString('obfuscatedid="'.$user->id.'"', $header);
+        // Opaque gaia id (coupled with userinfo `id`), not the sequential PK.
+        $this->assertStringContainsString('obfuscatedid="'.GaiaIdentity::for($user).'"', $header);
+        $this->assertStringNotContainsString('obfuscatedid="'.$user->id.'"', $header);
         $this->assertStringContainsString('sessionindex=0', $header);
 
         // oauth_code cookie (the auth code the browser exchanges later).

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Gaia;
 
+use App\Gaia\GaiaIdentity;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,9 @@ class UserinfoController extends Controller
         }
 
         return response()->json([
-            'id' => (string) $user->getKey(),
+            // Opaque, stable gaia id — coupled with the obfuscatedid emitted in
+            // the sign-in header (App\Gaia\GaiaIdentity). NOT the sequential PK.
+            'id' => GaiaIdentity::for($user),
             'email' => $user->email,
             'verified_email' => (bool) $user->email_verified_at,
         ]);
