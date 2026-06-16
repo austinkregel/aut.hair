@@ -35,7 +35,7 @@ Route::post('oauth2/v4/token', [TokenController::class, 'issueToken'])
 // emitted in the google-accounts-signin header at sign-in). We deliberately
 // OMIT `hostedDomain` so Chromium treats this as a consumer account and skips
 // enterprise device-management enrollment.
-Route::middleware(['auth:api', \App\Http\Middleware\OidcTokenBlacklistMiddleware::class])
+Route::middleware(['auth:api', 'oidc.blacklist'])
     ->get('oauth2/v1/userinfo', UserinfoController::class)
     ->name('userinfo');
 
