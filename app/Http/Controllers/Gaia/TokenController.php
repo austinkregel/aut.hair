@@ -43,6 +43,32 @@ class TokenController extends Controller
             $psrRequest = $psrRequest->withParsedBody($body);
         }
 
+        // GAIA impedance mismatch: Chromium refreshes the OAuthLogin "uber" token
+        // for per-service scopes — including ones we recognize but did NOT grant at
+        // sign-in (e.g. chromeosdevicemanagement for an owner device). Standard
+        // OAuth2 refresh forbids widening scope (league throws invalid_scope and
+        // 400s the whole request), which aborts OOBE. Clamp the requested scope to
+        // the granted set; if nothing requested was granted, drop it so league
+        // reuses the original grant. Either way the refresh succeeds.
+        if ($grantType === 'refresh_token' && ! empty($body['scope'])) {
+            $requested = preg_split('/\s+/', trim((string) $body['scope'])) ?: [];
+            $allowed = array_values(array_intersect($requested, (array) config('gaia.scopes', [])));
+
+            if ($allowed !== $requested) {
+                Log::channel('gaia')->info('refresh scope clamped to granted set', [
+                    'requested' => $requested,
+                    'granted' => $allowed,
+                ]);
+            }
+
+            if ($allowed) {
+                $body['scope'] = implode(' ', $allowed);
+            } else {
+                unset($body['scope']);
+            }
+            $psrRequest = $psrRequest->withParsedBody($body);
+        }
+
         Log::channel('gaia')->debug('oauth2/v4/token', [
             'grant_type' => $grantType,
             'params' => Arr::except($body, ['client_secret']),

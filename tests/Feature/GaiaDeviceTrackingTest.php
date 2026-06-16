@@ -185,6 +185,36 @@ class GaiaDeviceTrackingTest extends TestCase
         $this->assertNotEmpty($rotated->jti);
     }
 
+    public function test_refresh_requesting_an_ungranted_scope_is_clamped_not_rejected(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create(['email_verified_at' => now()]);
+        [$client, $secret] = $this->provisionClient($user);
+
+        $page = $this->actingAs($user)->get(route('gaia.embedded-setup'));
+        $code = collect($page->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === 'oauth_code')?->getValue();
+
+        $refreshToken = $this->post('/oauth2/v4/token', [
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'client_id' => $client->id,
+            'client_secret' => $secret,
+        ])->json('refresh_token');
+        $this->assertNotEmpty($refreshToken);
+
+        // The owner device widens to the device-management scope on refresh —
+        // recognized (it's in tokens_can) but NOT granted at sign-in, so league's
+        // subset rule would 400 the whole request. The wrapper clamps it so the
+        // refresh still succeeds (DM enrollment itself remains out of scope).
+        $this->post('/oauth2/v4/token', [
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refreshToken,
+            'client_id' => $client->id,
+            'client_secret' => $secret,
+            'scope' => 'https://www.googleapis.com/auth/chromeosdevicemanagement',
+        ])->assertStatus(200)->assertJsonStructure(['access_token']);
+    }
+
     public function test_revoking_a_captured_token_blocks_userinfo(): void
     {
         $user = User::factory()->withPersonalTeam()->create(['email_verified_at' => now()]);
