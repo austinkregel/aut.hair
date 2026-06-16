@@ -29,16 +29,23 @@ class BlacklistChromeosToken
             return false;
         }
 
-        $token->revoked = true;
-        $token->save();
+        DB::transaction(function () use ($token, $jti) {
+            $token->revoked = true;
+            $token->save();
 
-        DB::table('oauth_refresh_tokens')
-            ->where('access_token_id', $jti)
-            ->update(['revoked' => true]);
+            DB::table('oauth_refresh_tokens')
+                ->where('access_token_id', $jti)
+                ->update(['revoked' => true]);
 
+            ChromeosDeviceToken::where('jti', $jti)->update(['revoked' => true]);
+        });
+
+        // Cache write is outside the transaction: cache drivers aren't transactional,
+        // and a fast-path cache hit is acceptable even if the DB write were to roll
+        // back (the DB flag is the durable, enforced record).
+        // TTL of 24h covers any extended token lifetime without unbounded growth;
+        // the middleware's DB fallback remains authoritative regardless.
         Cache::put('oidc_token_blacklist:'.$jti, true, now()->addDay());
-
-        ChromeosDeviceToken::where('jti', $jti)->update(['revoked' => true]);
 
         return true;
     }

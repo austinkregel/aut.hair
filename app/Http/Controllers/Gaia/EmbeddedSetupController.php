@@ -103,20 +103,24 @@ class EmbeddedSetupController extends Controller
     private function recordDevice(Request $request, $user, string $deviceId, string $code): void
     {
         try {
-            $device = ChromeosDevice::firstOrNew(['device_id' => $deviceId]);
+            $device = ChromeosDevice::updateOrCreate(
+                ['device_id' => $deviceId],
+                [
+                    'team_id' => $user->currentTeam?->id,
+                    'user_id' => $user->getKey(),
+                    'last_code_hash' => hash('sha256', $code),
+                    'last_seen_ip' => $request->ip(),
+                    'last_user_agent' => $request->userAgent(),
+                    'last_seen_at' => now(),
+                ]
+            );
 
-            if (! $device->exists) {
+            // `approved` is set only on first creation so an admin's later
+            // decision survives re-sign-ins.
+            if ($device->wasRecentlyCreated) {
                 $device->approved = (bool) config('gaia.auto_approve_devices', true);
+                $device->save();
             }
-
-            $device->fill([
-                'team_id' => $user->currentTeam?->id,
-                'user_id' => $user->getKey(),
-                'last_code_hash' => hash('sha256', $code),
-                'last_seen_ip' => $request->ip(),
-                'last_user_agent' => $request->userAgent(),
-                'last_seen_at' => now(),
-            ])->save();
 
             activity()
                 ->causedBy($user)

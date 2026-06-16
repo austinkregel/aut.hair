@@ -11,5 +11,7 @@ class VerifyCsrfToken extends Middleware
      *
      * @var array<int, string>
      */
-    protected $except = [];
+    protected $except = [
+        'oauth/revoke', // RFC 7009 — called by OAuth clients with client credentials, not browsers
+    ];
 }
