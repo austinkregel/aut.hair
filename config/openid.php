@@ -52,7 +52,10 @@ return [
      */
     'repositories' => [
         'identity' => \OpenIDConnect\Repositories\IdentityRepository::class,
-        'scope' => \OpenIDConnect\Repositories\ScopeRepository::class,
+        // GaiaScopeRepository extends the OIDC one to also accept the GAIA
+        // scopes (from tokens_can above) — the vendor repo hardcodes only the
+        // 5 OIDC scopes and would reject chromesync/OAuthLogin/etc.
+        'scope' => \App\Repositories\GaiaScopeRepository::class,
     ],
 
     /**
