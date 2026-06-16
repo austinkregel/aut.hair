@@ -70,7 +70,7 @@ EXPOSE 6001/tcp
 WORKDIR /var/www/html
 COPY . /var/www/html
 
-
+RUN composer install
 RUN npm install && npm run build && rm -rf node_modules && rm -rf /tmp/*
 
 ENTRYPOINT ["start-container"]
