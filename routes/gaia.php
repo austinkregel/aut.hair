@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AccessTokenController;
 use App\Http\Controllers\Gaia\EmbeddedSetupController;
+use App\Http\Controllers\Gaia\TokenController;
 use App\Http\Controllers\Gaia\UserinfoController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,10 +23,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Token endpoint (apis origin) — authorization_code and refresh_token grants.
-// Reuses aut.hair's customized Passport token controller unchanged: Chromium
-// POSTs grant_type/code/client_id/client_secret/scope like any OAuth2 client,
-// and issueToken already handles client_secret_basic/post.
-Route::post('oauth2/v4/token', [AccessTokenController::class, 'issueToken'])
+// Gaia\TokenController wraps the shared Passport token controller to (1) default
+// the redirect_uri the device omits (else AuthCodeGrant rejects the code) and
+// (2) capture a hashed reference to the issued token for audit/revocation.
+Route::post('oauth2/v4/token', [TokenController::class, 'issueToken'])
     ->name('token')
     ->middleware('throttle');
 
@@ -35,7 +35,7 @@ Route::post('oauth2/v4/token', [AccessTokenController::class, 'issueToken'])
 // emitted in the google-accounts-signin header at sign-in). We deliberately
 // OMIT `hostedDomain` so Chromium treats this as a consumer account and skips
 // enterprise device-management enrollment.
-Route::middleware('auth:api')
+Route::middleware(['auth:api', 'oidc.blacklist'])
     ->get('oauth2/v1/userinfo', UserinfoController::class)
     ->name('userinfo');
 

@@ -73,6 +73,16 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Verbose debug for the openFyde/ChromeOS GAIA sign-in flow (endpoints,
+        // query params, token exchange). Isolated from the main log.
+        'gaia' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/gaia.log'),
+            'level' => env('GAIA_LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

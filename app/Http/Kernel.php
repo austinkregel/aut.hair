@@ -42,7 +42,6 @@ class Kernel extends HttpKernel
         'api' => [
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-//            OidcTokenBlacklistMiddleware::class,
         ],
     ];
 
@@ -67,5 +66,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'oidc.auth_time' => \App\Http\Middleware\OidcAuthTimeMiddleware::class,
         'oauth.team' => \App\Http\Middleware\CheckOAuthTeamAccess::class,
+        'oidc.blacklist' => OidcTokenBlacklistMiddleware::class,
     ];
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Gaia;
 
 use App\Gaia\GaiaIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\ChromeosDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
@@ -38,6 +39,17 @@ class EmbeddedSetupController extends Controller
     {
         $user = $request->user(); // guaranteed by the auth middleware
 
+        // L1: fail closed if the device is built for a DIFFERENT OAuth client than
+        // the one we provisioned. Validate only when the param is present (the
+        // OOBE page GET sends client_id=<n>); a mismatch is always rejected.
+        $expectedClientId = (string) config('gaia.client_id', '');
+        $presentedClientId = (string) $request->query('client_id', '');
+        abort_if(
+            $expectedClientId !== '' && $presentedClientId !== '' && ! hash_equals($expectedClientId, $presentedClientId),
+            403,
+            'This device is configured for a different sign-in client.'
+        );
+
         $email = strtolower((string) $user->email);
         $gaiaId = GaiaIdentity::for($user); // opaque + stable; coupled with userinfo `id`
 
@@ -57,7 +69,19 @@ class EmbeddedSetupController extends Controller
             return response()->view('gaia.error', [], 200);
         }
 
-        // oauth_code cookie: Path=/, HttpOnly, Secure, SameSite=None.
+        // L2 + audit: record the device and log the descriptor. Best-effort —
+        // never block sign-in if this fails.
+        $deviceId = $request->cookie('device_id') ?: (string) Str::uuid();
+        $this->recordDevice($request, $user, $deviceId, $authCode);
+
+        // device_id cookie: server-side soft identity (resets on powerwash). 1yr,
+        // HttpOnly/Secure/SameSite=Lax, and kept ENCRYPTED (NOT in
+        // EncryptCookies::$except) — unlike oauth_code, the device never reads it.
+        Cookie::queue(cookie()->make('device_id', $deviceId, 60 * 24 * 365, '/', null, true, true, false, 'lax'));
+
+        // oauth_code cookie: Path=/, HttpOnly, Secure, SameSite=None — required
+        // for the cross-site Set-Cookie the webview's signin partition accepts.
+        // Raw (exempt from cookie encryption) so the device reads the code verbatim.
         Cookie::queue(
             cookie()->make('oauth_code', $authCode, 0, '/', null, true, true, false, 'none')
         );
@@ -68,6 +92,54 @@ class EmbeddedSetupController extends Controller
                 'google-accounts-signin',
                 sprintf('email="%s", obfuscatedid="%s", sessionindex=0', $email, $gaiaId)
             );
+    }
+
+    /**
+     * Record/refresh the device row (keyed by the device_id cookie) and audit the
+     * sign-in. `last_code_hash` is the correlation key the token endpoint uses to
+     * tie an issued token back to this device. `approved` is only set on first
+     * sight so an admin's later decision survives re-sign-ins.
+     */
+    private function recordDevice(Request $request, $user, string $deviceId, string $code): void
+    {
+        try {
+            $device = ChromeosDevice::updateOrCreate(
+                ['device_id' => $deviceId],
+                [
+                    'team_id' => $user->currentTeam?->id,
+                    'user_id' => $user->getKey(),
+                    'last_code_hash' => hash('sha256', $code),
+                    'last_seen_ip' => $request->ip(),
+                    'last_user_agent' => $request->userAgent(),
+                    'last_seen_at' => now(),
+                ]
+            );
+
+            // `approved` is set only on first creation so an admin's later
+            // decision survives re-sign-ins.
+            if ($device->wasRecentlyCreated) {
+                $device->approved = (bool) config('gaia.auto_approve_devices', true);
+                $device->save();
+            }
+
+            activity()
+                ->causedBy($user)
+                ->withProperty('endpoint', $request->path())
+                ->withProperty('query', $request->query()) // all params incl. unknown (mi, etc.)
+                ->withProperty('ip', $request->ip())
+                ->withProperty('user_agent', $request->userAgent())
+                ->withProperty('device_id', $deviceId)
+                ->log('gaia device sign-in');
+
+            Log::channel('gaia')->debug('embedded-setup', [
+                'endpoint' => $request->path(),
+                'query' => $request->query(),
+                'device_id' => $deviceId,
+                'user_id' => $user->getKey(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('gaia')->error('embedded-setup device record failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

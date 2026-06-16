@@ -63,6 +63,9 @@ onMounted(() => {
                                 <JetNavLink :href="route('admin')" :active="route().current('admin')">
                                     Admin
                                 </JetNavLink>
+                                <JetNavLink :href="route('admin.chromeos-devices')" :active="route().current('admin.chromeos-devices')">
+                                    Devices
+                                </JetNavLink>
 
                             </div>
                         </div>
@@ -230,6 +233,10 @@ onMounted(() => {
 
                         <JetResponsiveNavLink :href="route('admin')" :active="route().current('admin')">
                             Admin
+                        </JetResponsiveNavLink>
+
+                        <JetResponsiveNavLink :href="route('admin.chromeos-devices')" :active="route().current('admin.chromeos-devices')">
+                            Devices
                         </JetResponsiveNavLink>
                     </div>
 
