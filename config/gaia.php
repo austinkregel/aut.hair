@@ -24,6 +24,11 @@ return [
     // validation.
     'redirect_uri' => env('GAIA_CHROMEOS_REDIRECT_URI', 'https://chromeos.localhost/oauth2/callback'),
 
+    // Whether newly-seen devices are auto-approved. Recording-first: even when
+    // false, sign-in is NOT blocked this slice — devices are simply recorded as
+    // pending (approved=false) for admin review. Enforcement is a future step.
+    'auto_approve_devices' => env('GAIA_AUTO_APPROVE_DEVICES', true),
+
     // Scopes minted for the sign-in token. Single source of truth lives in
     // App\Gaia\GaiaScopes; config/openid.php tokens_can derives from the same
     // class, so the GAIA scope strings aren't duplicated.

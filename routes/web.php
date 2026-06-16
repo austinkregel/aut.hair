@@ -59,6 +59,7 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
 
 Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {
     Route::get('/user/admin', Controllers\Settings\AdminController::class)->name('admin');
+    Route::get('/user/admin/chromeos-devices', Controllers\Settings\ChromeosDeviceController::class)->name('admin.chromeos-devices');
     Route::post('/api/install', Controllers\InstallNewProvider::class);
     Route::post('/api/uninstall', Controllers\UninstallNewProvider::class);
     Route::post('/api/enable', Controllers\EnableProviderController::class);
