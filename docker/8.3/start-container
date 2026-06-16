@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+#
+#if [ ! -z "$WWWUSER" ]; then
+#    usermod -u $WWWUSER sail
+#fi
+
+if [ ! -d /.composer ]; then
+    mkdir /.composer
+fi
+
+php artisan optimize:clear
+php artisan optimize
+
+if [ $# -gt 0 ]; then
+    exec gosu $WWWUSER "$@"
+else
+    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+fi
