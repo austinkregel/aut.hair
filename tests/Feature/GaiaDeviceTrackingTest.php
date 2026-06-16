@@ -135,7 +135,7 @@ class GaiaDeviceTrackingTest extends TestCase
         $token->assertStatus(200);
         $token->assertJsonStructure(['token_type', 'expires_in', 'access_token', 'refresh_token']);
 
-        $codeHash = hash('sha256', $code);
+        $codeHash = hash('sha256', (string) $code);
         $device = ChromeosDevice::where('last_code_hash', $codeHash)->first();
         $this->assertNotNull($device);
 
@@ -146,6 +146,43 @@ class GaiaDeviceTrackingTest extends TestCase
         $this->assertSame(hash('sha256', $token->json('access_token')), $access->token_hash);
 
         $this->assertDatabaseHas('chromeos_device_tokens', ['type' => 'refresh', 'code_hash' => $codeHash]);
+    }
+
+    public function test_refresh_grant_issues_new_token_row_with_null_device(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create(['email_verified_at' => now()]);
+        [$client, $secret] = $this->provisionClient($user);
+
+        $page = $this->actingAs($user)->get(route('gaia.embedded-setup'));
+        $code = collect($page->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === 'oauth_code')?->getValue();
+
+        $first = $this->post('/oauth2/v4/token', [
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'client_id' => $client->id,
+            'client_secret' => $secret,
+        ]);
+        $refreshToken = $first->json('refresh_token');
+        $this->assertNotEmpty($refreshToken);
+
+        $second = $this->post('/oauth2/v4/token', [
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refreshToken,
+            'client_id' => $client->id,
+            'client_secret' => $secret,
+        ]);
+        $second->assertStatus(200);
+        $second->assertJsonStructure(['access_token', 'refresh_token']);
+
+        // Refresh grant has no code, so chromeos_device_id must be null.
+        $rotated = ChromeosDeviceToken::where('type', 'access')
+            ->whereNull('code_hash')
+            ->latest('id')
+            ->first();
+        $this->assertNotNull($rotated, 'rotated access token must be captured');
+        $this->assertNull($rotated->chromeos_device_id);
+        $this->assertNotEmpty($rotated->jti);
     }
 
     public function test_revoking_a_captured_token_blocks_userinfo(): void
