@@ -1,0 +1,6 @@
+#############################################################################
+#
+# This is just a basic cron, it will never be more advnaced than this.
+#
+#############################################################################
+* * * * * php -d memory_limit=-1 /var/www/html/artisan schedule:run 2>&1 | sed "s/^/[$(date)] /" >> /var/www/html/storage/logs/crontab.log
