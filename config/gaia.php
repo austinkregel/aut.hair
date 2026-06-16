@@ -24,14 +24,8 @@ return [
     // validation.
     'redirect_uri' => env('GAIA_CHROMEOS_REDIRECT_URI', 'https://chromeos.localhost/oauth2/callback'),
 
-    // Scopes minted for the sign-in token — the literal GAIA scope strings
-    // Chromium requests. Kept in sync with config/openid.php `tokens_can`.
-    'scopes' => [
-        'openid',
-        'email',
-        'https://www.google.com/accounts/OAuthLogin',
-        'https://www.googleapis.com/auth/chromesync',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-    ],
+    // Scopes minted for the sign-in token. Single source of truth lives in
+    // App\Gaia\GaiaScopes; config/openid.php tokens_can derives from the same
+    // class, so the GAIA scope strings aren't duplicated.
+    'scopes' => \App\Gaia\GaiaScopes::SIGN_IN,
 ];

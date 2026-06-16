@@ -9,7 +9,7 @@ return [
          * Place your Passport and OpenID Connect scopes here.
          * To receive an `id_token, you should at least provide the openid scope.
          */
-        'tokens_can' => [
+        'tokens_can' => array_merge([
             'openid' => 'Enable OpenID Connect',
             'name' => 'Can access your name',
             'profile' => 'Information about your profile',
@@ -17,19 +17,14 @@ return [
             'address' => 'Information about your address',
             'sync' => 'Release your sync-chain seed for self-hosted device sync',
             // 'login' => 'See your login information',
-
-            // ChromeOS / GAIA-compat scopes. openFyde's Chromium requests these
-            // literal Google scope strings verbatim during sign-in, Chrome Sync,
-            // and device management (it speaks GAIA, repointed at us via
-            // --fydeos-gaia-url/--fydeos-apis-url). Registered so Passport will
-            // mint tokens for them. See the fyde-fork repo's docs/gaia-shim-spike.md.
-            'https://www.google.com/accounts/OAuthLogin' => 'Sign in to your openFyde device',
-            'https://www.googleapis.com/auth/chromesync' => 'Sync your openFyde browser and OS state',
-            'https://www.googleapis.com/auth/userinfo.email' => 'See your email address (openFyde)',
-            'https://www.googleapis.com/auth/userinfo.profile' => 'See your basic profile info (openFyde)',
-            // Deferred (enterprise enrollment only; consumer sign-in skips DM):
-            'https://www.googleapis.com/auth/chromeosdevicemanagement' => 'Enroll this device in management',
         ],
+            // ChromeOS / GAIA-compat scopes — the literal Google scope strings
+            // openFyde's Chromium requests verbatim (it speaks GAIA, repointed at
+            // us via --fydeos-gaia-url/--fydeos-apis-url). Single source of truth
+            // in App\Gaia\GaiaScopes (shared with config/gaia.php). Registered
+            // here so Passport/GaiaScopeRepository mint tokens for them.
+            \App\Gaia\GaiaScopes::DESCRIPTIONS
+        ),
     ],
 
     /**

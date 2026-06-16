@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Gaia;
 
+use App\Gaia\GaiaIdentity;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -38,7 +39,7 @@ class EmbeddedSetupController extends Controller
         $user = $request->user(); // guaranteed by the auth middleware
 
         $email = strtolower((string) $user->email);
-        $gaiaId = (string) $user->getKey();
+        $gaiaId = GaiaIdentity::for($user); // opaque + stable; coupled with userinfo `id`
 
         try {
             $authCode = $this->mintAuthCode($user);
