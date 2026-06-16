@@ -2,13 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Concerns\ExtractsTokenId;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Lcobucci\JWT\Encoding\JoseEncoder;
-use Lcobucci\JWT\Token\Parser;
-use Lcobucci\JWT\Token\Plain;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -26,9 +24,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class OidcTokenBlacklistMiddleware
 {
+    use ExtractsTokenId;
+
     public function handle(Request $request, Closure $next): Response
     {
-        $jti = $this->jtiFromBearer($request->bearerToken());
+        $jti = $this->extractTokenId($request->bearerToken() ?? '');
 
         if ($jti !== null && $this->isRevoked($jti)) {
             return response()->json(['error' => 'invalid_token'], 401);
@@ -47,25 +47,5 @@ class OidcTokenBlacklistMiddleware
             ->where('id', $jti)
             ->where('revoked', true)
             ->exists();
-    }
-
-    private function jtiFromBearer(?string $token): ?string
-    {
-        if (! $token) {
-            return null;
-        }
-
-        try {
-            $jwt = (new Parser(new JoseEncoder()))->parse($token);
-            if (! $jwt instanceof Plain) {
-                return null;
-            }
-
-            $jti = $jwt->claims()->get('jti');
-
-            return is_string($jti) && $jti !== '' ? $jti : null;
-        } catch (\Throwable) {
-            return null;
-        }
     }
 }
