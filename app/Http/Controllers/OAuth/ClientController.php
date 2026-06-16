@@ -59,7 +59,15 @@ class ClientController extends Controller
             'scopes' => $request->input('scopes', []),
         ])->save();
 
-        return $client->fresh();
+        $fresh = $client->fresh();
+
+        // Passport hides the `secret` column. Surface it once on creation so the
+        // user can store a confidential client's secret (it is shown only here).
+        if (! empty($fresh->secret)) {
+            $fresh->makeVisible('secret');
+        }
+
+        return $fresh;
     }
 
     public function update(Request $request, $clientId)

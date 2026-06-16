@@ -90,4 +90,56 @@ class TeamOAuthInvitesTest extends TestCase
             'oauth_client_id' => $client->id,
         ]);
     }
+
+    public function test_inviting_a_team_to_a_second_client_does_not_overwrite_the_first(): void
+    {
+        $owner = User::factory()->create();
+        $teamA = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $teamB = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $owner->teams()->attach($teamA, ['role' => 'admin']);
+        $owner->teams()->attach($teamB, ['role' => 'admin']);
+
+        $makeClient = fn (string $name) => Client::create([
+            'user_id' => null,
+            'team_id' => $teamA->id,
+            'name' => $name,
+            'secret' => 'secret',
+            'redirect' => 'http://localhost/callback',
+            'personal_access_client' => false,
+            'password_client' => false,
+            'revoked' => false,
+        ]);
+
+        $clientOne = $makeClient('Client One');
+        $clientTwo = $makeClient('Client Two');
+
+        $this->actingAs($owner);
+
+        $this->post("/teams/{$teamA->id}/oauth-clients/{$clientOne->id}/invite-team", [
+            'invited_team_id' => $teamB->id,
+            'role' => 'login',
+        ])->assertStatus(204);
+
+        // Inviting the same team to a second client must not overwrite the first grant.
+        $this->post("/teams/{$teamA->id}/oauth-clients/{$clientTwo->id}/invite-team", [
+            'invited_team_id' => $teamB->id,
+            'role' => 'login',
+        ])->assertStatus(204);
+
+        $this->assertDatabaseHas('oauth_client_team_invitations', [
+            'inviting_team_id' => $teamA->id,
+            'invited_team_id' => $teamB->id,
+            'oauth_client_id' => $clientOne->id,
+        ]);
+        $this->assertDatabaseHas('oauth_client_team_invitations', [
+            'inviting_team_id' => $teamA->id,
+            'invited_team_id' => $teamB->id,
+            'oauth_client_id' => $clientTwo->id,
+        ]);
+
+        $this->assertSame(2, DB::table('oauth_client_team_invitations')
+            ->where('inviting_team_id', $teamA->id)
+            ->where('invited_team_id', $teamB->id)
+            ->count());
+    }
 }

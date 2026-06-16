@@ -120,6 +120,42 @@ class OAuthClientsRouteTest extends TestCase
         ]);
     }
 
+    public function test_confidential_client_creation_returns_the_secret_and_public_does_not(): void
+    {
+        $owner = User::factory()->create();
+        $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $owner->teams()->attach($team, ['role' => 'admin']);
+        $owner->switchTeam($team);
+
+        $this->actingAs($owner);
+
+        // A confidential client must surface its secret once on creation.
+        $confidential = $this->postJson('/oauth/clients', [
+            'team_id' => $team->id,
+            'name' => 'Confidential Client',
+            'redirect' => 'http://localhost/callback',
+            'confidential' => true,
+            'grant_types' => ['authorization_code', 'refresh_token'],
+            'scopes' => ['openid'],
+        ]);
+
+        $confidential->assertOk();
+        $this->assertNotEmpty($confidential->json('secret'));
+
+        // A public (PKCE) client has no secret.
+        $public = $this->postJson('/oauth/clients', [
+            'team_id' => $team->id,
+            'name' => 'Public Client',
+            'redirect' => 'http://localhost/callback',
+            'confidential' => false,
+            'grant_types' => ['authorization_code', 'refresh_token'],
+            'scopes' => ['openid'],
+        ]);
+
+        $public->assertOk();
+        $this->assertEmpty($public->json('secret'));
+    }
+
     public function test_non_owner_cannot_create_update_or_delete_clients(): void
     {
         $owner = User::factory()->create();

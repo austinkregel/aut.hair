@@ -28,7 +28,8 @@ class MachineTokenEndpointsTest extends TestCase
         $this->actingAs($user = User::factory()->withPersonalTeam()->create());
 
         Client::query()->create([
-            'user_id' => $user->id,
+            'user_id' => null,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Machine Client',
             'secret' => 'secret',
             'redirect' => '',
@@ -39,7 +40,8 @@ class MachineTokenEndpointsTest extends TestCase
         ]);
 
         Client::query()->create([
-            'user_id' => $user->id,
+            'user_id' => null,
+            'team_id' => $user->currentTeam->id,
             'name' => 'PKCE Client',
             'secret' => null,
             'redirect' => 'http://localhost/callback',
@@ -61,7 +63,8 @@ class MachineTokenEndpointsTest extends TestCase
         $this->actingAs($user = User::factory()->withPersonalTeam()->create());
 
         $client = Client::query()->create([
-            'user_id' => $user->id,
+            'user_id' => null,
+            'team_id' => $user->currentTeam->id,
             'name' => 'Machine Client',
             'secret' => 'secret',
             'redirect' => '',

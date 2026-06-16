@@ -60,7 +60,7 @@ const fetchClients = async () => {
 
 const fetchTeams = () => {
     const page = usePage();
-    availableTeams.value = page.props?.auth?.user?.all_teams ?? [];
+    availableTeams.value = page.props?.user?.all_teams ?? [];
     if (!form.invitedTeamId && availableTeams.value.length) {
         form.invitedTeamId = availableTeams.value[0].id;
     }
@@ -193,7 +193,7 @@ onMounted(() => {
 
                     <div class="flex items-center justify-between">
                         <div class="text-sm text-slate-600 dark:text-slate-400">
-                            {{ clients }} client{{ clients.length === 1 ? '' : 's' }}
+                            {{ clients.length }} client{{ clients.length === 1 ? '' : 's' }}
                         </div>
                         <JetSecondaryButton type="button" class="!py-2 px-3" @click="refreshAll">
                             Refresh
