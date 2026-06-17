@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -64,25 +65,17 @@ class GaiaSamlMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Laravel's Authenticate middleware throws AuthenticationException rather
-        // than returning a RedirectResponse. For the /embedded/setup route we need
-        // to intercept that throw so we can return our SAML-initialising HTML page
-        // instead of letting the exception handler produce a plain 302.
-        try {
-            $response = $next($request);
-        } catch (\Illuminate\Auth\AuthenticationException $e) {
-            if (! $request->routeIs('gaia.embedded-setup')) {
-                throw $e;
-            }
-
+        // For the GAIA embedded setup route, handle unauthenticated requests HERE
+        // before calling $next() — not after. Laravel's Authenticate middleware
+        // throws AuthenticationException rather than returning a RedirectResponse,
+        // so any post-$next() check is unreachable for unauthenticated requests.
+        // StartSession runs before us in the web group, so Auth::check() correctly
+        // reads session state without needing $next() to run first.
+        if ($request->routeIs('gaia.embedded-setup') && ! Auth::check()) {
             return $this->samlRedirectPage($request);
         }
 
-        // Fallback for any non-throw redirect (guard implementations that return
-        // a RedirectResponse rather than throwing).
-        if ($request->routeIs('gaia.embedded-setup') && $response->isRedirect()) {
-            return $this->samlRedirectPage($request);
-        }
+        $response = $next($request);
 
         // Belt-and-suspenders: also emit the header on the login page itself.
         // Keeps pendingIsSamlPage_ = true throughout the /login navigation so
