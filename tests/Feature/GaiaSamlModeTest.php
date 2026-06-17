@@ -48,7 +48,8 @@ class GaiaSamlModeTest extends TestCase
         $login = $this->get('/login');
 
         $login->assertStatus(200);
-        $this->assertNotNull($login->headers->get('google-accounts-saml'));
+        // Must be exactly "start" — ChromeOS matches the value, not mere presence.
+        $this->assertSame('start', $login->headers->get('google-accounts-saml'));
         $login->assertSee('gaia_saml_api', false);
         $login->assertSee('KEY_TYPE_PASSWORD_PLAIN', false);
     }

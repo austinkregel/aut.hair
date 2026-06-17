@@ -14,10 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
  * password, never from the OAuth token. If sign-in completes with no password
  * captured (a "passwordless owner"), ChromeOS arms a silent powerwash and wipes
  * the device on the next boot. SAML mode — and therefore password capture — is
- * gated entirely by one response header (`google-accounts-saml`, presence-based;
- * traced from the openFyde r132 tree, saml_handler.js). We emit it on the login
- * page and run the Chrome Credentials Passing API (`gaia_saml_api`) handshake to
- * hand ChromeOS the password explicitly.
+ * gated entirely by one response header: `google-accounts-saml: start` turns it
+ * on, `: end` turns it off (the value is matched, not just the header's presence;
+ * saml_handler.js:823-830 in the openFyde r132 tree). We emit `start` on the
+ * login page and run the Chrome Credentials Passing API (`gaia_saml_api`)
+ * handshake to hand ChromeOS the password explicitly.
  *
  * Scoped to the GAIA flow via a session flag set when /embedded/setup is hit
  * (even when the unauthenticated device is bounced to /login), so normal web
@@ -38,7 +39,9 @@ class GaiaSamlMode
         // completion page (/embedded/setup) stays a plain GAIA response so the
         // existing google-accounts-signin + oauth_code path finishes sign-in.
         if ($request->routeIs('login') && $this->isGaiaFlow($request)) {
-            $response->headers->set('google-accounts-saml', parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'aut.hair');
+            // Must be exactly "start" — ChromeOS lowercases and matches the value
+            // against start/end; anything else is ignored and SAML mode never arms.
+            $response->headers->set('google-accounts-saml', 'start');
             $this->injectHandshake($response);
         }
 
