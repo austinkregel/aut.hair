@@ -64,26 +64,24 @@ class GaiaSamlMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
+        // Laravel's Authenticate middleware throws AuthenticationException rather
+        // than returning a RedirectResponse. For the /embedded/setup route we need
+        // to intercept that throw so we can return our SAML-initialising HTML page
+        // instead of letting the exception handler produce a plain 302.
+        try {
+            $response = $next($request);
+        } catch (\Illuminate\Auth\AuthenticationException $e) {
+            if (! $request->routeIs('gaia.embedded-setup')) {
+                throw $e;
+            }
 
-        // When an unauthenticated ChromeOS webview hits /embedded/setup, Laravel's
-        // auth middleware returns a 302 to /login. We replace that 302 with an HTML
-        // page that carries google-accounts-saml: start and JS-redirects to /login.
-        // See the class docblock for why a JS redirect is required (loadcommit
-        // timing — a server-side 302 does not produce its own loadcommit event).
+            return $this->samlRedirectPage($request);
+        }
+
+        // Fallback for any non-throw redirect (guard implementations that return
+        // a RedirectResponse rather than throwing).
         if ($request->routeIs('gaia.embedded-setup') && $response->isRedirect()) {
-            $loginUrl = json_encode(
-                $response->getTargetUrl(),
-                JSON_UNESCAPED_SLASHES | JSON_HEX_TAG
-            );
-
-            return response(
-                '<!doctype html><html><head><meta charset="utf-8"></head><body>'
-                . "<script>window.location.replace($loginUrl);</script>"
-                . '</body></html>',
-                200
-            )->header('Content-Type', 'text/html; charset=utf-8')
-             ->header('google-accounts-saml', 'start');
+            return $this->samlRedirectPage($request);
         }
 
         // Belt-and-suspenders: also emit the header on the login page itself.
@@ -94,6 +92,33 @@ class GaiaSamlMode
         }
 
         return $response;
+    }
+
+    /**
+     * Return the HTML intermediate page that arms SAML mode on ChromeOS.
+     *
+     * See the class docblock for the full explanation. Short version: a JS
+     * redirect (not a 302) is required because only a real HTML response gets its
+     * own loadcommit, which is what sets isSamlPage_ = true before /login's
+     * document_start fires and queries getSAMLFlag.
+     */
+    private function samlRedirectPage(Request $request): Response
+    {
+        // Mirror redirect()->guest(): store the intended URL so isGaiaFlow()
+        // returns true when the browser subsequently loads /login.
+        if ($request->hasSession()) {
+            $request->session()->put('url.intended', $request->fullUrl());
+        }
+
+        $loginUrl = json_encode(route('login'), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+
+        return response(
+            '<!doctype html><html><head><meta charset="utf-8"></head><body>'
+            . "<script>window.location.replace($loginUrl);</script>"
+            . '</body></html>',
+            200
+        )->header('Content-Type', 'text/html; charset=utf-8')
+         ->header('google-accounts-saml', 'start');
     }
 
     private function isGaiaFlow(Request $request): bool
