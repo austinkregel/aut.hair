@@ -37,7 +37,39 @@ class EmbeddedSetupController extends Controller
 
     public function __invoke(Request $request)
     {
-        $user = $request->user(); // guaranteed by the auth middleware
+        // Unauthenticated OOBE webview: return the SAML bootstrap page.
+        //
+        // ChromeOS's PasswordInputScraper is gated by getSAMLFlag, which queries
+        // isSamlPage_ at document_start. Content scripts run BEFORE loadcommit
+        // fires for the same page, so isSamlPage_ always reflects the PREVIOUS
+        // page's loadcommit. With a server-side 302 (/embedded/setup → /login)
+        // there is no loadcommit for /embedded/setup, meaning isSamlPage_ is
+        // false when /login's document_start fires and the scraper never inits.
+        //
+        // Fix: serve a real HTML page here (not a redirect) with
+        // google-accounts-saml: start. This gives ChromeOS a loadcommit for
+        // /embedded/setup (isSamlPage_ = true). When the JS redirect to /login
+        // fires, /login's document_start sees isSamlPage_ = true → scraper inits →
+        // password captured → no powerwash. This mirrors real enterprise SAML:
+        // GAIA emits the header on its own HTML page, gets its own loadcommit,
+        // then the IdP's document_start inherits isSamlPage_ = true.
+        if (! $request->user()) {
+            if ($request->hasSession()) {
+                $request->session()->put('url.intended', $request->fullUrl());
+            }
+
+            $loginUrl = json_encode(route('login'), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+
+            return response(
+                '<!doctype html><html><head><meta charset="utf-8"></head><body>'
+                . "<script>window.location.replace($loginUrl);</script>"
+                . '</body></html>',
+                200
+            )->header('Content-Type', 'text/html; charset=utf-8')
+             ->header('google-accounts-saml', 'start');
+        }
+
+        $user = $request->user();
 
         // L1: fail closed if the device is built for a DIFFERENT OAuth client than
         // the one we provisioned. Validate only when the param is present (the

@@ -39,10 +39,15 @@ Route::middleware(['auth:api', 'oidc.blacklist'])
     ->get('oauth2/v1/userinfo', UserinfoController::class)
     ->name('userinfo');
 
-// Sign-in webview page (GAIA origin) — served to the OOBE <webview>. Behind
-// web/auth: an unauthenticated device hits aut.hair's normal login (creds +
-// 2FA) first, then returns here. The google-accounts-signin header + oauth_code
-// cookie ride on this response; the page posts userInfo -> closeView.
-Route::middleware(['web', 'auth'])
+// Sign-in webview page (GAIA origin) — served to the OOBE <webview>.
+// Auth is handled inside the controller: unauthenticated requests receive the
+// SAML bootstrap page (google-accounts-saml: start + JS redirect to /login),
+// which gives ChromeOS the loadcommit it needs to set isSamlPage_ = true before
+// /login's document_start fires. Authenticated requests get the normal
+// google-accounts-signin header + oauth_code cookie completion page.
+// We do NOT use the `auth` middleware here because Authenticate throws
+// AuthenticationException rather than returning a response, which makes it
+// impossible to intercept and replace with the SAML bootstrap page.
+Route::middleware('web')
     ->get('embedded/setup/v2/chromeos', EmbeddedSetupController::class)
     ->name('embedded-setup');
