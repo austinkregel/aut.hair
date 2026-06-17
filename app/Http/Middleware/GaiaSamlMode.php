@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -65,53 +64,18 @@ class GaiaSamlMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // For the GAIA embedded setup route, handle unauthenticated requests HERE
-        // before calling $next() — not after. Laravel's Authenticate middleware
-        // throws AuthenticationException rather than returning a RedirectResponse,
-        // so any post-$next() check is unreachable for unauthenticated requests.
-        // StartSession runs before us in the web group, so Auth::check() correctly
-        // reads session state without needing $next() to run first.
-        if ($request->routeIs('gaia.embedded-setup') && ! Auth::check()) {
-            return $this->samlRedirectPage($request);
-        }
-
         $response = $next($request);
 
-        // Belt-and-suspenders: also emit the header on the login page itself.
+        // Belt-and-suspenders: also emit the header on the login page.
         // Keeps pendingIsSamlPage_ = true throughout the /login navigation so
-        // isSamlPage_ remains true at /login's loadcommit and beyond.
+        // isSamlPage_ remains true at /login's own loadcommit and beyond.
+        // The primary SAML header is emitted by EmbeddedSetupController on the
+        // bootstrap page that precedes /login.
         if ($request->routeIs('login') && $this->isGaiaFlow($request)) {
             $response->headers->set('google-accounts-saml', 'start');
         }
 
         return $response;
-    }
-
-    /**
-     * Return the HTML intermediate page that arms SAML mode on ChromeOS.
-     *
-     * See the class docblock for the full explanation. Short version: a JS
-     * redirect (not a 302) is required because only a real HTML response gets its
-     * own loadcommit, which is what sets isSamlPage_ = true before /login's
-     * document_start fires and queries getSAMLFlag.
-     */
-    private function samlRedirectPage(Request $request): Response
-    {
-        // Mirror redirect()->guest(): store the intended URL so isGaiaFlow()
-        // returns true when the browser subsequently loads /login.
-        if ($request->hasSession()) {
-            $request->session()->put('url.intended', $request->fullUrl());
-        }
-
-        $loginUrl = json_encode(route('login'), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
-
-        return response(
-            '<!doctype html><html><head><meta charset="utf-8"></head><body>'
-            . "<script>window.location.replace($loginUrl);</script>"
-            . '</body></html>',
-            200
-        )->header('Content-Type', 'text/html; charset=utf-8')
-         ->header('google-accounts-saml', 'start');
     }
 
     private function isGaiaFlow(Request $request): bool

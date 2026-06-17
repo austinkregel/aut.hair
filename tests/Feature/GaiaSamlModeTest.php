@@ -50,7 +50,7 @@ class GaiaSamlModeTest extends TestCase
         // JS redirect is required — a meta-refresh or server 302 won't produce the
         // intermediate loadcommit that sets isSamlPage_ = true.
         $setup->assertSee('window.location.replace', false);
-        // Auth middleware still ran and stored url.intended before we intercepted.
+        // Controller stores url.intended directly so isGaiaFlow() fires on /login.
         $setup->assertSessionHas('url.intended');
 
         // The login page (same session) also emits the SAML header (belt-and-
