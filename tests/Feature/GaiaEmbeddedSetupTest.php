@@ -29,11 +29,20 @@ class GaiaEmbeddedSetupTest extends TestCase
         ]);
     }
 
-    public function test_unauthenticated_device_is_redirected_to_login(): void
+    public function test_unauthenticated_device_gets_saml_bootstrap_page(): void
     {
-        // No session => aut.hair's real login runs first (creds + 2FA), then the
-        // device is sent back here.
-        $this->get(route('gaia.embedded-setup'))->assertRedirect();
+        // No session => the controller returns a 200 HTML page (not a 302) that
+        // carries google-accounts-saml: start and JS-redirects to /login.
+        // A server-side 302 would have no loadcommit of its own, so isSamlPage_
+        // would be false when /login's document_start fires and the
+        // PasswordInputScraper would never initialize — the device powerwashes.
+        $response = $this->get(route('gaia.embedded-setup'));
+
+        $response->assertStatus(200);
+        $this->assertSame('start', $response->headers->get('google-accounts-saml'));
+        $response->assertSee('window.location.replace', false);
+        // Controller stores url.intended so isGaiaFlow() fires on /login.
+        $response->assertSessionHas('url.intended');
     }
 
     public function test_authenticated_page_emits_the_signin_contract(): void
