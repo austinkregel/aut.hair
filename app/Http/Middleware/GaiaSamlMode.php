@@ -13,17 +13,52 @@ use Symfony\Component\HttpFoundation\Response;
  * Why this exists: ChromeOS derives the encrypted-home key from the typed
  * password, never from the OAuth token. If sign-in completes with no password
  * captured (a "passwordless owner"), ChromeOS arms a silent powerwash and wipes
- * the device on the next boot. SAML mode — and therefore password capture — is
- * gated entirely by one response header: `google-accounts-saml: start` turns it
- * on, `: end` turns it off (the value is matched, not just the header's presence;
- * saml_handler.js:823-830 in the openFyde r132 tree). We emit `start` on the
- * login page and run the Chrome Credentials Passing API (`gaia_saml_api`)
- * handshake to hand ChromeOS the password explicitly.
+ * the device on the next boot. SAML mode is gated entirely by one response
+ * header: `google-accounts-saml: start` turns it on, `: end` turns it off (the
+ * value is matched, not just presence; saml_handler.js:823-830 in the openFyde
+ * r132 tree).
  *
- * Scoped to the GAIA flow via a session flag set when /embedded/setup is hit
- * (even when the unauthenticated device is bounced to /login), so normal web
- * logins are unaffected. No-op outside the flow and in any non-ChromeOS browser
- * (nothing listens for the gaia_saml_api messages there).
+ * Once in SAML mode ChromeOS's injected PasswordInputScraper (saml_injected.js)
+ * auto-scrapes any input[type=password] on the login page and stores the value in
+ * passwordStore_ on the handler side — this persists across the /login →
+ * /embedded/setup navigation because samlHandler_.reset() is never called between
+ * those two pages. When maybeCompleteAuth_ runs after the token exchange it finds
+ * scrapedPasswordCount === 1 and sets password_ = firstScrapedPassword, which
+ * becomes the cryptohome factor.
+ *
+ * We do NOT inject the Chrome Credentials Passing API (gaia_saml_api) handshake.
+ * The API's `add` call sets samlApiUsed = true (overriding scraping) but `confirm`
+ * is sent on form submit — it is lost when the page navigates before the extension
+ * channel round-trip completes. With samlApiUsed true and confirmToken_ null,
+ * apiPasswordBytes returns null and password_ ends up null → powerwash. The DOM
+ * scraper avoids this race entirely because it fires on keystroke, not on submit.
+ *
+ * THE TIMING PROBLEM (why /embedded/setup must return HTML, not a 302):
+ *
+ * ChromeOS injects saml_injected.js at `document_start` for every page in the
+ * webview (saml_handler.js:382-390). At document_start, it immediately sends a
+ * `getSAMLFlag` RPC (saml_injected.js:214). The handler responds with
+ * `this.isSamlPage_` (saml_handler.js:1026). `isSamlPage_` is only updated at
+ * `loadcommit` (saml_handler.js:572). In Chromium's architecture, document_start
+ * content scripts run in the renderer during document creation, and `loadcommit`
+ * fires only after the browser process receives DidCommitNavigation from the
+ * renderer — so content scripts always run BEFORE loadcommit for the same page.
+ *
+ * Consequence: when /login's content scripts query getSAMLFlag, isSamlPage_
+ * reflects the PREVIOUS page's loadcommit (initial state = false), not /login's
+ * own pendingIsSamlPage_. The PasswordInputScraper is never initialized and the
+ * device powerwashes.
+ *
+ * Fix: serve a real HTML page at /embedded/setup (not a 302) that carries
+ * google-accounts-saml: start and JS-redirects to /login. This gives ChromeOS a
+ * loadcommit for /embedded/setup (isSamlPage_ = true). When the browser then
+ * follows the JS redirect to /login, document_start fires before /login's
+ * loadcommit — but now isSamlPage_ is true (from /embedded/setup's loadcommit),
+ * so the scraper initializes, captures the typed password, and stops the powerwash.
+ *
+ * This mirrors how real enterprise SAML works: GAIA (accounts.google.com) emits
+ * the header and gets its own loadcommit; the actual IdP page's document_start
+ * then sees isSamlPage_ = true from GAIA's prior loadcommit.
  */
 class GaiaSamlMode
 {
@@ -31,18 +66,31 @@ class GaiaSamlMode
     {
         $response = $next($request);
 
-        // SAML mode + password capture belong on the login page (where the
-        // password field lives), and only inside the GAIA OOBE flow. We detect
-        // the flow via Laravel's intended-URL: when an unauthenticated device
-        // hits /embedded/setup, `auth` stores that URL as `url.intended` for the
-        // post-login redirect — a signal guaranteed to survive the bounce. The
-        // completion page (/embedded/setup) stays a plain GAIA response so the
-        // existing google-accounts-signin + oauth_code path finishes sign-in.
+        // When an unauthenticated ChromeOS webview hits /embedded/setup, Laravel's
+        // auth middleware returns a 302 to /login. We replace that 302 with an HTML
+        // page that carries google-accounts-saml: start and JS-redirects to /login.
+        // See the class docblock for why a JS redirect is required (loadcommit
+        // timing — a server-side 302 does not produce its own loadcommit event).
+        if ($request->routeIs('gaia.embedded-setup') && $response->isRedirect()) {
+            $loginUrl = json_encode(
+                $response->getTargetUrl(),
+                JSON_UNESCAPED_SLASHES | JSON_HEX_TAG
+            );
+
+            return response(
+                '<!doctype html><html><head><meta charset="utf-8"></head><body>'
+                . "<script>window.location.replace($loginUrl);</script>"
+                . '</body></html>',
+                200
+            )->header('Content-Type', 'text/html; charset=utf-8')
+             ->header('google-accounts-saml', 'start');
+        }
+
+        // Belt-and-suspenders: also emit the header on the login page itself.
+        // Keeps pendingIsSamlPage_ = true throughout the /login navigation so
+        // isSamlPage_ remains true at /login's loadcommit and beyond.
         if ($request->routeIs('login') && $this->isGaiaFlow($request)) {
-            // Must be exactly "start" — ChromeOS lowercases and matches the value
-            // against start/end; anything else is ignored and SAML mode never arms.
             $response->headers->set('google-accounts-saml', 'start');
-            $this->injectHandshake($response);
         }
 
         return $response;
@@ -55,51 +103,5 @@ class GaiaSamlMode
         }
 
         return str_contains((string) $request->session()->get('url.intended', ''), 'embedded/setup/v2/chromeos');
-    }
-
-    private function injectHandshake(Response $response): void
-    {
-        $content = $response->getContent();
-
-        if (! is_string($content)
-            || ! str_contains((string) $response->headers->get('Content-Type'), 'text/html')
-            || ! str_contains($content, '</body>')) {
-            return;
-        }
-
-        $response->setContent(str_replace('</body>', $this->script().'</body>', $content));
-    }
-
-    /**
-     * The Chrome Credentials Passing API handshake (gaia_saml_api): initialize
-     * the API, then on form submit hand the typed password to ChromeOS as a
-     * KEY_TYPE_PASSWORD_PLAIN credential (add + confirm). authenticator.js reads
-     * this at maybeCompleteAuth_ and sets it as the cryptohome factor — taking
-     * priority over DOM scraping. A no-op in any browser that isn't ChromeOS in
-     * SAML mode (nothing forwards the messages).
-     */
-    private function script(): string
-    {
-        return <<<'HTML'
-<script>
-(function () {
-    if (window.__gaiaSamlApi) return; window.__gaiaSamlApi = true;
-    var TOKEN = 'authair-password';
-    function call(c) { window.postMessage({ type: 'gaia_saml_api', call: c }, window.location.origin); }
-    // v1 is the only supported version (saml_handler.js MIN/MAX_API_VERSION_VERSION = 1).
-    call({ method: 'initialize', requestedVersion: 1 });
-    function handOff(pw) {
-        if (!pw) return;
-        call({ method: 'add', token: TOKEN, keyType: 'KEY_TYPE_PASSWORD_PLAIN', passwordBytes: pw });
-        call({ method: 'confirm', token: TOKEN });
-    }
-    // Capture phase: read the password before the SPA's submit handler clears it.
-    document.addEventListener('submit', function () {
-        var input = document.querySelector('input[type="password"]');
-        if (input) { handOff(input.value); }
-    }, true);
-})();
-</script>
-HTML;
     }
 }

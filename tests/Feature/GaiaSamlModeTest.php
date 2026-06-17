@@ -9,8 +9,10 @@ use Tests\TestCase;
 /**
  * SAML mode for the openFyde/ChromeOS GAIA OOBE flow: ChromeOS only captures the
  * typed password (the cryptohome factor that prevents the silent powerwash) when
- * the login page emits `google-accounts-saml` and runs the gaia_saml_api
- * handshake. That must happen ONLY inside the GAIA flow, never for normal logins.
+ * the login page emits `google-accounts-saml: start`. The PasswordInputScraper
+ * injected by ChromeOS then auto-scrapes the password field and stores it on the
+ * handler side, where it persists across the /login → /embedded/setup navigation.
+ * That must happen ONLY inside the GAIA flow, never for normal logins.
  */
 class GaiaSamlModeTest extends TestCase
 {
@@ -32,26 +34,32 @@ class GaiaSamlModeTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertNull($response->headers->get('google-accounts-saml'));
-        $response->assertDontSee('gaia_saml_api', false);
     }
 
     public function test_embedded_setup_marks_the_flow_and_login_enters_saml_mode(): void
     {
-        // An unauthenticated device hitting the GAIA entry point is bounced to
-        // login; `auth` records the GAIA page as the intended URL.
-        $this->get(route('gaia.embedded-setup'))
-            ->assertRedirect(route('login'))
-            ->assertSessionHas('url.intended');
+        // An unauthenticated device hitting the GAIA entry point must receive an
+        // HTML page (not a 302) that carries google-accounts-saml: start and uses a
+        // JavaScript redirect to /login. A server-side 302 would skip the loadcommit
+        // for /embedded/setup; without that loadcommit, isSamlPage_ is false when
+        // /login's document_start fires and the PasswordInputScraper never inits.
+        $setup = $this->get(route('gaia.embedded-setup'));
 
-        // The login page (same session) now emits the SAML header and the
-        // Credentials Passing API handshake so ChromeOS captures the password.
+        $setup->assertStatus(200);
+        $this->assertSame('start', $setup->headers->get('google-accounts-saml'));
+        // JS redirect is required — a meta-refresh or server 302 won't produce the
+        // intermediate loadcommit that sets isSamlPage_ = true.
+        $setup->assertSee('window.location.replace', false);
+        // Auth middleware still ran and stored url.intended before we intercepted.
+        $setup->assertSessionHas('url.intended');
+
+        // The login page (same session) also emits the SAML header (belt-and-
+        // suspenders: keeps pendingIsSamlPage_ = true at /login's loadcommit).
         $login = $this->get('/login');
 
         $login->assertStatus(200);
-        // Must be exactly "start" — ChromeOS matches the value, not mere presence.
         $this->assertSame('start', $login->headers->get('google-accounts-saml'));
-        $login->assertSee('gaia_saml_api', false);
-        $login->assertSee('KEY_TYPE_PASSWORD_PLAIN', false);
+        $login->assertDontSee('gaia_saml_api', false);
     }
 
     public function test_the_completion_page_is_not_in_saml_mode(): void
