@@ -38,6 +38,10 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
+            // openFyde/ChromeOS GAIA OOBE: emit google-accounts-saml + the
+            // gaia_saml_api handshake on /login so ChromeOS captures the password
+            // (cryptohome factor). No-op outside the GAIA flow.
+            \App\Http\Middleware\GaiaSamlMode::class,
         ],
         'api' => [
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
