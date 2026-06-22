@@ -69,8 +69,10 @@ class GaiaEmbeddedSetupTest extends TestCase
         // oauth_code cookie (the auth code the browser exchanges later).
         $response->assertCookie('oauth_code');
 
-        // The page wires the handshake -> userInfo -> closeView completion.
+        // The page wires the handshake -> confirm -> userInfo -> closeView completion.
         $response->assertSee('handshake', false);
+        $response->assertSee('gaia_saml_api', false);  // Credentials Passing API confirm call
+        $response->assertSee('confirm', false);
         $response->assertSee('userInfo', false);
         $response->assertSee('closeView', false);
     }

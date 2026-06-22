@@ -7,12 +7,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * SAML mode for the openFyde/ChromeOS GAIA OOBE flow: ChromeOS only captures the
- * typed password (the cryptohome factor that prevents the silent powerwash) when
- * the login page emits `google-accounts-saml: start`. The PasswordInputScraper
- * injected by ChromeOS then auto-scrapes the password field and stores it on the
- * handler side, where it persists across the /login → /embedded/setup navigation.
- * That must happen ONLY inside the GAIA flow, never for normal logins.
+ * SAML mode for the openFyde/ChromeOS GAIA OOBE flow.
+ *
+ * ChromeOS captures the typed password (the cryptohome knowledge factor that
+ * prevents silent powerwash) via two mechanisms:
+ *
+ *  1. Credentials Passing API (`gaia_saml_api`) — Login.vue posts the password
+ *     via window.postMessage before form submit; embedded-setup.blade.php sends
+ *     `confirm` after the handshake.  This is the primary mechanism and works
+ *     regardless of whether SAML mode is active.
+ *
+ *  2. PasswordInputScraper (belt-and-suspenders) — ChromeOS auto-scrapes
+ *     password fields when isSamlPage_ = true.  isSamlPage_ is set when
+ *     google-accounts-saml: start is returned by an intermediate page that gets
+ *     its own loadcommit before /login's document_start fires.
+ *
+ * The SAML header must NOT appear on normal logins (only inside the GAIA flow).
  */
 class GaiaSamlModeTest extends TestCase
 {
@@ -59,6 +69,7 @@ class GaiaSamlModeTest extends TestCase
 
         $login->assertStatus(200);
         $this->assertSame('start', $login->headers->get('google-accounts-saml'));
+        // gaia_saml_api is used by Login.vue (compiled JS), not the server HTML.
         $login->assertDontSee('gaia_saml_api', false);
     }
 

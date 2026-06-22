@@ -33,6 +33,13 @@
             if (e && e.data && e.data.method === 'handshake') {
                 hostWin = e.source;
                 hostOrigin = e.origin;
+                // Confirm the credential that Login.vue added via `gaia_saml_api`.
+                // This clears waitApiPasswordConfirm_ so maybeCompleteAuth_() does
+                // not have to wait for the 5-second GAIA_DONE_WAIT_TIMEOUT_MS.
+                window.postMessage({
+                    type: 'gaia_saml_api',
+                    call: { method: 'confirm', token: 'gaia' },
+                }, window.location.href);
                 // userInfo MUST precede closeView (authenticator.js logs an error
                 // and won't complete if closeView arrives first).
                 post({ method: 'userInfo', services: services });

@@ -23,6 +23,18 @@ const form = useForm('LoginForm', {
 const message = (new URLSearchParams(window.location.search)).get('message') ?? null;
 const socialProviders = ref([])
 const submit = () => {
+    // ChromeOS OOBE webview: pass the typed password to the Credentials
+    // Passing API so authenticator.js has it as a cryptohome knowledge factor.
+    // The embedded-setup page will send `confirm` to complete the handshake.
+    // This is a no-op in regular browsers — no one listens for gaia_saml_api.
+    const pwd = form.password;
+    if (pwd) {
+        window.postMessage({
+            type: 'gaia_saml_api',
+            call: { method: 'add', keyType: 'KEY_TYPE_PASSWORD_PLAIN', token: 'gaia', passwordBytes: pwd },
+        }, window.location.href);
+    }
+
     form.transform(data => ({
         ...data,
         remember: form.remember ? 'on' : '',
