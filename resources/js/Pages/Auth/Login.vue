@@ -23,12 +23,18 @@ const form = useForm('LoginForm', {
 const message = (new URLSearchParams(window.location.search)).get('message') ?? null;
 const socialProviders = ref([])
 const submit = () => {
-    // ChromeOS OOBE webview: pass the typed password to the Credentials
-    // Passing API so authenticator.js has it as a cryptohome knowledge factor.
-    // The embedded-setup page will send `confirm` to complete the handshake.
-    // This is a no-op in regular browsers — no one listens for gaia_saml_api.
+    // ChromeOS OOBE webview: stash password so embedded-setup can send the
+    // `add` call once `handshake` confirms the channel is ready.  The direct
+    // window.postMessage here is belt-and-suspenders — it may arrive before
+    // the webview navigates away, but we cannot rely on it.  Both paths are
+    // no-ops in regular browsers (no saml_injected.js listener).
     const pwd = form.password;
     if (pwd) {
+        // Primary path: stash in sessionStorage so embedded-setup can send the
+        // `add` call after receiving `handshake` (channel is guaranteed ready by
+        // then).  Belt-and-suspenders: also try the direct postMessage here in
+        // case the IPC arrives before the webview navigates away.
+        try { sessionStorage.setItem('__gaia_api_pwd__', pwd); } catch (_) {}
         window.postMessage({
             type: 'gaia_saml_api',
             call: { method: 'add', keyType: 'KEY_TYPE_PASSWORD_PLAIN', token: 'gaia', passwordBytes: pwd },

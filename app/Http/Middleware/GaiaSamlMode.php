@@ -26,12 +26,30 @@ use Symfony\Component\HttpFoundation\Response;
  * scrapedPasswordCount === 1 and sets password_ = firstScrapedPassword, which
  * becomes the cryptohome factor.
  *
- * We do NOT inject the Chrome Credentials Passing API (gaia_saml_api) handshake.
- * The API's `add` call sets samlApiUsed = true (overriding scraping) but `confirm`
- * is sent on form submit — it is lost when the page navigates before the extension
- * channel round-trip completes. With samlApiUsed true and confirmToken_ null,
- * apiPasswordBytes returns null and password_ ends up null → powerwash. The DOM
- * scraper avoids this race entirely because it fires on keystroke, not on submit.
+ * PRIMARY MECHANISM (Credentials Passing API, PR #46 / v1.6.8):
+ *
+ * Login.vue stashes the typed password in sessionStorage['__gaia_api_pwd__']
+ * before the Inertia XHR. When the webview navigates to embedded-setup.blade.php
+ * and the host sends `handshake`, the page reads the password and sends:
+ *   1. window.postMessage({type:'gaia_saml_api', call:{method:'add',...}})
+ *   2. window.postMessage({type:'gaia_saml_api', call:{method:'confirm',...}})
+ * These go through saml_injected.js's APICallForwarder (always active, not gated
+ * on SAML mode) → saml_handler.js stores lastApiPasswordBytes_ and sets
+ * confirmToken_, clearing waitApiPasswordConfirm_ in authenticator.js.
+ * A 200 ms setTimeout before the userInfo + closeView signals gives the IPC
+ * (saml_injected.js → saml_handler.js) time to complete so maybeCompleteAuth_()
+ * sees samlApiUsed = true and password_ = apiPasswordBytes.
+ *
+ * The `add` is sent from embedded-setup (not from /login) because the channel
+ * is GUARANTEED established there — handshake is sent in onContentLoad_ which
+ * fires after full page load, by which time channel.connect('injected') has
+ * already completed. From /login the IPC may not arrive before the webview
+ * navigates away, leaving lastApiPasswordBytes_ = null → empty password → powerwash.
+ * Login.vue keeps the window.postMessage as a belt-and-suspenders (no harm if
+ * it also arrives; saml_handler.js just overwrites with the same value).
+ * Outside the OOBE webview sessionStorage and postMessage are both ignored.
+ *
+ * SAML MODE (belt-and-suspenders, PasswordInputScraper):
  *
  * THE TIMING PROBLEM (why /embedded/setup must return HTML, not a 302):
  *

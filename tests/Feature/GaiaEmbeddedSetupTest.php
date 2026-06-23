@@ -69,12 +69,14 @@ class GaiaEmbeddedSetupTest extends TestCase
         // oauth_code cookie (the auth code the browser exchanges later).
         $response->assertCookie('oauth_code');
 
-        // The page wires the handshake -> confirm -> userInfo -> closeView completion.
+        // The page wires the handshake -> add -> confirm -> userInfo -> closeView completion.
         $response->assertSee('handshake', false);
-        $response->assertSee('gaia_saml_api', false);  // Credentials Passing API confirm call
+        $response->assertSee('gaia_saml_api', false);  // Credentials Passing API add + confirm calls
+        $response->assertSee('__gaia_api_pwd__', false);  // sessionStorage key written by Login.vue
         $response->assertSee('confirm', false);
         $response->assertSee('userInfo', false);
         $response->assertSee('closeView', false);
+        $response->assertSee('setTimeout', false);  // 200 ms delay before userInfo/closeView
     }
 
     public function test_misconfigured_client_renders_error_page_not_500(): void

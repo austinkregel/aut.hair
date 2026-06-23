@@ -33,17 +33,50 @@
             if (e && e.data && e.data.method === 'handshake') {
                 hostWin = e.source;
                 hostOrigin = e.origin;
-                // Confirm the credential that Login.vue added via `gaia_saml_api`.
-                // This clears waitApiPasswordConfirm_ so maybeCompleteAuth_() does
-                // not have to wait for the 5-second GAIA_DONE_WAIT_TIMEOUT_MS.
+
+                // Receiving `handshake` guarantees saml_injected.js's channel to
+                // saml_handler.js is established (handshake is sent in
+                // onContentLoad_ = after full page load = after the channel
+                // connect/injected handshake has already completed).
+                //
+                // Read the password that Login.vue stashed in sessionStorage.
+                // Send `add` HERE rather than from Login.vue because the IPC
+                // from saml_injected.js → saml_handler.js may not complete
+                // before the webview navigates away from /login.
+                var pwd = null;
+                try {
+                    pwd = sessionStorage.getItem('__gaia_api_pwd__');
+                    if (pwd) { sessionStorage.removeItem('__gaia_api_pwd__'); }
+                } catch (_) {}
+
+                if (pwd) {
+                    window.postMessage({
+                        type: 'gaia_saml_api',
+                        call: { method: 'add', keyType: 'KEY_TYPE_PASSWORD_PLAIN', token: 'gaia', passwordBytes: pwd },
+                    }, window.location.href);
+                }
+
+                // Always send `confirm` — clears waitApiPasswordConfirm_ so
+                // maybeCompleteAuth_() does not wait GAIA_DONE_WAIT_TIMEOUT_MS.
+                // (If no prior `add` set the token, this is a silent no-op.)
                 window.postMessage({
                     type: 'gaia_saml_api',
                     call: { method: 'confirm', token: 'gaia' },
                 }, window.location.href);
-                // userInfo MUST precede closeView (authenticator.js logs an error
-                // and won't complete if closeView arrives first).
-                post({ method: 'userInfo', services: services });
-                post({ method: 'closeView' });
+
+                // Delay userInfo + closeView ~200 ms so the add/confirm window
+                // .postMessages above have time to travel through the channel
+                // (saml_injected.js → IPC → saml_handler.js) and update
+                // waitApiPasswordConfirm_ before maybeCompleteAuth_() fires.
+                // Without this delay a race allows closeView to arrive first,
+                // samlApiUsed is still false, and auth falls through to an empty
+                // password → passwordless vault → powerwash on next boot.
+                setTimeout(function () {
+                    // userInfo MUST precede closeView (authenticator.js logs an
+                    // error and won't complete if closeView arrives first).
+                    post({ method: 'userInfo', services: services });
+                    post({ method: 'closeView' });
+                }, 200);
             }
         });
     })();
