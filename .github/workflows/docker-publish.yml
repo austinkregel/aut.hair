@@ -28,12 +28,45 @@ jobs:
         id: vars
         run: echo "sha7=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
 
+      # The Dockerfile refuses to build a bundle it cannot key, but it only gets there
+      # after apt + composer + npm. Fail in seconds instead, with the fix in the message.
+      - name: Check the Reverb client config is configured
+        run: |
+          missing=""
+          [ -n "${{ vars.REVERB_APP_KEY }}" ] || missing="$missing REVERB_APP_KEY"
+          [ -n "${{ vars.REVERB_HOST }}" ]    || missing="$missing REVERB_HOST"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository variable(s):$missing"
+            echo "Set them under Settings -> Secrets and variables -> Actions -> Variables."
+            echo "They are compiled into the JS bundle, so they cannot be supplied at runtime."
+            echo "REVERB_APP_KEY must match the REVERB_APP_KEY in the deployment's env."
+            exit 1
+          fi
+
+      # Vite inlines VITE_* into the JS bundle at BUILD time, so the Reverb client
+      # config has to be present HERE -- setting it on the deployed container is too
+      # late, the bundle is already compiled. Building without it ships an Echo client
+      # whose key is `undefined` ("You must pass your app key when you instantiate
+      # Pusher"), which is only visible in a browser console after release.
+      #
+      # REVERB_APP_KEY is a repo VARIABLE, not a secret: it is public by design --
+      # every browser that loads the app receives it. It must equal the REVERB_APP_KEY
+      # in the deployment's runtime env, or the client presents a key the Reverb
+      # server does not know.
+      #
+      # The REVERB_APP_SECRET is NOT here and must never be: a VITE_-prefixed secret
+      # is one reference away from being published in the bundle.
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            VITE_REVERB_APP_KEY=${{ vars.REVERB_APP_KEY }}
+            VITE_REVERB_HOST=${{ vars.REVERB_HOST }}
+            VITE_REVERB_PORT=443
+            VITE_REVERB_SCHEME=https
           tags: |
             ghcr.io/austinkregel/aut.hair:latest
             ghcr.io/austinkregel/aut.hair:${{ steps.vars.outputs.sha7 }}
