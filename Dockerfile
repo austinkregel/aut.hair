@@ -71,6 +71,34 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 RUN composer install
+
+# Vite INLINES import.meta.env.VITE_* into the JS bundle at build time (see
+# resources/js/bootstrap.js -- Echo reads the Reverb key from it). They are not read
+# at runtime, so setting them on the container does nothing: the bundle is already
+# compiled. Building without them ships an Echo client whose key is `undefined`, and
+# the browser throws "You must pass your app key when you instantiate Pusher."
+#
+# The app KEY is public by design -- it is sent to every browser -- so baking it in is
+# correct. The SECRET must never be a VITE_ var: anything VITE_-prefixed is one
+# reference away from being published in the bundle.
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT=443
+ARG VITE_REVERB_SCHEME=https
+
+ENV VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY}
+ENV VITE_REVERB_HOST=${VITE_REVERB_HOST}
+ENV VITE_REVERB_PORT=${VITE_REVERB_PORT}
+ENV VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
+
+# Fail loudly rather than ship a bundle that cannot connect. A blind build is only
+# discoverable in the browser console, long after release.
+RUN test -n "$VITE_REVERB_APP_KEY" -a -n "$VITE_REVERB_HOST" || { \
+      echo "ERROR: VITE_REVERB_APP_KEY and VITE_REVERB_HOST must be passed as build args."; \
+      echo "They are compiled into the JS bundle; setting them at runtime is too late."; \
+      exit 1; \
+    }
+
 RUN npm install && npm run build && rm -rf node_modules && rm -rf /tmp/*
 
 ENTRYPOINT ["start-container"]
