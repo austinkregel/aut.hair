@@ -1,0 +1,18 @@
+# The Dockerfile does `COPY . /var/www/html`, so anything here would be baked into a
+# published image. A developer's .env would be both a secret leak and a build-
+# reproducibility hazard: Vite reads .env at build time, so a local one silently
+# changes what gets compiled into the public JS bundle.
+.env
+.env.*
+!.env.example
+
+.git
+.github
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+*.md
