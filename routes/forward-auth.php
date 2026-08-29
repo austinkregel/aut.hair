@@ -20,6 +20,6 @@ use Illuminate\Support\Facades\Route;
 | rather than throwing, so it must NOT use the `auth` middleware.
 */
 
-Route::middleware(['web', 'throttle:forward-auth'])
+Route::middleware('web')
     ->get('outpost.goauthentik.io/auth/nginx', [ForwardAuthController::class, 'verify'])
     ->name('verify');

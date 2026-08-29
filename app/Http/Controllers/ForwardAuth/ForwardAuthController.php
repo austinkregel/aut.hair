@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProxyApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -73,9 +74,13 @@ class ForwardAuthController extends Controller
      * ProxyApp for approval, still failing closed.
      *
      * Gated to trusted subnets so a random internet actor spraying fresh
-     * X-Forwarded-Host values cannot flood the approval queue with junk rows (the
-     * route throttle backstops the rest). Returns null when discovery is off or the
-     * caller is untrusted — the caller then 403s without writing anything.
+     * X-Forwarded-Host values cannot flood the approval queue with junk rows, and
+     * rate-limited per IP as a backstop against a spoofed trusted source. Returns
+     * null when discovery is off, the caller is untrusted, or the limit is hit —
+     * the caller then 403s without writing anything.
+     *
+     * This is the ONLY throttled path: the verify hot path for already-registered
+     * apps is never rate-limited, so asset-heavy page loads are unaffected.
      */
     protected function discover(Request $request, string $host): ?ProxyApp
     {
@@ -87,6 +92,17 @@ class ForwardAuthController extends Controller
 
             return null;
         }
+
+        $limit = (int) config('forward-auth.discovery_throttle', 20);
+        if (RateLimiter::tooManyAttempts('fa-discovery:'.$request->ip(), $limit)) {
+            Log::warning('forward-auth: discovery rate limit hit', [
+                'host' => $host,
+                'ip' => $request->ip(),
+            ]);
+
+            return null;
+        }
+        RateLimiter::hit('fa-discovery:'.$request->ip(), 60);
 
         // firstOrCreate dedupes on the unique host under concurrent first hits.
         $app = ProxyApp::firstOrCreate(

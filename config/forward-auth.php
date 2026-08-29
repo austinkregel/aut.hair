@@ -4,19 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Verify endpoint rate limit
-    |--------------------------------------------------------------------------
-    |
-    | Requests per minute, per client IP, allowed against the forward-auth verify
-    | endpoint (/outpost.goauthentik.io/auth/nginx). It is publicly reachable and
-    | unauthenticated, so this caps abuse — including the auto-discovery row writes
-    | below. Tune up if a single busy client legitimately exceeds it.
-    |
-    */
-    'throttle' => (int) env('FORWARD_AUTH_THROTTLE', 30),
-
-    /*
-    |--------------------------------------------------------------------------
     | First-contact auto-discovery
     |--------------------------------------------------------------------------
     |
@@ -31,6 +18,19 @@ return [
     |
     */
     'auto_discovery' => (bool) env('FORWARD_AUTH_AUTO_DISCOVERY', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Discovery rate limit
+    |--------------------------------------------------------------------------
+    |
+    | New-host discovery attempts per minute, per client IP. This guards ONLY the
+    | row-creating discovery branch — the verify hot path for already-registered
+    | apps is never throttled, so asset-heavy page loads are unaffected. Discovering
+    | a new app is a rare, once-per-app event, so this can stay tight.
+    |
+    */
+    'discovery_throttle' => (int) env('FORWARD_AUTH_DISCOVERY_THROTTLE', 20),
 
     'trusted_subnets' => array_filter(array_map('trim', explode(',', (string) env(
         'FORWARD_AUTH_TRUSTED_SUBNETS',

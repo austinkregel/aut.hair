@@ -64,6 +64,20 @@ class ForwardAuthLifecycleTest extends TestCase
         $this->assertDatabaseMissing('proxy_apps', ['host' => 'evil.example.com']);
     }
 
+    public function test_discovery_is_rate_limited_per_ip(): void
+    {
+        config(['forward-auth.discovery_throttle' => 2]);
+
+        // Three fresh hosts from the same trusted IP; only the first two register.
+        foreach (['a.example.com', 'b.example.com', 'c.example.com'] as $host) {
+            $this->get(self::VERIFY, $this->forwarded($host))->assertForbidden();
+        }
+
+        $this->assertDatabaseHas('proxy_apps', ['host' => 'a.example.com']);
+        $this->assertDatabaseHas('proxy_apps', ['host' => 'b.example.com']);
+        $this->assertDatabaseMissing('proxy_apps', ['host' => 'c.example.com']);
+    }
+
     public function test_pending_app_is_forbidden_even_for_an_entitled_user(): void
     {
         $team = Team::factory()->create(['personal_team' => false]);
