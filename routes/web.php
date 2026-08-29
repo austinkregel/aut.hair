@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers;
-use App\Http\Controllers\OAuth\TeamOAuthClientController;
 use App\Http\Controllers\OAuth\ClientListController;
+use App\Http\Controllers\OAuth\TeamOAuthClientController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +25,7 @@ Route::middleware('web')->group(function () {
     });
     Route::get('/.well-known/openid-configuration', Controllers\WellKnownController::class)->name('well-known');
     Route::get('/oauth/jwks', Controllers\JsonWebKeysController::class)->name('oidc.jwks');
-// OIDC End Session Endpoint
+    // OIDC End Session Endpoint
     Route::match(['GET', 'POST'], '/oauth/logout', Controllers\OidcLogoutController::class)->name('oauth.logout');
     Route::post('/oauth/revoke', App\Http\Controllers\OidcTokenRevocationController::class)->name('oauth.revoke');
     Route::get('/api/available-login-providers', Controllers\AvailableLoginProvidersController::class);
@@ -60,6 +60,14 @@ Route::middleware([config('jetstream.auth_session'), 'verified'])->group(functio
 Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middleware\OnlyHost::class])->group(function () {
     Route::get('/user/admin', Controllers\Settings\AdminController::class)->name('admin');
     Route::get('/user/admin/chromeos-devices', Controllers\Settings\ChromeosDeviceController::class)->name('admin.chromeos-devices');
+
+    // Forward-auth approval queue (Option A/B lifecycle). Admin-only via OnlyHost.
+    Route::get('/user/admin/forward-auth/apps', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'index'])
+        ->name('admin.forward-auth.apps');
+    Route::post('/user/admin/forward-auth/apps/{proxyApp}/approve', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'approve'])
+        ->name('admin.forward-auth.apps.approve');
+    Route::post('/user/admin/forward-auth/apps/{proxyApp}/reject', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'reject'])
+        ->name('admin.forward-auth.apps.reject');
     Route::post('/api/install', Controllers\InstallNewProvider::class);
     Route::post('/api/uninstall', Controllers\UninstallNewProvider::class);
     Route::post('/api/enable', Controllers\EnableProviderController::class);

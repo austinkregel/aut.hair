@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Http\Middleware\OidcTokenBlacklistMiddleware;
-use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -51,6 +50,12 @@ class RouteServiceProvider extends ServiceProvider
             // Per-route middleware is set in the file.
             Route::as('gaia.')
                 ->group(base_path('routes/gaia.php'));
+
+            // Forward-auth (Authentik-outpost compatible): root-relative
+            // /outpost.goauthentik.io/auth/nginx a reverse proxy hits per request.
+            // Per-route middleware is set in the file.
+            Route::as('forward-auth.')
+                ->group(base_path('routes/forward-auth.php'));
         });
     }
 }

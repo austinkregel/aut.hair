@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ForwardAuth\ForwardAuthAppController;
 use App\Http\Controllers\MachineInfoController;
 use App\Http\Controllers\SeedReleaseController;
 use App\Http\Controllers\UserinfoController;
@@ -31,3 +32,10 @@ Route::middleware('auth:api')->post('sync-seed', SeedReleaseController::class)->
 Route::middleware(\Laravel\Passport\Http\Middleware\CheckClientCredentials::class)
     ->get('machine-info', MachineInfoController::class)
     ->name('oidc.machine_info');
+
+// Deploy-time forward-auth registration (Option A). A trusted machine (e.g.
+// homelab-in-a-box) upserts a protected app with a client_credentials token that
+// carries the `forward-auth` scope.
+Route::middleware(\Laravel\Passport\Http\Middleware\CheckClientCredentials::class.':forward-auth')
+    ->post('forward-auth/apps', [ForwardAuthAppController::class, 'store'])
+    ->name('forward-auth.apps.store');

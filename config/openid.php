@@ -16,6 +16,7 @@ return [
             'email' => 'Information about your email address',
             'address' => 'Information about your address',
             'sync' => 'Release your sync-chain seed for self-hosted device sync',
+            'forward-auth' => 'Register and manage forward-auth protected apps',
             // 'login' => 'See your login information',
         ],
             // ChromeOS / GAIA-compat scopes — the literal Google scope strings
@@ -69,5 +70,5 @@ return [
          * - /oauth/jwks
          */
         'jwks' => false,
-    ]
+    ],
 ];
