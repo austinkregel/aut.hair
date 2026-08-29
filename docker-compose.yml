@@ -46,6 +46,13 @@ services:
       args:
         WWWGROUP: 1000
         WWWUSER: 1000
+        # Vite inlines these into the JS bundle at build time; the root Dockerfile
+        # refuses to build without them. Sourced from the REVERB_* values in .env
+        # (nested VITE_REVERB_*="${REVERB_*}" refs are not expanded for build args).
+        VITE_REVERB_APP_KEY: '${REVERB_APP_KEY}'
+        VITE_REVERB_HOST: '${REVERB_HOST}'
+        VITE_REVERB_PORT: '${REVERB_PORT:-443}'
+        VITE_REVERB_SCHEME: '${REVERB_SCHEME:-https}'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
