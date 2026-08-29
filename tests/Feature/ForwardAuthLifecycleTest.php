@@ -16,9 +16,15 @@ class ForwardAuthLifecycleTest extends TestCase
 
     private const VERIFY = '/outpost.goauthentik.io/auth/nginx';
 
-    private function forwarded(string $host): array
+    // A docker/private source IP — discovery only fires from a trusted subnet.
+    private function forwarded(string $host, string $ip = '172.18.0.5'): array
     {
-        return ['X-Forwarded-Host' => $host, 'X-Forwarded-Proto' => 'https', 'X-Forwarded-Uri' => '/'];
+        return [
+            'X-Forwarded-Host' => $host,
+            'X-Forwarded-Proto' => 'https',
+            'X-Forwarded-Uri' => '/',
+            'X-Forwarded-For' => $ip,
+        ];
     }
 
     // --- Option B: first-contact discovery -------------------------------------
@@ -47,6 +53,15 @@ class ForwardAuthLifecycleTest extends TestCase
         $this->get(self::VERIFY, $this->forwarded('dup.example.com'))->assertForbidden();
 
         $this->assertSame(1, ProxyApp::where('host', 'dup.example.com')->count());
+    }
+
+    public function test_unknown_host_from_an_untrusted_ip_is_not_discovered(): void
+    {
+        // A public source IP: still 403, but no junk row is written.
+        $this->get(self::VERIFY, $this->forwarded('evil.example.com', '203.0.113.9'))
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('proxy_apps', ['host' => 'evil.example.com']);
     }
 
     public function test_pending_app_is_forbidden_even_for_an_entitled_user(): void
@@ -109,6 +124,31 @@ class ForwardAuthLifecycleTest extends TestCase
             'status' => ProxyApp::STATUS_PENDING,
             'enabled' => false,
         ]);
+    }
+
+    public function test_redeploy_without_status_does_not_demote_a_live_app(): void
+    {
+        $team = Team::factory()->create(['personal_team' => false]);
+        $app = ProxyApp::factory()->create([
+            'host' => 'grafana.example.com',
+            'team_id' => $team->id,
+            'status' => ProxyApp::STATUS_APPROVED,
+            'enabled' => true,
+        ]);
+
+        Passport::actingAsClient(Client::factory()->create(), ['forward-auth']);
+
+        // A plain redeploy: same host + name, no status/enabled.
+        $this->postJson('/api/forward-auth/apps', [
+            'host' => 'grafana.example.com',
+            'name' => 'Grafana (v2)',
+            'owner_team_id' => $team->id,
+        ])->assertOk();
+
+        $app->refresh();
+        $this->assertSame(ProxyApp::STATUS_APPROVED, $app->status);
+        $this->assertTrue($app->enabled);
+        $this->assertSame('Grafana (v2)', $app->name);
     }
 
     public function test_machine_without_the_scope_is_forbidden(): void

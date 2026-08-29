@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProxyApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -36,10 +37,58 @@ class ForwardAuthController extends Controller
         // Symfony's trusted set, so read them off the raw header.
         $host = $request->header('X-Forwarded-Host', $request->getHost());
 
-        // First-contact discovery (Option B): an unknown host is auto-registered as
-        // pending and surfaced for approval. firstOrCreate dedupes on the unique
-        // host, so repeat traffic never floods the queue. Fail closed either way —
-        // a pending, rejected, or disabled app never reaches the auth checks below.
+        $app = ProxyApp::where('host', $host)->first()
+            ?? $this->discover($request, $host);
+
+        // Fail closed: a missing, pending, rejected, or disabled app never reaches
+        // the auth checks below.
+        if (! $app || ! $app->isActive()) {
+            return response('Forbidden: this app is not approved for forward auth.', 403);
+        }
+
+        $user = $request->user();
+
+        if (! $user) {
+            $request->session()->put('url.intended', $this->returnUrl($request, $host));
+
+            return redirect()->to($this->loginUrl());
+        }
+
+        if (! $app->allowsUser($user)) {
+            return response('Forbidden: you do not have access to this app.', 403);
+        }
+
+        return response('', 200, [
+            'X-authentik-username' => $user->email,
+            'X-authentik-email' => $user->email,
+            // Only the teams that entitle THIS user to THIS app — never the user's
+            // full team membership, which would leak unrelated (private) teams to
+            // the app operator.
+            'X-authentik-groups' => $this->groupsFor($app, $user),
+        ]);
+    }
+
+    /**
+     * First-contact discovery (Option B): auto-register an unknown host as a pending
+     * ProxyApp for approval, still failing closed.
+     *
+     * Gated to trusted subnets so a random internet actor spraying fresh
+     * X-Forwarded-Host values cannot flood the approval queue with junk rows (the
+     * route throttle backstops the rest). Returns null when discovery is off or the
+     * caller is untrusted — the caller then 403s without writing anything.
+     */
+    protected function discover(Request $request, string $host): ?ProxyApp
+    {
+        if (! config('forward-auth.auto_discovery') || ! $this->fromTrustedSubnet($request)) {
+            Log::warning('forward-auth: unregistered host, discovery skipped', [
+                'host' => $host,
+                'ip' => $request->ip(),
+            ]);
+
+            return null;
+        }
+
+        // firstOrCreate dedupes on the unique host under concurrent first hits.
         $app = ProxyApp::firstOrCreate(
             ['host' => $host],
             [
@@ -58,27 +107,27 @@ class ForwardAuthController extends Controller
             ]);
         }
 
-        if (! $app->isActive()) {
-            return response('Forbidden: this app is not approved for forward auth ('.$app->status.').', 403);
-        }
+        return $app;
+    }
 
-        $user = $request->user();
+    protected function fromTrustedSubnet(Request $request): bool
+    {
+        $subnets = config('forward-auth.trusted_subnets', []);
 
-        if (! $user) {
-            $request->session()->put('url.intended', $this->returnUrl($request, $host));
+        return ! empty($subnets) && IpUtils::checkIp((string) $request->ip(), $subnets);
+    }
 
-            return redirect()->to($this->loginUrl());
-        }
-
-        if (! $app->allowsUser($user)) {
-            return response('Forbidden: you do not have access to this app.', 403);
-        }
-
-        return response('', 200, [
-            'X-authentik-username' => $user->email,
-            'X-authentik-email' => $user->email,
-            'X-authentik-groups' => $user->allTeams()->unique('id')->pluck('id')->implode('|'),
-        ]);
+    /**
+     * The user's team ids intersected with the teams entitled to this app, pipe-joined.
+     */
+    protected function groupsFor(ProxyApp $app, $user): string
+    {
+        return $user->allTeams()
+            ->pluck('id')
+            ->intersect($app->allowedTeamIds())
+            ->unique()
+            ->values()
+            ->implode('|');
     }
 
     /**

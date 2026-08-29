@@ -26,6 +26,12 @@ class ForwardAuthAppController extends Controller
      * Deploy-time upsert (machine token). The scope check is the trust signal, so a
      * caller may land the app straight in `approved`; default is `pending` so a
      * misconfigured pipeline can never silently expose an app.
+     *
+     * TRUST BOUNDARY: `owner_team_id` is not bound to the calling client — any
+     * client holding the `forward-auth` scope may register any host for any team.
+     * That is intentional: the scope is issued only to fully-trusted deploy machines
+     * (e.g. homelab-in-a-box). Do not hand this scope to a client you would not
+     * trust to grant arbitrary teams access to arbitrary hosts.
      */
     public function store(Request $request): JsonResponse
     {
@@ -39,17 +45,26 @@ class ForwardAuthAppController extends Controller
             'enabled' => ['sometimes', 'boolean'],
         ]);
 
-        $status = $data['status'] ?? ProxyApp::STATUS_PENDING;
+        $app = ProxyApp::firstOrNew(['host' => $data['host']]);
+        $app->name = $data['name'];
+        $app->team_id = $data['owner_team_id'];
 
-        $app = ProxyApp::updateOrCreate(
-            ['host' => $data['host']],
-            [
-                'name' => $data['name'],
-                'team_id' => $data['owner_team_id'],
-                'status' => $status,
-                'enabled' => $data['enabled'] ?? ($status === ProxyApp::STATUS_APPROVED),
-            ]
-        );
+        if (! $app->exists) {
+            // New app: default to pending unless the caller explicitly approves it.
+            $app->status = $data['status'] ?? ProxyApp::STATUS_PENDING;
+            $app->enabled = $data['enabled'] ?? ($app->status === ProxyApp::STATUS_APPROVED);
+        } else {
+            // Existing app: a redeploy that omits status/enabled must NOT demote a
+            // live app back to pending. Only change them when explicitly provided.
+            if (array_key_exists('status', $data)) {
+                $app->status = $data['status'];
+            }
+            if (array_key_exists('enabled', $data)) {
+                $app->enabled = $data['enabled'];
+            }
+        }
+
+        $app->save();
 
         if (array_key_exists('allow_team_ids', $data)) {
             $app->teams()->sync($data['allow_team_ids']);

@@ -29,6 +29,12 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Forward-auth verify endpoint: public + unauthenticated, so cap per client
+        // IP. Configurable via config/forward-auth.php (FORWARD_AUTH_THROTTLE).
+        RateLimiter::for('forward-auth', function (Request $request) {
+            return Limit::perMinute((int) config('forward-auth.throttle', 30))->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware(OidcTokenBlacklistMiddleware::class)

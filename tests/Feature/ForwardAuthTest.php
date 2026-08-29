@@ -129,6 +129,24 @@ class ForwardAuthTest extends TestCase
         $response->assertHeader('X-authentik-groups', (string) $team->id);
     }
 
+    public function test_groups_header_only_exposes_teams_relevant_to_this_app(): void
+    {
+        // User belongs to two teams; the app only allows one of them.
+        $allowedTeam = Team::factory()->create(['personal_team' => false]);
+        $privateTeam = Team::factory()->create(['personal_team' => false]);
+        $user = $allowedTeam->owner;
+        $user->teams()->attach($privateTeam, ['role' => 'admin']);
+
+        ProxyApp::factory()->create(['host' => 'app.example.com', 'team_id' => $allowedTeam->id]);
+
+        $response = $this->actingAs($user)
+            ->get(self::VERIFY, $this->forwarded('app.example.com'));
+
+        $response->assertOk();
+        // Only the entitling team leaks — not the unrelated private team.
+        $response->assertHeader('X-authentik-groups', (string) $allowedTeam->id);
+    }
+
     public function test_allows_user_truth_table(): void
     {
         $ownerTeam = Team::factory()->create(['personal_team' => false]);

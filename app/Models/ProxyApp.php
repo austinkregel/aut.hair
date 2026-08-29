@@ -103,7 +103,7 @@ class ProxyApp extends Model
      */
     public function allowsUser(User $user): bool
     {
-        $allowedTeamIds = $this->grantedTeamIds();
+        $allowedTeamIds = $this->allowedTeamIds();
 
         return $user->allTeams()
             ->contains(fn (Team $team) => $allowedTeamIds->contains($team->id));
@@ -112,7 +112,7 @@ class ProxyApp extends Model
     /**
      * The set of team ids allowed into this app: the owner plus all granted teams.
      */
-    protected function grantedTeamIds(): Collection
+    public function allowedTeamIds(): Collection
     {
         return collect([$this->team_id])
             ->merge($this->teams()->pluck('teams.id'))
