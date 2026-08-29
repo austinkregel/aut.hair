@@ -62,6 +62,8 @@ Route::middleware([config('jetstream.auth_session'), 'verified', App\Http\Middle
     Route::get('/user/admin/chromeos-devices', Controllers\Settings\ChromeosDeviceController::class)->name('admin.chromeos-devices');
 
     // Forward-auth approval queue (Option A/B lifecycle). Admin-only via OnlyHost.
+    Route::get('/user/admin/forward-auth', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'page'])
+        ->name('admin.forward-auth');
     Route::get('/user/admin/forward-auth/apps', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'index'])
         ->name('admin.forward-auth.apps');
     Route::post('/user/admin/forward-auth/apps/{proxyApp}/approve', [Controllers\ForwardAuth\ForwardAuthAppController::class, 'approve'])

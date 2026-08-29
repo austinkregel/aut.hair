@@ -6,6 +6,7 @@ use App\Models\ProxyApp;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -246,6 +247,29 @@ class ForwardAuthLifecycleTest extends TestCase
         $this->actingAs($member)
             ->get(self::VERIFY, $this->forwarded('app.example.com'))
             ->assertOk();
+    }
+
+    public function test_admin_can_view_the_forward_auth_page(): void
+    {
+        config(['auth.admin_emails' => ['admin@example.com']]);
+        $admin = User::factory()->withPersonalTeam()->create(['email' => 'admin@example.com']);
+        ProxyApp::factory()->pending()->create(['host' => 'pending.example.com']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.forward-auth'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('ForwardAuth/Index')
+                ->has('apps', 1)
+                ->has('teams'));
+    }
+
+    public function test_non_admin_cannot_view_the_forward_auth_page(): void
+    {
+        config(['auth.admin_emails' => ['admin@example.com']]);
+        $user = User::factory()->withPersonalTeam()->create(['email' => 'someone@example.com']);
+
+        $this->actingAs($user)->get(route('admin.forward-auth'))->assertNotFound();
     }
 
     public function test_non_admin_cannot_reach_the_approval_queue(): void

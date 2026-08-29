@@ -4,9 +4,12 @@ namespace App\Http\Controllers\ForwardAuth;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProxyApp;
+use App\Models\Team;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * Registration + approval lifecycle for forward-auth protected apps.
@@ -71,6 +74,20 @@ class ForwardAuthAppController extends Controller
         }
 
         return response()->json($app->load('teams'), $app->wasRecentlyCreated ? 201 : 200);
+    }
+
+    /**
+     * The admin Forward Auth screen: the approval queue + configured apps.
+     */
+    public function page(): Response
+    {
+        return Inertia::render('ForwardAuth/Index', [
+            'apps' => ProxyApp::query()
+                ->with(['ownerTeam:id,name', 'teams:id,name', 'requestedBy:id,name,email'])
+                ->orderBy('host')
+                ->get(),
+            'teams' => Team::orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     /**

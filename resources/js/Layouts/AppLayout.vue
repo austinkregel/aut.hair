@@ -66,6 +66,9 @@ onMounted(() => {
                                 <JetNavLink :href="route('admin.chromeos-devices')" :active="route().current('admin.chromeos-devices')">
                                     Devices
                                 </JetNavLink>
+                                <JetNavLink :href="route('admin.forward-auth')" :active="route().current('admin.forward-auth')">
+                                    Forward Auth
+                                </JetNavLink>
 
                             </div>
                         </div>
@@ -237,6 +240,10 @@ onMounted(() => {
 
                         <JetResponsiveNavLink :href="route('admin.chromeos-devices')" :active="route().current('admin.chromeos-devices')">
                             Devices
+                        </JetResponsiveNavLink>
+
+                        <JetResponsiveNavLink :href="route('admin.forward-auth')" :active="route().current('admin.forward-auth')">
+                            Forward Auth
                         </JetResponsiveNavLink>
                     </div>
 
