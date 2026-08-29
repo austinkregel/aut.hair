@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ForwardAuth\ForwardAuthAppController;
+use App\Http\Controllers\ClientPermissionsController;
 use App\Http\Controllers\MachineInfoController;
 use App\Http\Controllers\SeedReleaseController;
 use App\Http\Controllers\UserinfoController;
@@ -23,6 +24,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:api')->get('userinfo', UserinfoController::class)->name('oidc.userinfo');
+
+// Per-client entitlement + permissions for the token's bearer. Takes no
+// parameters: the access token names both the user and the client, so a relying
+// party can only ask about itself. See ClientPermissionsController.
+Route::middleware('auth:api')
+    ->get('client-permissions', ClientPermissionsController::class)
+    ->name('oidc.client_permissions');
 
 // Releases the user's sync-chain seed (creating it on first use). Gated by the
 // `sync` scope. The seed is the identity for self-hosted, client-side-encrypted
