@@ -33,6 +33,14 @@ class ForwardAuthController extends Controller
 {
     public function verify(Request $request): Response
     {
+        // Shared-secret gate (topology-independent). When configured, only requests
+        // carrying the secret — which the trusted proxy injects and the app strips
+        // from client input — reach any logic. This is the robust defense when the
+        // endpoint is publicly routable; see config/forward-auth.php.
+        if (! $this->secretOk($request)) {
+            return response('Forbidden.', 403);
+        }
+
         // X-Forwarded-Host/Proto are trusted headers (see TrustProxies) and are
         // reflected by getHost()/getScheme(). X-Forwarded-Uri/Method are NOT in
         // Symfony's trusted set, so read them off the raw header.
@@ -75,34 +83,41 @@ class ForwardAuthController extends Controller
      *
      * Gated to trusted subnets so a random internet actor spraying fresh
      * X-Forwarded-Host values cannot flood the approval queue with junk rows, and
-     * rate-limited per IP as a backstop against a spoofed trusted source. Returns
-     * null when discovery is off, the caller is untrusted, or the limit is hit —
-     * the caller then 403s without writing anything.
+     * rate-limited as a backstop. Returns null when discovery is off, the caller is
+     * untrusted, or the limit is hit — the caller then 403s without writing anything.
+     *
+     * Both the subnet gate and the rate-limit key use the real socket peer
+     * (connectingIp), NOT $request->ip(): with TrustProxies='*' the latter comes
+     * from a client-controllable X-Forwarded-For, so an attacker could spoof it into
+     * a trusted range and rotate it for fresh rate buckets. REMOTE_ADDR cannot be
+     * forged by the client.
      *
      * This is the ONLY throttled path: the verify hot path for already-registered
      * apps is never rate-limited, so asset-heavy page loads are unaffected.
      */
     protected function discover(Request $request, string $host): ?ProxyApp
     {
-        if (! config('forward-auth.auto_discovery') || ! $this->fromTrustedSubnet($request)) {
+        $ip = $this->connectingIp($request);
+
+        if (! config('forward-auth.auto_discovery') || ! $this->fromTrustedSubnet($ip)) {
             Log::warning('forward-auth: unregistered host, discovery skipped', [
                 'host' => $host,
-                'ip' => $request->ip(),
+                'ip' => $ip,
             ]);
 
             return null;
         }
 
         $limit = (int) config('forward-auth.discovery_throttle', 20);
-        if (RateLimiter::tooManyAttempts('fa-discovery:'.$request->ip(), $limit)) {
+        if (RateLimiter::tooManyAttempts('fa-discovery:'.$ip, $limit)) {
             Log::warning('forward-auth: discovery rate limit hit', [
                 'host' => $host,
-                'ip' => $request->ip(),
+                'ip' => $ip,
             ]);
 
             return null;
         }
-        RateLimiter::hit('fa-discovery:'.$request->ip(), 60);
+        RateLimiter::hit('fa-discovery:'.$ip, 60);
 
         // firstOrCreate dedupes on the unique host under concurrent first hits.
         $app = ProxyApp::firstOrCreate(
@@ -126,11 +141,35 @@ class ForwardAuthController extends Controller
         return $app;
     }
 
-    protected function fromTrustedSubnet(Request $request): bool
+    protected function fromTrustedSubnet(string $ip): bool
     {
         $subnets = config('forward-auth.trusted_subnets', []);
 
-        return ! empty($subnets) && IpUtils::checkIp((string) $request->ip(), $subnets);
+        return ! empty($subnets) && IpUtils::checkIp($ip, $subnets);
+    }
+
+    /**
+     * The real socket peer — the one IP the client cannot forge. Deliberately NOT
+     * $request->ip(), which TrustProxies='*' derives from X-Forwarded-For.
+     */
+    protected function connectingIp(Request $request): string
+    {
+        return (string) $request->server('REMOTE_ADDR', $request->ip());
+    }
+
+    /**
+     * Whether the request carries the configured shared secret. Returns true when no
+     * secret is configured (deployments that rely on network isolation instead).
+     */
+    protected function secretOk(Request $request): bool
+    {
+        $secret = (string) config('forward-auth.shared_secret', '');
+
+        if ($secret === '') {
+            return true;
+        }
+
+        return hash_equals($secret, (string) $request->header('X-Forward-Auth-Secret', ''));
     }
 
     /**

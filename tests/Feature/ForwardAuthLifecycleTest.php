@@ -16,15 +16,24 @@ class ForwardAuthLifecycleTest extends TestCase
 
     private const VERIFY = '/outpost.goauthentik.io/auth/nginx';
 
-    // A docker/private source IP — discovery only fires from a trusted subnet.
-    private function forwarded(string $host, string $ip = '172.18.0.5'): array
+    private function forwarded(string $host): array
     {
         return [
             'X-Forwarded-Host' => $host,
             'X-Forwarded-Proto' => 'https',
             'X-Forwarded-Uri' => '/',
-            'X-Forwarded-For' => $ip,
         ];
+    }
+
+    /**
+     * Hit verify simulating the real socket peer via REMOTE_ADDR — the value the
+     * discovery gate/rate-limit key off (NOT the spoofable X-Forwarded-For).
+     * Defaults to a docker/private IP so discovery is allowed.
+     */
+    private function verifyFrom(string $host, string $remoteAddr = '172.18.0.5')
+    {
+        return $this->withServerVariables(['REMOTE_ADDR' => $remoteAddr])
+            ->get(self::VERIFY, $this->forwarded($host));
     }
 
     // --- Option B: first-contact discovery -------------------------------------
@@ -33,9 +42,8 @@ class ForwardAuthLifecycleTest extends TestCase
     {
         $user = User::factory()->withPersonalTeam()->create();
 
-        $this->actingAs($user)
-            ->get(self::VERIFY, $this->forwarded('newapp.example.com'))
-            ->assertForbidden();
+        $this->actingAs($user);
+        $this->verifyFrom('newapp.example.com')->assertForbidden();
 
         $this->assertDatabaseHas('proxy_apps', [
             'host' => 'newapp.example.com',
@@ -49,33 +57,66 @@ class ForwardAuthLifecycleTest extends TestCase
     {
         User::factory()->withPersonalTeam()->create();
 
-        $this->get(self::VERIFY, $this->forwarded('dup.example.com'))->assertForbidden();
-        $this->get(self::VERIFY, $this->forwarded('dup.example.com'))->assertForbidden();
+        $this->verifyFrom('dup.example.com')->assertForbidden();
+        $this->verifyFrom('dup.example.com')->assertForbidden();
 
         $this->assertSame(1, ProxyApp::where('host', 'dup.example.com')->count());
     }
 
     public function test_unknown_host_from_an_untrusted_ip_is_not_discovered(): void
     {
-        // A public source IP: still 403, but no junk row is written.
-        $this->get(self::VERIFY, $this->forwarded('evil.example.com', '203.0.113.9'))
-            ->assertForbidden();
+        // A public socket peer: still 403, but no junk row is written. An attacker
+        // cannot forge REMOTE_ADDR, so spoofing X-Forwarded-For does not help.
+        $this->verifyFrom('evil.example.com', '203.0.113.9')->assertForbidden();
 
         $this->assertDatabaseMissing('proxy_apps', ['host' => 'evil.example.com']);
+    }
+
+    public function test_spoofed_x_forwarded_for_cannot_pass_the_discovery_gate(): void
+    {
+        // Public socket peer, but a spoofed private X-Forwarded-For. The gate keys on
+        // REMOTE_ADDR, so the spoof is ignored and no row is created.
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.9'])
+            ->get(self::VERIFY, $this->forwarded('spoof.example.com') + ['X-Forwarded-For' => '10.0.0.5'])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('proxy_apps', ['host' => 'spoof.example.com']);
     }
 
     public function test_discovery_is_rate_limited_per_ip(): void
     {
         config(['forward-auth.discovery_throttle' => 2]);
 
-        // Three fresh hosts from the same trusted IP; only the first two register.
+        // Three fresh hosts from the same trusted peer; only the first two register.
         foreach (['a.example.com', 'b.example.com', 'c.example.com'] as $host) {
-            $this->get(self::VERIFY, $this->forwarded($host))->assertForbidden();
+            $this->verifyFrom($host)->assertForbidden();
         }
 
         $this->assertDatabaseHas('proxy_apps', ['host' => 'a.example.com']);
         $this->assertDatabaseHas('proxy_apps', ['host' => 'b.example.com']);
         $this->assertDatabaseMissing('proxy_apps', ['host' => 'c.example.com']);
+    }
+
+    public function test_shared_secret_gate_rejects_requests_without_the_secret(): void
+    {
+        config(['forward-auth.shared_secret' => 's3cret']);
+        $team = Team::factory()->create(['personal_team' => false]);
+        ProxyApp::factory()->create(['host' => 'app.example.com', 'team_id' => $team->id]);
+        $this->actingAs($team->owner);
+
+        // Missing secret → rejected before any other logic. (Runs first: test-client
+        // default headers persist across requests, so set the header only at the end.)
+        $this->get(self::VERIFY, $this->forwarded('app.example.com'))->assertForbidden();
+
+        // Wrong secret → rejected.
+        $this->withHeaders(['X-Forward-Auth-Secret' => 'wrong'])
+            ->get(self::VERIFY, $this->forwarded('app.example.com'))
+            ->assertForbidden();
+
+        // Correct secret + entitled user → allowed.
+        $this->withHeaders(['X-Forward-Auth-Secret' => 's3cret'])
+            ->get(self::VERIFY, $this->forwarded('app.example.com'))
+            ->assertOk();
     }
 
     public function test_pending_app_is_forbidden_even_for_an_entitled_user(): void

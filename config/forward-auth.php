@@ -21,6 +21,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shared secret (topology-independent gate)
+    |--------------------------------------------------------------------------
+    |
+    | The verify endpoint is a root route on the public aut.hair domain. The subnet
+    | gate and rate limit below both key off the real socket peer (REMOTE_ADDR), so
+    | X-Forwarded-For spoofing can't defeat them — but if aut.hair itself sits behind
+    | the same proxy, REMOTE_ADDR is that proxy for everyone, and the subnet gate no
+    | longer distinguishes a real forwardAuth call from a public request.
+    |
+    | The robust fix is either to NOT route this endpoint publicly (point Traefik's
+    | forward_auth_address at aut.hair's internal address), or to set a shared secret
+    | here and have the proxy inject it as X-Forward-Auth-Secret via a
+    | headers.customRequestHeaders middleware (which overwrites any client-supplied
+    | value). When set, requests without the exact secret are rejected before any
+    | other logic. Empty = rely on network isolation instead.
+    |
+    */
+    'shared_secret' => env('FORWARD_AUTH_SHARED_SECRET'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Discovery rate limit
     |--------------------------------------------------------------------------
     |
